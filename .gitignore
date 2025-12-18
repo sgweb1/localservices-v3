@@ -1,0 +1,46 @@
+# Laravel
+/vendor/
+/node_modules/
+/public/hot
+/public/storage
+/storage/*.key
+/storage/framework/
+/storage/logs/
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+npm-debug.log
+yarn-error.log
+
+/localservices/
+/repo/
+/repo_old/
+
+# React / Vite
+/dist/
+/build/
+*.local
+.vite/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+coverage/
+.phpunit.cache/
+
+# Composer
+composer.lock
+
+# NPM
+package-lock.json
+yarn.lock
