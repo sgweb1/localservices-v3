@@ -17,8 +17,8 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000
 export async function fetchDashboardWidgets(): Promise<DashboardWidgetsResponse> {
   // W dev bez auth - używaj mocków
   if (import.meta.env.DEV) {
-    const { MOCK_DATA } = await import('@/features/provider/dashboard/mocks/mockData');
-    return { data: MOCK_DATA };
+    const { mockDashboardData } = await import('@/features/provider/dashboard/mocks/mockData');
+    return { data: mockDashboardData };
   }
 
   const response = await fetch(`${API_BASE_URL}/api/v1/provider/dashboard/widgets`, {
@@ -37,15 +37,15 @@ export async function fetchDashboardWidgets(): Promise<DashboardWidgetsResponse>
     if (response.status === 401) {
       // Fallback do mocków przy 401 w dev
       if (import.meta.env.DEV) {
-        const { MOCK_DATA } = await import('@/features/provider/dashboard/mocks/mockData');
-        return { data: MOCK_DATA };
+        const { mockDashboardData } = await import('@/features/provider/dashboard/mocks/mockData');
+        return { data: mockDashboardData };
       }
       throw new Error('Musisz być zalogowany');
     }
     // Fallback do mocków przy innych błędach w dev
     if (import.meta.env.DEV) {
-      const { MOCK_DATA } = await import('@/features/provider/dashboard/mocks/mockData');
-      return { data: MOCK_DATA };
+      const { mockDashboardData } = await import('@/features/provider/dashboard/mocks/mockData');
+      return { data: mockDashboardData };
     }
     throw new Error(`Błąd API: ${response.status}`);
   }
