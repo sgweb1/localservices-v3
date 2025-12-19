@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Moon, Sun, LayoutDashboard } from 'lucide-react';
+import { Moon, Sun, LayoutDashboard, Users } from 'lucide-react';
 import { AuthDemo } from './features/auth/components/AuthDemo';
 import { HomePage } from './pages/HomePage';
 import { ServicesPage } from './pages/ServicesPage';
+import { DevLoginPage } from './pages/DevLoginPage';
 import { DashboardPage } from './features/provider/dashboard/components';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Footer } from './components/Footer';
@@ -32,6 +33,35 @@ const ProviderDashboardLink = () => {
       <LayoutDashboard size={16} />
       <span className="hidden sm:inline">Dashboard</span>
     </Link>
+  );
+};
+
+// Current User Badge (w navbar)
+const CurrentUserBadge = () => {
+  const { user, isAuthenticated } = useAuth();
+
+  if (!isAuthenticated || !user || !import.meta.env.DEV) {
+    return null;
+  }
+
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case 'provider': return 'bg-primary-100 text-primary-700';
+      case 'admin': return 'bg-purple-100 text-purple-700';
+      default: return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  return (
+    <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+      <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
+      <span className="text-xs font-semibold text-gray-900 dark:text-gray-100">
+        {user.name.split(' ')[0]}
+      </span>
+      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${getRoleBadgeColor(user.role)}`}>
+        {user.role.toUpperCase()}
+      </span>
+    </div>
   );
 };
 
@@ -66,15 +96,23 @@ const App = () => {
             >
               Usługi
             </Link>
-            <Link
-              to="/auth-demo"
-              className="px-3 sm:px-4 py-2 rounded-xl font-semibold transition-all text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              Auth
-            </Link>
+
+            {/* DEV Login Link - tylko w DEV mode */}
+            {import.meta.env.DEV && (
+              <Link
+                to="/dev/login"
+                className="px-3 sm:px-4 py-2 rounded-xl font-semibold transition-all bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:shadow-lg flex items-center gap-2"
+              >
+                <Users size={16} />
+                <span className="hidden sm:inline">DEV Login</span>
+              </Link>
+            )}
 
             {/* Provider Dashboard Link - tylko dla providerów */}
             <ProviderDashboardLink />
+
+            {/* Current User Badge */}
+            <CurrentUserBadge />
 
             {/* Dark Mode Toggle */}
             <button
