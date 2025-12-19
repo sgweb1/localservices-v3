@@ -129,13 +129,11 @@ const App = () => {
       {/* Page Content */}
       <main className="flex-1 transition-colors">
         <Routes>
-          uthProvider>
-          <App />
-        </AuthProviderte path="/" element={<HomePage />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/szukaj" element={<ServicesPage />} />
           <Route path="/szukaj/:category" element={<ServicesPage />} />
           <Route path="/szukaj/:category/:city" element={<ServicesPage />} />
-          <Route path="/auth-demo" element={<AuthDemo />} />
+          <Route path="/dev/login" element={<DevLoginPage />} />
           <Route path="/provider/dashboard" element={<DashboardPage />} />
         </Routes>
       </main>
