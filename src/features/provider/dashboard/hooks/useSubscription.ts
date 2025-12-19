@@ -27,8 +27,8 @@ const fetchSubscription = async (): Promise<SubscriptionResponse> => {
   });
 
   if (!res.ok) {
-    // W DEV przy 401/5xx fallback do mock
-    if (import.meta.env.DEV && (res.status === 401 || res.status >= 500)) {
+    // W DEV przy 401/404/5xx fallback do mock (endpoint nie istnieje jeszcze)
+    if (import.meta.env.DEV && (res.status === 401 || res.status === 404 || res.status >= 500)) {
       return MOCK_SUBPAGES.subscription;
     }
     throw new Error(`HTTP ${res.status}`);

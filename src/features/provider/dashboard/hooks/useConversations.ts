@@ -27,7 +27,10 @@ async function fetchConversations(): Promise<ConversationListResponse> {
     headers: { Accept: 'application/json' },
   });
   if (!res.ok) {
-    if (import.meta.env.DEV) return { data: mockConversations };
+    // W DEV przy 401/404/5xx fallback do mock
+    if (import.meta.env.DEV && (res.status === 401 || res.status === 404 || res.status >= 500)) {
+      return { data: mockConversations };
+    }
     throw new Error(`Conversations API error: ${res.status}`);
   }
   return res.json();

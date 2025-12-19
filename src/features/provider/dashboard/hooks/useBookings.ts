@@ -65,10 +65,13 @@ async function fetchBookings(): Promise<BookingListResponse> {
   });
 
   if (!res.ok) {
-    // Fallback do mock w DEV przy błędzie
-    if (import.meta.env.DEV) return MOCK_SUBPAGES.bookings;
-    throw new Error(`Bookings API error: ${res.status}`);
+    // W DEV przy 401/404/5xx fallback do mock
+    if (import.meta.env.DEV && (res.status === 401 || res.status === 404 || res.status >= 500)) {
+      return MOCK_SUBPAGES.bookings;
+    }
+    throw new Error(`HTTP ${res.status}`);
   }
+
   return res.json();
 }
 

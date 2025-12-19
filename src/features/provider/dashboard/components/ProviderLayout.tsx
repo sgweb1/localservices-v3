@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
+import { DevToolsPanel } from './DevToolsPanel';
 
 export const ProviderLayout: React.FC = () => {
   return (
@@ -9,6 +10,7 @@ export const ProviderLayout: React.FC = () => {
       <div className="flex-1 min-w-0">
         <Outlet />
       </div>
+      <DevToolsPanel />
     </div>
   );
 };
