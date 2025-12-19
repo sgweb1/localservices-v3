@@ -15,10 +15,10 @@ import {
   ArrowUpRight,
   MapPin,
   Mail,
-  ExclamationTriangle,
-  CheckBadge,
+  AlertTriangle,
+  BadgeCheck,
   XCircle,
-  PencilSquare
+  Edit
 } from 'lucide-react';
 
 /**
@@ -308,7 +308,7 @@ export const BookingsPage: React.FC = () => {
                         <>
                           {booking.hasConflict && (
                             <div className="mb-4 flex items-center gap-2 rounded-lg bg-red-100 px-3 py-2 text-sm text-red-800 border border-red-200">
-                              <ExclamationTriangle className="w-5 h-5" />
+                              <AlertTriangle className="w-5 h-5" />
                               <span className="font-semibold">Konflikt czasowy!</span> Nakładające się rezerwacje w tym samym czasie.
                             </div>
                           )}
@@ -427,7 +427,7 @@ export const BookingsPage: React.FC = () => {
                                 onClick={() => handleMarkCompleted(booking.id)}
                                 className="flex-1 rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 inline-flex items-center justify-center gap-2"
                               >
-                                <CheckBadge className="w-4 h-4" />
+                                <BadgeCheck className="w-4 h-4" />
                                 Oznacz jako ukończone
                               </button>
                             </div>
