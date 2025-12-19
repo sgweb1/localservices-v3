@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDashboardWidgets } from '../hooks/useDashboardWidgets';
 import { DashboardHero } from './DashboardHero';
-import { DashboardGrid } from './DashboardGrid';
+import { MainGrid } from './MainGrid';
 import { DevToolsPopup } from './DevToolsPopup';
 import { useAuth } from '@/contexts/AuthContext';
 import { mockDashboardData } from '../mocks/mockData';
@@ -73,13 +73,9 @@ export const DashboardPage: React.FC = () => {
           </div>
         )}
 
-        <DashboardHero 
-          userName={userName}
-          trustScore={trustScore}
-          planName={planName}
-        />
+        <DashboardHero />
         
-        <DashboardGrid widgets={data} />
+        <MainGrid />
       </div>
 
       {/* DEV Tools - tylko w local env */}
