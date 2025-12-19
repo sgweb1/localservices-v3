@@ -44,3 +44,83 @@ export const subscription = {
     { key: 'analytics_pro', name: 'Analityka PRO', active: false },
   ],
 };
+
+// Unified mock object for hooks
+export const MOCK_SUBPAGES = {
+  bookings: {
+    data: bookings,
+    counts: {
+      total: bookings.length,
+      pending: bookings.filter(b => b.status === 'pending').length,
+      confirmed: bookings.filter(b => b.status === 'confirmed').length,
+      completed: bookings.filter(b => b.status === 'completed').length,
+    },
+  },
+  conversations: {
+    data: conversations.map(c => ({
+      id: c.id,
+      participantName: c.customerName,
+      lastMessage: c.lastMessage,
+      lastMessageAt: c.updatedAt,
+      unreadCount: c.unreadCount,
+    })),
+    counts: {
+      unread: conversations.filter(c => c.unreadCount > 0).length,
+    },
+  },
+  services: {
+    data: services.map(s => ({
+      id: s.id,
+      name: s.name,
+      category: s.category,
+      price: '150-300 zł',
+      status: s.status === 'visible' ? 'active' : 'inactive',
+    })),
+    counts: {
+      active: services.filter(s => s.status === 'visible').length,
+      inactive: services.filter(s => s.status === 'hidden').length,
+    },
+  },
+  reviews: {
+    data: reviews.map(r => ({
+      id: r.id,
+      customerName: r.author,
+      rating: r.rating,
+      comment: r.comment,
+      date: r.createdAt,
+    })),
+    averageRating: reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length,
+    totalReviews: reviews.length,
+  },
+  notifications: {
+    data: notifications.map(n => ({
+      id: n.id,
+      type: n.type,
+      title: n.title,
+      message: n.body,
+      createdAt: n.createdAt,
+      isRead: n.read,
+    })),
+    counts: {
+      unread: notifications.filter(n => !n.read).length,
+    },
+  },
+  subscription: {
+    data: {
+      plan: subscription.planSlug,
+      expiresAt: subscription.expiresAt,
+      features: [
+        'Nieograniczone usługi',
+        'Priorytet w wynikach',
+        'Analityka zaawansowana',
+        'Wsparcie 24/7',
+      ],
+      limits: {
+        maxServices: subscription.limits.listings.max,
+        maxPhotos: 100,
+        prioritySupport: true,
+        analytics: true,
+      },
+    },
+  },
+};
