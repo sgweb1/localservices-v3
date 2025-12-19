@@ -11,6 +11,7 @@ import { ServicesCard } from './widgets/ServicesCard';
 import { TipsSidebar } from './widgets/TipsSidebar';
 import { QuickActionsWidget } from './widgets/QuickActionsWidget';
 import { PerformanceDashboardWidget } from './widgets/PerformanceDashboardWidget';
+import { LiveActivityFeedWidget } from './widgets/LiveActivityFeedWidget';
 import { useDashboardWidgets } from '../hooks/useDashboardWidgets';
 
 /**
@@ -18,7 +19,7 @@ import { useDashboardWidgets } from '../hooks/useDashboardWidgets';
  * 
  * Layout 2/3 + 1/3:
  * - Lewa kolumna: Quick actions, Performance dashboard, limity planu, pending actions, rezerwacje, powiadomienia
- * - Prawa kolumna (sidebar): Recent activity, profile completion, services, tips
+ * - Prawa kolumna (sidebar): Live activity feed, profile completion, services, tips
  */
 export const MainGrid: React.FC = () => {
   const { data: widgets, isLoading } = useDashboardWidgets();
@@ -37,7 +38,7 @@ export const MainGrid: React.FC = () => {
             {/* Quick Actions Widget */}
             <QuickActionsWidget />
 
-            {/* Performance Dashboard Widget - NEW */}
+            {/* Performance Dashboard Widget */}
             <PerformanceDashboardWidget />
 
             {/* Limity planu subskrypcji */}
@@ -61,8 +62,8 @@ export const MainGrid: React.FC = () => {
 
           {/* Sidebar (1 kolumna) */}
           <div className="lg:col-span-1 space-y-4">
-            {/* Recent Activity */}
-            <RecentActivity />
+            {/* Live Activity Feed - NEW */}
+            <LiveActivityFeedWidget />
 
             {/* Profile Completion */}
             <ProfileCompletionCard />
