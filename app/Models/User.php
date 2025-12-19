@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
@@ -359,6 +360,118 @@ class User extends Authenticatable
     public function payouts(): HasMany
     {
         return $this->hasMany(Payout::class);
+    }
+
+    /**
+     * Oferty usług (service listings) providera
+     */
+    public function serviceListings(): HasMany
+    {
+        return $this->hasMany(Service::class, 'provider_id');
+    }
+
+    // ==========================================
+    // Subskrypcje i funkcje planów
+    // ==========================================
+
+    /**
+     * Relacja do aktualnego planu (denormalized)
+     */
+    public function currentPlan(): BelongsTo
+    {
+        return $this->belongsTo(SubscriptionPlan::class, 'current_subscription_plan_id');
+    }
+
+    /**
+     * Aktywny plan z fallbackiem do FREE
+     */
+    public function getActivePlanAttribute(): ?SubscriptionPlan
+    {
+        return Cache::remember("user:{$this->id}:active_plan", 300, function () {
+            if ($this->current_subscription_plan_id && (! $this->subscription_expires_at || $this->subscription_expires_at->isFuture())) {
+                return $this->currentPlan ?: $this->getFreePlan();
+            }
+
+            return $this->getFreePlan();
+        });
+    }
+
+    /**
+     * Plan FREE (cache 1h)
+     */
+    protected function getFreePlan(): ?SubscriptionPlan
+    {
+        return Cache::remember('subscription_plan:free', 3600, function () {
+            return SubscriptionPlan::where('slug', 'free')->first();
+        });
+    }
+
+    /**
+     * Sprawdza dostępność feature na podstawie planu
+     */
+    public function hasFeature(string $feature): bool
+    {
+        $plan = $this->activePlan;
+        if (! $plan) {
+            return false;
+        }
+
+        $normalized = Str::snake($feature);
+        $features = $plan->features ?? [];
+
+        return in_array($normalized, $features, true)
+            || in_array(str_replace('has_', '', $normalized), $features, true);
+    }
+
+    /**
+     * Pobiera limit dla danego klucza
+     */
+    public function getLimit(string $limitKey): int
+    {
+        $plan = $this->activePlan;
+        if (! $plan) {
+            return 0;
+        }
+
+        $limits = ($plan->features['limits'] ?? []);
+
+        return match ($limitKey) {
+            'max_listings' => (int) ($limits['max_listings'] ?? $plan->max_services ?? 0),
+            'max_service_categories' => (int) ($limits['max_service_categories'] ?? 0),
+            default => (int) ($limits[$limitKey] ?? 0),
+        };
+    }
+
+    /**
+     * Informacje o wykorzystaniu limitu
+     */
+    public function getLimitUsage(string $limitKey): array
+    {
+        $limit = $this->getLimit($limitKey);
+        $current = $this->getCurrentUsage($limitKey);
+
+        $isUnlimited = $limit === -1 || $limit >= 9999;
+
+        return [
+            'current' => $current,
+            'limit' => $isUnlimited ? null : $limit,
+            'remaining' => $isUnlimited ? null : max(0, $limit - $current),
+            'percentage' => $isUnlimited ? 0 : ($limit > 0 ? round(($current / $limit) * 100) : 0),
+            'is_unlimited' => $isUnlimited,
+            'is_exceeded' => ! $isUnlimited && $current > $limit,
+        ];
+    }
+
+    /**
+     * Aktualne użycie limitu
+     */
+    protected function getCurrentUsage(string $limitKey): int
+    {
+        return match ($limitKey) {
+            'max_listings' => $this->serviceListings()->where('status', 'active')->count(),
+            'max_service_categories' => $this->serviceListings()->distinct('category_id')->count('category_id'),
+            default => 0,
+        };
     }
 
     /**
