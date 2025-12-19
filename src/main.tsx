@@ -40,7 +40,7 @@ const ProviderDashboardLink = () => {
 const CurrentUserBadge = () => {
   const { user, isAuthenticated } = useAuth();
 
-  if (!isAuthenticated || !user || !import.meta.env.DEV) {
+  if (!isAuthenticated || !user) {
     return null;
   }
 
@@ -97,16 +97,14 @@ const App = () => {
               Usługi
             </Link>
 
-            {/* DEV Login Link - tylko w DEV mode */}
-            {import.meta.env.DEV && (
-              <Link
-                to="/dev/login"
-                className="px-3 sm:px-4 py-2 rounded-xl font-semibold transition-all bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:shadow-lg flex items-center gap-2"
-              >
-                <Users size={16} />
-                <span className="hidden sm:inline">DEV Login</span>
-              </Link>
-            )}
+            {/* DEV Login Link - publiczny */}
+            <Link
+              to="/dev/login"
+              className="px-3 sm:px-4 py-2 rounded-xl font-semibold transition-all bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:shadow-lg flex items-center gap-2"
+            >
+              <Users size={16} />
+              <span className="hidden sm:inline">DEV Login</span>
+            </Link>
 
             {/* Provider Dashboard Link - tylko dla providerów */}
             <ProviderDashboardLink />
