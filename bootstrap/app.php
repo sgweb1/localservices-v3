@@ -25,6 +25,10 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware('web')
                 ->prefix('api/v1')
                 ->group(base_path('routes/api/v1/marketplace.php'));
+
+            Route::middleware('web')
+                ->prefix('api/v1')
+                ->group(base_path('routes/api/v1/provider.php'));
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
