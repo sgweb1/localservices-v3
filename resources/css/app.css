@@ -79,6 +79,15 @@
     @apply bg-white/80 backdrop-blur-xl border border-white/40;
 }
 
+/* Sidebar heading and badges */
+.sidebar-heading {
+    @apply text-[11px] font-bold tracking-wider text-gray-500 uppercase px-1 mb-1;
+}
+
+.badge-pro {
+    @apply text-[10px] font-extrabold bg-gradient-to-r from-primary-600 to-accent-600 text-white px-2 py-0.5 rounded-full;
+}
+
 /* Hero gradient background (for DashboardHero) */
 .hero-gradient {
     background:

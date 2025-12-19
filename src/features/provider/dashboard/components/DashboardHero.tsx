@@ -33,15 +33,21 @@ export const DashboardHero: React.FC<DashboardHeroProps> = ({
         <div className="flex items-start justify-between">
           {/* Left: Greeting */}
           <div>
-            <p className="text-gray-700 text-sm font-medium mb-2">
-              {getGreeting()}, {userName}!
-            </p>
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Panel Providera
+            <div className="text-white/70 text-[11px] tracking-widest uppercase font-bold mb-2">Eksperymentalny kokpit rozwoju</div>
+            <h1 className="text-4xl font-bold text-white mb-2">
+              Witaj ponownie, {userName}!
             </h1>
-            <p className="text-gray-600 text-sm">
-              Zarządzaj swoją działalnością w jednym miejscu
+            <p className="text-white/80 text-sm mb-6 max-w-xl">
+              Monitoruj limity planu, aktywuj dodatki i reaguj na leady szybciej niż konkurencja. Ta wersja dashboardu skupia się na wzroście i utrzymaniu Trust Score™.
             </p>
+            <div className="flex items-center gap-3">
+              <a href="/provider/services" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/95 text-gray-900 font-semibold hover:shadow-md">
+                <span className="text-sm">Dodaj usługę</span>
+              </a>
+              <a href="/provider/subscription" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/20 text-white font-semibold hover:bg-white/25">
+                <span className="text-sm">Zarządzaj planem</span>
+              </a>
+            </div>
           </div>
 
           {/* Right: Trust Score + Plan */}
