@@ -138,14 +138,14 @@ export const PerformanceDashboardWidget: React.FC = () => {
     return (
       <svg 
         viewBox="0 0 100 100" 
-        className="w-full h-12 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        className="w-full h-12 opacity-80 transition-opacity duration-300"
         preserveAspectRatio="none"
       >
         <polyline
           points={points}
           fill="none"
           stroke={`url(#gradient-${color})`}
-          strokeWidth="3"
+          strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
           className="animate-draw-line"
