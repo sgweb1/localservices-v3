@@ -50,13 +50,13 @@ export const MessagesPage: React.FC = () => {
             <div key={c.id} className="px-6 py-4 hover:bg-gray-50 transition cursor-pointer flex items-center gap-4">
               {/* Avatar */}
               <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center text-white font-bold">
-                {c.participantName.charAt(0).toUpperCase()}
+                {(c.participantName || '?').charAt(0).toUpperCase()}
               </div>
 
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
-                  <p className="font-semibold text-gray-900">{c.participantName}</p>
+                  <p className="font-semibold text-gray-900">{c.participantName || 'Nieznany użytkownik'}</p>
                   <p className="text-xs text-gray-500">{c.lastMessageAt}</p>
                 </div>
                 <p className="text-sm text-gray-600 truncate">{c.lastMessage}</p>
