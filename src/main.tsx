@@ -19,6 +19,7 @@ import { SettingsPage } from './features/provider/dashboard/pages/SettingsPage';
 import { SupportPage } from './features/provider/dashboard/pages/SupportPage';
 import { CalendarPage } from './features/provider/calendar/CalendarPage';
 import { MarketingTipsPage } from './features/provider/marketing/MarketingTipsPage';
+import { AnalyticsPage } from './features/provider/analytics/AnalyticsPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Footer } from './components/Footer';
 import '../resources/css/app.css';
@@ -151,6 +152,7 @@ const App = () => {
             <Route path="services" element={<ProviderServicesPage />} />
             <Route path="reviews" element={<ReviewsPage />} />
             <Route path="marketing" element={<MarketingTipsPage />} />
+            <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="subscription" element={<SubscriptionPage />} />
             <Route path="settings" element={<SettingsPage />} />
