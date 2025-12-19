@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDashboardWidgets } from '../hooks/useDashboardWidgets';
 import { DashboardHero } from './DashboardHero';
 import { MainGrid } from './MainGrid';
 import { DevToolsPopup } from './DevToolsPopup';
 import { useAuth } from '@/contexts/AuthContext';
 import { mockDashboardData } from '../mocks/mockData';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { Loader2, AlertTriangle, Sparkles } from 'lucide-react';
+import { OnboardingTour, OnboardingChecklist, PROVIDER_ONBOARDING_STEPS, PROVIDER_CHECKLIST_ITEMS } from '../../onboarding/OnboardingTour';
 
 /**
  * Provider Dashboard Page
@@ -17,6 +18,34 @@ export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const [useMockData, setUseMockData] = useState(true); // DEV: Start z mock data
   const { data: apiData, isLoading, error, isError } = useDashboardWidgets();
+  
+  // Onboarding state
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [checklistItems, setChecklistItems] = useState(PROVIDER_CHECKLIST_ITEMS);
+
+  useEffect(() => {
+    // Check if user is new (first login)
+    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
+    if (!hasSeenOnboarding) {
+      setShowOnboarding(true);
+    }
+  }, []);
+
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('hasSeenOnboarding', 'true');
+    setShowOnboarding(false);
+  };
+
+  const handleOnboardingSkip = () => {
+    localStorage.setItem('hasSeenOnboarding', 'true');
+    setShowOnboarding(false);
+  };
+
+  const handleChecklistItemComplete = (id: string) => {
+    setChecklistItems(prev => 
+      prev.map(item => item.id === id ? { ...item, completed: true } : item)
+    );
+  };
 
   // Używaj mock data jeśli włączone lub API error
   const data = useMockData || isError ? mockDashboardData : apiData;
@@ -41,8 +70,20 @@ export const DashboardPage: React.FC = () => {
   const planName = data.plan_card.plan_name;
   const userName = user?.name.split(' ')[0] || 'Użytkowniku';
 
+  const completedCount = checklistItems.filter(item => item.completed).length;
+  const showChecklist = completedCount < checklistItems.length;
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Onboarding Tour */}
+      {showOnboarding && (
+        <OnboardingTour
+          steps={PROVIDER_ONBOARDING_STEPS}
+          onComplete={handleOnboardingComplete}
+          onSkip={handleOnboardingSkip}
+        />
+      )}
+
       <div className="max-w-[1600px] mx-auto px-4 py-8">
         {/* DEV Banner - Mock Data Info */}
         {import.meta.env.DEV && (
@@ -64,12 +105,31 @@ export const DashboardPage: React.FC = () => {
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => setUseMockData(!useMockData)}
-              className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-shadow"
-            >
-              {useMockData ? 'Przełącz na API' : 'Przełącz na Mock'}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowOnboarding(true)}
+                className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-shadow flex items-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                Tour
+              </button>
+              <button
+                onClick={() => setUseMockData(!useMockData)}
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-shadow"
+              >
+                {useMockData ? 'Przełącz na API' : 'Przełącz na Mock'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Onboarding Checklist - tylko dla nowych użytkowników */}
+        {showChecklist && (
+          <div className="mb-6">
+            <OnboardingChecklist
+              items={checklistItems}
+              onItemComplete={handleChecklistItemComplete}
+            />
           </div>
         )}
 
