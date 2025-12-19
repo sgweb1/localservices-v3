@@ -42,11 +42,19 @@ class ProfileController extends Controller
         $user = $request->user();
 
         // Walidacja inline z różnymi regułami dla customer/provider
+        $bioRules = ['sometimes', 'string'];
+        if ($user->isProvider()) {
+            $bioRules[] = 'min:50';
+            $bioRules[] = 'max:1000';
+        } else {
+            $bioRules[] = 'max:500';
+        }
+
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|email|max:255|unique:users,email,' . $user->id,
             'phone' => 'nullable|string|max:20',
-            'bio' => ['sometimes', 'string', $user->isProvider() ? 'min:50|max:1000' : 'max:500'],
+            'bio' => $bioRules,
             'city' => 'nullable|string|max:100',
             'address' => 'nullable|string|max:500',
             'latitude' => 'nullable|numeric|between:-90,90',

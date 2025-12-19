@@ -60,8 +60,8 @@ class UpdateUserProfileServiceTest extends TestCase
 
         $originalName = $user->name;
 
-        DB::shouldReceivePartialMock()
-            ->shouldReceive('transaction')
+        // Zamockuj metodę transaction na DB facade, aby rzucała wyjątek
+        DB::shouldReceive('transaction')
             ->andThrow(new \Exception('Database error'));
 
         $service = app(UpdateUserProfileService::class);

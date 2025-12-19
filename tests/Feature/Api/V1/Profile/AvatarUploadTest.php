@@ -54,9 +54,9 @@ class AvatarUploadTest extends TestCase
         $user = User::factory()->create();
         $user->profile()->create(UserProfile::factory()->make()->toArray());
 
-        // Utwórz stary avatar
+        // Utwórz stary avatar (jako plik, nie katalog)
         $oldFile = UploadedFile::fake()->image('old_avatar.jpg');
-        Storage::disk('public')->put('avatars/0/1/old_avatar.jpg', $oldFile);
+        Storage::disk('public')->putFileAs('avatars/0/1', $oldFile, 'old_avatar.jpg');
         $user->update(['avatar' => 'avatars/0/1/old_avatar.jpg']);
 
         Sanctum::actingAs($user);

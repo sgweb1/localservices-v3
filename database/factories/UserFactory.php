@@ -26,11 +26,11 @@ class UserFactory extends Factory
     {
         return [
             'uuid' => Str::uuid(),
-            'name' => fake()->name(),
+            'name' => 'Jan Kowalski',
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
-            'user_type' => fake()->randomElement([UserType::Customer, UserType::Provider]),
+            'user_type' => UserType::Provider->value,
             'phone' => fake()->numerify('+48 ### ### ###'),
             'bio' => fake()->paragraph(3),
             'city' => fake()->randomElement(['Warszawa', 'Kraków', 'Wrocław', 'Poznań', 'Gdańsk']),
@@ -47,7 +47,7 @@ class UserFactory extends Factory
     public function customer(): static
     {
         return $this->state(fn (array $attributes) => [
-            'user_type' => UserType::Customer,
+            'user_type' => UserType::Customer->value,
         ]);
     }
 
@@ -57,7 +57,7 @@ class UserFactory extends Factory
     public function provider(): static
     {
         return $this->state(fn (array $attributes) => [
-            'user_type' => UserType::Provider,
+            'user_type' => UserType::Provider->value,
         ]);
     }
 

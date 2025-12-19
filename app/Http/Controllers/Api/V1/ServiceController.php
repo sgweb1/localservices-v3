@@ -26,13 +26,15 @@ class ServiceController extends Controller
         $validated = $request->validate([
             'page' => 'integer|min:1',
             'per_page' => 'integer|min:1|max:50',
-            'category' => 'string',
-            'city' => 'string',
+            'category_id' => 'integer|exists:service_categories,id',
+            'location_id' => 'integer|exists:locations,id',
             'search' => 'string',
             'min_price' => 'numeric|min:0',
             'max_price' => 'numeric|min:0',
-            'sort_by' => 'string|in:created_at,base_price,rating_average,bookings_count',
-            'sort_order' => 'string|in:asc,desc',
+            'rating_min' => 'numeric|min:0|max:5',
+            'trust_min' => 'numeric|min:0|max:100',
+            'instant_only' => 'boolean',
+            'sort' => 'string|in:newest,price_asc,price_desc,rating,popular',
         ]);
 
         $services = $this->service->list($validated);

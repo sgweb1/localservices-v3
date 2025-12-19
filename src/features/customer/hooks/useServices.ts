@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Service } from '../../../types/service';
 import { ServiceClient } from '../../../api/v1/services';
 
@@ -16,30 +16,36 @@ export const useServices = () => {
     last_page: 1,
   });
 
-  const fetchServices = async (
-    page: number = 1,
-    filters: Record<string, any> = {}
-  ) => {
-    try {
-      setLoading(true);
-      setError(null);
+  const fetchServices = useCallback(
+    async (
+      page: number = 1,
+      filters: Record<string, any> = {},
+      options: { append?: boolean } = {}
+    ) => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      const response = await ServiceClient.list({
-        page,
-        per_page: 12,
-        ...filters,
-      });
+        const response = await ServiceClient.list({
+          page,
+          per_page: 12,
+          ...filters,
+        });
 
-      setServices(response.data);
-      setPagination(response.meta);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Błąd przy pobieraniu usług'
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+        setServices((prev) =>
+          options.append ? [...prev, ...response.data] : response.data
+        );
+        setPagination(response.meta);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : 'Błąd przy pobieraniu usług'
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   return {
     services,

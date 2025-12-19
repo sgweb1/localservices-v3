@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
-import { updatePassword } from '../../api/v1/profileApi';
-import { UpdatePasswordRequest, ApiError } from '../../types/profile';
+import { updatePassword } from '../../../api/v1/profileApi';
+import { UpdatePasswordRequest, ApiError } from '../../../types/profile';
 
 /**
  * Hook do zmiany hasła

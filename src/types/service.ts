@@ -8,6 +8,11 @@ export interface ServiceCategory {
   slug: string;
   description?: string | null;
   color?: string | null;
+  icon?: string | null;
+  order?: number | null;
+  is_featured?: boolean;
+  listings_count?: number | null;
+  providers_count?: number | null;
 }
 
 export interface ServiceProvider {
@@ -26,6 +31,8 @@ export interface Service {
   base_price: number;
   category?: ServiceCategory | null;
   city?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   provider?: ServiceProvider;
   created_at?: string;
   updated_at?: string;
@@ -33,10 +40,14 @@ export interface Service {
 
 export interface ServiceFilters {
   category?: string;
-  city?: string;
+  location_id?: number;
   search?: string;
   min_price?: number;
   max_price?: number;
+  rating_min?: number;
+  trust_min?: number;
+  instant_only?: boolean;
+  sort?: 'newest' | 'price_asc' | 'price_desc' | 'rating' | 'popular';
   page?: number;
   per_page?: number;
 }

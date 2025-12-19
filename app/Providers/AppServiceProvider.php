@@ -25,15 +25,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Register event listeners
-        Event::listen(ProfileUpdated::class, [
-            LogProfileChangeListener::class,
-            InvalidateProviderCache::class,
-            SendProfileUpdatedNotification::class,
-        ]);
-
-        Event::listen(AvatarUpdated::class, [
-            InvalidateProviderCache::class,
-        ]);
+        // Eventy są rejestrowane w EventServiceProvider
     }
 }

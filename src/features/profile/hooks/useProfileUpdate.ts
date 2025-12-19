@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { updateProfile } from '../../api/v1/profileApi';
-import { ProfileUpdateRequest, User, ApiError } from '../../types/profile';
+import { updateProfile } from '../../../api/v1/profileApi';
+import { ProfileUpdateRequest, User, ApiError } from '../../../types/profile';
 
 /**
  * Hook do aktualizacji profilu użytkownika
@@ -25,7 +25,7 @@ export function useProfileUpdate() {
 
       // Optimistically update
       if (previousUser) {
-        queryClient.setQueryData<User>(['user'], (old) => ({
+        queryClient.setQueryData<User>(['user'], (old: User | undefined) => ({
           ...old!,
           ...newData,
           profile: {

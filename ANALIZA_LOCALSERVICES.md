@@ -299,7 +299,6 @@
 ---
 
 ## 9. CO LOKALSERVICES ROBI, CZEGO LS2 NIE MA
-
 ### Zaawansowane funkcje (nie dla MVP ls2)
 1. **Quiz kwalifikacyjny** – QuizQuestion, QuizAttempt, logika oceny
 2. **Scraper konkurencji** – OLX/Marketplace scraping, 4 tabele (ScraperSource, ScraperRun, ScrapedProvider, ScraperAlert)
@@ -308,11 +307,6 @@
 5. **Portfolio providerów** – PortfolioItem (galeria prac)
 6. **Blog & Educational Content** – BlogPost, BlogCategory, EducationalArticle
 7. **Bannery** – Banner model (promocje)
-8. **Feature Flags** – A/B testing (FeatureFlag)
-9. **Kupony rabatowe** – Coupon, CouponUse
-10. **System poleceń** – Referral (viral loop)
-11. **Bug reporting** – BugReport (users zgłaszają błędy w app)
-12. **Newsletter** – NewsletterSubscription
 13. **Admin Audit Log** – pełny tracking akcji admina
 14. **Provider Traffic Analytics** – ProviderTrafficEvent (views, clicks, leads)
 15. **Contractor matching** – Contractor, ContractorLeadLog (external providers)
@@ -327,8 +321,6 @@
 2. **Profile Edit** – ✅ CZĘŚCIOWO (backend gotowy, UI brak)
 3. **User/UserProfile/CustomerProfile/ProviderProfile** – ✅ ZROBIONE w ls2 (uproszczona wersja)
 4. **Trust Score™** – ❌ NIE MA (algorytm jest w starej wersji TrustScoreService)
-5. **ServiceListing** – ❌ NIE MA (lista ogłoszeń usług)
-6. **Booking** – ❌ NIE MA (rezerwacje instant + quote requests)
 7. **Reviews** – ❌ NIE MA (recenzje 5-gwiazdkowe)
 8. **Real-time Chat** – ❌ NIE MA (Conversation, Message)
 9. **Availability Calendar** – ❌ NIE MA (provider slots)
@@ -421,15 +413,10 @@
 - [ ] Developer experience notes
 - [ ] Decyzja: kontynuować React czy wrócić do Livewire?
 
----
-
 ## 11. KLUCZOWE PYTANIA DO USTALENIA
 
 1. **Czy ls2 ma być pełnym marketplace czy proof-of-concept?**
    - Jeśli PoC → skup się na 2-3 prostych feature'ach (lista usług + rezerwacje)
-   - Jeśli marketplace → potrzebujesz payments, subscriptions, full booking workflow
-
-2. **Czy ls2 ma mieć real-time features?**
    - Chat (Conversation, Message) → wymaga Laravel Reverb + Echo.js
    - Jeśli nie → odłóż na później
 
@@ -438,10 +425,6 @@
    - Jeśli nie → zarządzaj przez tinker/seeder (MVP)
 
 4. **Czy ls2 ma mieć Trust Score™?**
-   - Jeśli tak → skopiuj algorytm z TrustScoreService
-   - Jeśli nie → skip weryfikację 5-poziomową
-
-5. **Czy ls2 ma mieć płatności?**
    - Jeśli tak → PayU integration (duża praca)
    - Jeśli nie → mock payment_status (pending/paid)
 
@@ -458,52 +441,27 @@
 6. **Dokumentuj różnice** – co działa inaczej w React vs Livewire
 
 ### DON'T:
-1. **Nie kopiuj 60+ tabel** – wybierz tylko potrzebne
-2. **Nie dodawaj scraper logic** – niepotrzebne
 3. **Nie rób quizów/gamifikacji** – overkill dla MVP
 4. **Nie integruj płatności** na początku – mock wystarczy
-5. **Nie twórz subdomen** – za skomplikowane
-6. **Nie buduj Filament Admin** w React – to osobny temat
-
 ### NEXT STEPS:
-1. Przeczytaj `PARALLEL_REACT_PROJECT.md` ponownie w kontekście tej analizy
 2. Zaktualizuj `api_contracts_and_14_day_plan.md` pod realia marketplace
 3. Zdecyduj: który feature zaczynasz (rekomendacja: lista usług)
 4. Stwórz migracje dla wybranego feature'a (np. `services` table)
 5. Zaimplementuj backend (Service model + controller + service class)
 6. Zaimplementuj frontend (React component + API call)
 7. Przetestuj (feature test + manual)
-8. Porównaj z Livewire (performance, DX, UX)
-
----
 
 ## 13. IMPLEMENTACJA SYSTEMU RÓL (2025-12-18)
-
-### ✅ Spatie Permission zaimplementowane
-
 **Pakiet:** spatie/laravel-permission v6.24.0
 
-**Struktura bazy danych:**
-- `roles` - role systemowe (customer, provider, admin, super_admin, ops_manager, finance, support)
-- `permissions` - uprawnienia szczegółowe (na przyszłość)
 - `model_has_roles` - pivot: user ↔ roles
 - `model_has_permissions` - pivot: user ↔ permissions
-- `role_has_permissions` - pivot: role ↔ permissions
-
-### Role w systemie
 
 | Rola | Opis | Przypadek użycia |
-|------|------|------------------|
-| **customer** | Podstawowa rola użytkownika | Może rezerwować usługi, przeglądać oferty |
-| **provider** | Usługodawca | Może świadczyć usługi + wszystko co customer |
 | **admin** | Administrator platformy | Zarządzanie użytkownikami, moderacja |
 | **super_admin** | Super administrator | Pełny dostęp do systemu |
 | **ops_manager** | Manager operacyjny | Zarządzanie operacjami |
 | **finance** | Dział finansowy | Dostęp do płatności, faktur |
-| **support** | Wsparcie techniczne | Pomoc użytkownikom |
-
-**WAŻNE:** Użytkownik może mieć **wiele ról jednocześnie**!
-- Provider automatycznie dostaje role: `customer` + `provider` (może też rezerwować usługi)
 - Admin dostaje: `admin` + `super_admin`
 
 ### Rozbudowa tabeli users
@@ -520,21 +478,10 @@ $table->string('last_name')->nullable();
 
 // Rating system
 $table->decimal('rating_average', 3, 2)->default(0);
-$table->unsignedInteger('rating_count')->default(0);
-
-// Profile tracking
-$table->tinyInteger('profile_completion')->default(0);
 
 // Activity tracking
 $table->timestamp('last_login_at')->nullable();
-$table->timestamp('last_seen_at')->nullable();
-
-// Subscription
-$table->foreignId('current_subscription_plan_id')->nullable();
-$table->timestamp('subscription_expires_at')->nullable();
-
 // Notifications
-$table->boolean('email_notifications')->default(true);
 $table->boolean('push_notifications')->default(true);
 $table->boolean('sms_notifications')->default(false);
 
@@ -555,14 +502,6 @@ class User extends Authenticatable
     {
         return $this->user_type === UserType::Provider || $this->hasRole('provider');
     }
-
-    public function isCustomer(): bool
-    {
-        return $this->user_type === UserType::Customer || $this->hasRole('customer');
-    }
-
-    public function isAdmin(): bool
-    {
         if ($this->is_admin) return true;
         return $this->hasAnyRole(['super_admin', 'admin', 'ops_manager', 'finance', 'support']);
     }
@@ -580,29 +519,14 @@ class User extends Authenticatable
 ```
 
 ### Seedery
-
-**RoleAndPermissionSeeder** (PIERWSZY w kolejności):
 ```php
 // Tworzenie ról
-Role::firstOrCreate(['name' => 'customer']);
-Role::firstOrCreate(['name' => 'provider']);
 Role::firstOrCreate(['name' => 'admin']);
 Role::firstOrCreate(['name' => 'super_admin']);
-// ... etc
-
-// Migracja istniejących użytkowników
 User::where('user_type', 'customer')->get()->each(fn($u) => $u->assignRole('customer'));
 User::where('user_type', 'provider')->get()->each(fn($u) => $u->assignRole(['customer', 'provider']));
-User::where('is_admin', true)->get()->each(fn($u) => $u->assignRole(['admin', 'super_admin']));
-```
-
-**UserSeeder** - rozbudowany o:
 - `createAdmin()` - tworzy admina z is_admin=true + role admin/super_admin
 - `assignRole()` w każdej metodzie (customer/provider)
-
-### Tabele Laravel Framework
-
-Dodane 3 migracje (wymagane przez Spatie):
 - `2024_01_01_000001_create_cache_table.php`
 - `2024_01_01_000002_create_jobs_table.php`
 - `2024_01_01_000003_create_sessions_table.php`
@@ -622,32 +546,15 @@ php artisan migrate:fresh --seed
 **System ról działa poprawnie!**
 
 ### Wnioski dla projektu ls2
-
-1. **System ról jest KLUCZOWY** - bez niego nie ma pełnego marketplace
-2. **Dual role dla providerów** - provider może też być customerem (rezerwować usługi)
-3. **Tabela users jest teraz pełna** - 30+ kolumn zamiast 14
-4. **5 tabel Permission** - muszą być w każdej bazie ls2
 5. **Kolejność seederów ma znaczenie** - RoleAndPermissionSeeder MUSI być pierwszy
 
 ### Next steps
 
-Zgodnie z [notes/database-rebuild-plan.md](notes/database-rebuild-plan.md):
-
-**Priorytet 1 (Dzień 5-7):**
-- [ ] Booking System (bookings, booking_requests)
 - [ ] Reviews System (reviews, review_responses)
 
-**Priorytet 2 (Dzień 8-10):**
-- [ ] Chat System (conversations, messages)
-- [ ] Availability System (availabilities, service_areas)
-- [ ] Verification System (verifications, certifications)
 
 **Priorytet 3 (Dzień 11-12):**
-- [ ] Subscription & Payment (subscription_plans, subscriptions, payments)
-- [ ] Quiz System (quiz_questions, quiz_attempts)
-
 ---
-
 ## 14. IMPLEMENTACJA LS2 – STATUS (2025-12-18)
 
 ### ✅ Priority 1 – Marketplace Core (KOMPLETNE)

@@ -1,0 +1,275 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - generic [ref=e5]:
+      - link "LocalServices" [ref=e6] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e7]:
+        - link "Usługi" [ref=e8] [cursor=pointer]:
+          - /url: /szukaj
+        - link "Auth" [ref=e9] [cursor=pointer]:
+          - /url: /auth-demo
+        - button "Toggle dark mode" [ref=e10]:
+          - img [ref=e11]
+  - generic [ref=e16]:
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - heading "Znajdź specjalistę" [level=1] [ref=e19]
+        - paragraph [ref=e20]: "Wyniki: 10 ofert w Twojej okolicy"
+      - button [ref=e21]:
+        - img [ref=e22]
+    - generic [ref=e24]:
+      - button "Mapa" [ref=e25]:
+        - img [ref=e26]
+        - text: Mapa
+      - button "Lista" [ref=e28]
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - img [ref=e31]
+        - text: newest
+        - button [ref=e33]:
+          - img [ref=e34]
+      - button "Wyczyść filtry" [ref=e37]
+    - generic [ref=e38]:
+      - generic [ref=e39]:
+        - generic [ref=e40]:
+          - img [ref=e41]
+          - 'textbox "Szukaj: hydraulik, elektryk, firma..." [ref=e44]'
+        - button "Filtry" [ref=e45]:
+          - img [ref=e46]
+          - generic [ref=e48]: Filtry
+        - button "Zastosuj" [active] [ref=e49]:
+          - img [ref=e50]
+          - generic [ref=e53]: Zastosuj
+      - generic [ref=e54]:
+        - button "Najlepiej oceniani" [ref=e55]:
+          - img [ref=e56]
+          - text: Najlepiej oceniani
+        - button "Budżetowe" [ref=e58]
+        - button "Express / Instant" [ref=e59]
+        - button "Najbliżej mnie" [ref=e60]
+    - generic [ref=e61]:
+      - generic [ref=e64] [cursor=pointer]:
+        - generic [ref=e65]:
+          - button [ref=e66]:
+            - img [ref=e67]
+          - img [ref=e70]
+          - generic [ref=e73]: Kategoria
+        - generic [ref=e74]:
+          - heading "Usługa bez nazwy" [level=3] [ref=e75]
+          - paragraph [ref=e76]: "Profesjonalne usługi hydrauliczne dostępne całą dobę. Specjalizuję się w naprawach awaryjnych, montażu instalacji wodociągowych, wymian...ie baterii i toalet. Dojazd w ciągu godziny w obrębie centrum Warszawy. Posiadam pełne ubezpieczenie OC. Pracuję na sprawdzonych materiałach z gwarancją. W cenie: diagnostyka, dojazd, materiały eksploatacyjne. Koszty części ustalam przed rozpoczęciem prac."
+          - generic [ref=e77]:
+            - img "Marek Hydraulik" [ref=e78]
+            - paragraph [ref=e80]: Marek Hydraulik
+          - generic [ref=e81]:
+            - img [ref=e82]
+            - generic [ref=e85]: Cała Polska
+          - generic [ref=e86]:
+            - generic [ref=e87]:
+              - paragraph [ref=e88]: 150 zł
+              - paragraph [ref=e89]: za godzinę
+            - button "Sprawdź" [ref=e90]:
+              - generic [ref=e91]: Sprawdź
+              - img [ref=e92]
+      - generic [ref=e96] [cursor=pointer]:
+        - generic [ref=e97]:
+          - button [ref=e98]:
+            - img [ref=e99]
+          - img [ref=e102]
+          - generic [ref=e105]: Kategoria
+        - generic [ref=e106]:
+          - heading "Usługa bez nazwy" [level=3] [ref=e107]
+          - paragraph [ref=e108]: "Kompleksowe usługi hydrauliczne: montaż instalacji wodociągowych i kanalizacyjnych w nowych budynkach, modernizacje starych instalacji, wymiana rur, montaż pomp ciepła, ogrzewania podłogowego. Pracuję według projektu lub opracowuję własny. Doświadczenie 15 lat, referencje z dziesiątek realizacji. Dbam o terminowość i czystość na budowie."
+          - generic [ref=e109]:
+            - img "Hydraulika 24/7" [ref=e110]
+            - paragraph [ref=e112]: Hydraulika 24/7
+          - generic [ref=e113]:
+            - img [ref=e114]
+            - generic [ref=e117]: Cała Polska
+          - generic [ref=e118]:
+            - generic [ref=e119]:
+              - paragraph [ref=e120]: 0 zł
+              - paragraph [ref=e121]: za godzinę
+            - button "Sprawdź" [ref=e122]:
+              - generic [ref=e123]: Sprawdź
+              - img [ref=e124]
+      - generic [ref=e128] [cursor=pointer]:
+        - generic [ref=e129]:
+          - button [ref=e130]:
+            - img [ref=e131]
+          - img [ref=e134]
+          - generic [ref=e137]: Kategoria
+        - generic [ref=e138]:
+          - heading "Usługa bez nazwy" [level=3] [ref=e139]
+          - paragraph [ref=e140]: Fachowe usługi elektryczne w Krakowie i okolicach. Wymiana instalacji elektrycznej, montaż rozdzielnic, podłączanie AGD, montaż lamp, gniazd, włączników. Naprawy awarie, diagnostyka usterek. Posiadam uprawnienia SEP do 1kV. Wystawiam protokoły i certyfikaty. Pracuję szybko, czysto i solidnie. Uczciwe ceny bez ukrytych kosztów.
+          - generic [ref=e141]:
+            - img "Andrzej Nowak - Elektryk" [ref=e142]
+            - paragraph [ref=e144]: Andrzej Nowak - Elektryk
+          - generic [ref=e145]:
+            - img [ref=e146]
+            - generic [ref=e149]: Cała Polska
+          - generic [ref=e150]:
+            - generic [ref=e151]:
+              - paragraph [ref=e152]: 120 zł
+              - paragraph [ref=e153]: za godzinę
+            - button "Sprawdź" [ref=e154]:
+              - generic [ref=e155]: Sprawdź
+              - img [ref=e156]
+      - generic [ref=e160] [cursor=pointer]:
+        - generic [ref=e161]:
+          - button [ref=e162]:
+            - img [ref=e163]
+          - img [ref=e166]
+          - generic [ref=e169]: Kategoria
+        - generic [ref=e170]:
+          - heading "Usługa bez nazwy" [level=3] [ref=e171]
+          - paragraph [ref=e172]: "Profesjonalne sprzątanie mieszkań, domów i biur we Wrocławiu. Standardowe sprzątanie: odkurzanie, mycie podłóg, łazienki, kuchnia, odkurzanie mebli. Sprzątanie po remoncie, pranie tapicerki, mycie okien. Używam ekologicznych środków czystości bezpiecznych dla alergików. Elastyczne terminy, także weekendy. Mogę przynieść własny sprzęt i środki lub używać Państwa."
+          - generic [ref=e173]:
+            - img "Sprzątanie Express" [ref=e174]
+            - paragraph [ref=e176]: Sprzątanie Express
+          - generic [ref=e177]:
+            - img [ref=e178]
+            - generic [ref=e181]: Cała Polska
+          - generic [ref=e182]:
+            - generic [ref=e183]:
+              - paragraph [ref=e184]: 180 zł
+              - paragraph [ref=e185]: za godzinę
+            - button "Sprawdź" [ref=e186]:
+              - generic [ref=e187]: Sprawdź
+              - img [ref=e188]
+      - generic [ref=e192] [cursor=pointer]:
+        - generic [ref=e193]:
+          - button [ref=e194]:
+            - img [ref=e195]
+          - img [ref=e198]
+          - generic [ref=e201]: Kategoria
+        - generic [ref=e202]:
+          - heading "Usługa bez nazwy" [level=3] [ref=e203]
+          - paragraph [ref=e204]: "Specjalizuję się w sprzątaniu po remontach i budowie. Usuwam kurz po szlifowaniu, plamy po farbie, gruz, odpady budowlane. Myję okna, podłogi, kafelki. Zostawiam mieszkanie gotowe do zamieszkania. Posiadam profesjonalny sprzęt: myjki ciśnieniowe, odkurzacze przemysłowe, środki do usuwania trudnych plam. Cena zależy od zakresu zniszczeń - wycena po obejrzeniu."
+          - generic [ref=e205]:
+            - img "Czysto i Szybko" [ref=e206]
+            - paragraph [ref=e208]: Czysto i Szybko
+          - generic [ref=e209]:
+            - img [ref=e210]
+            - generic [ref=e213]: Cała Polska
+          - generic [ref=e214]:
+            - generic [ref=e215]:
+              - paragraph [ref=e216]: 0 zł
+              - paragraph [ref=e217]: za godzinę
+            - button "Sprawdź" [ref=e218]:
+              - generic [ref=e219]: Sprawdź
+              - img [ref=e220]
+      - generic [ref=e224] [cursor=pointer]:
+        - generic [ref=e225]:
+          - button [ref=e226]:
+            - img [ref=e227]
+          - img [ref=e230]
+          - generic [ref=e233]: Kategoria
+        - generic [ref=e234]:
+          - heading "Usługa bez nazwy" [level=3] [ref=e235]
+          - paragraph [ref=e236]: "Doświadczony nauczyciel matematyki z 10-letnim stażem przygotowuje do matury, poprawek, egzaminów. Prowadzę zajęcia online lub u ucznia. Specjalizacja: matura podstawowa i rozszerzona, olimpiady, egzaminy ósmoklasisty. Indywidualne podejście do każdego ucznia, własne materiały dydaktyczne, testy próbne. Wysoka zdawalność: 95% uczniów zdaje maturę za pierwszym razem."
+          - generic [ref=e237]:
+            - img "Anna Korepetycje" [ref=e238]
+            - paragraph [ref=e240]: Anna Korepetycje
+          - generic [ref=e241]:
+            - img [ref=e242]
+            - generic [ref=e245]: Cała Polska
+          - generic [ref=e246]:
+            - generic [ref=e247]:
+              - paragraph [ref=e248]: 80 zł
+              - paragraph [ref=e249]: za godzinę
+            - button "Sprawdź" [ref=e250]:
+              - generic [ref=e251]: Sprawdź
+              - img [ref=e252]
+      - generic [ref=e256] [cursor=pointer]:
+        - generic [ref=e257]:
+          - button [ref=e258]:
+            - img [ref=e259]
+          - img [ref=e262]
+          - generic [ref=e265]: Kategoria
+        - generic [ref=e266]:
+          - heading "Usługa bez nazwy" [level=3] [ref=e267]
+          - paragraph [ref=e268]: "Profesjonalna opieka nad osobami starszymi i niepełnosprawnymi w Gdańsku i Trójmieście. Posiadam wykształcenie pielęgniarskie i 8 lat doświadczenia. Zapewniam: opiekę higieniczną, podawanie leków, pomoc w czynnościach dnia codziennego, towarzystwo, wsparcie emocjonalne. Możliwa opieka całodobowa lub w wybranych godzinach. Dokumenty: zaświadczenie o niekaralności, badania lekarskie, referencje."
+          - generic [ref=e269]:
+            - img "Opieka Senior Care" [ref=e270]
+            - paragraph [ref=e272]: Opieka Senior Care
+          - generic [ref=e273]:
+            - img [ref=e274]
+            - generic [ref=e277]: Cała Polska
+          - generic [ref=e278]:
+            - generic [ref=e279]:
+              - paragraph [ref=e280]: 35 zł
+              - paragraph [ref=e281]: za godzinę
+            - button "Sprawdź" [ref=e282]:
+              - generic [ref=e283]: Sprawdź
+              - img [ref=e284]
+      - generic [ref=e288] [cursor=pointer]:
+        - generic [ref=e289]:
+          - button [ref=e290]:
+            - img [ref=e291]
+          - img [ref=e294]
+          - generic [ref=e297]: Kategoria
+        - generic [ref=e298]:
+          - heading "Usługa bez nazwy" [level=3] [ref=e299]
+          - paragraph [ref=e300]: "Kompleksowa pielęgnacja ogrodów przydomowych w Warszawie. Koszenie trawników, wertykulacja, nawożenie, przycinanie żywopłotów i krzewów ozdobnych, grabienie liści, odchwaszczanie. Posiadam profesjonalny sprzęt: kosiarka spalinowa, nożyce akumulatorowe, dmuchawa, wertykulat or. Regularne zlecenia z rabatem. Dojazd w obrębie Warszawy gratis."
+          - generic [ref=e301]:
+            - img "Marek Hydraulik" [ref=e302]
+            - paragraph [ref=e304]: Marek Hydraulik
+          - generic [ref=e305]:
+            - img [ref=e306]
+            - generic [ref=e309]: Cała Polska
+          - generic [ref=e310]:
+            - generic [ref=e311]:
+              - paragraph [ref=e312]: 200 zł
+              - paragraph [ref=e313]: za godzinę
+            - button "Sprawdź" [ref=e314]:
+              - generic [ref=e315]: Sprawdź
+              - img [ref=e316]
+      - generic [ref=e320] [cursor=pointer]:
+        - generic [ref=e321]:
+          - button [ref=e322]:
+            - img [ref=e323]
+          - img [ref=e326]
+          - generic [ref=e329]: Kategoria
+        - generic [ref=e330]:
+          - heading "Usługa bez nazwy" [level=3] [ref=e331]
+          - paragraph [ref=e332]: "Profesjonalne malowanie mieszkań, domów i biur w Łodzi. Wykonuję: gładzie gipsowe, szpachlowanie, malowanie farbami akrylowymi i lateksowymi, tapetowanie, usuwanie starych tapet. Dbam o czystość i terminowość. Przed pracami zabezpieczam meble i podłogi. Po zakończeniu zostawiam mieszkanie czyste. Ceny negocjowalne przy większych zleceniach. Wycena po obejrzeniu."
+          - generic [ref=e333]:
+            - img "Remont Budex" [ref=e334]
+            - paragraph [ref=e336]: Remont Budex
+          - generic [ref=e337]:
+            - img [ref=e338]
+            - generic [ref=e341]: Cała Polska
+          - generic [ref=e342]:
+            - generic [ref=e343]:
+              - paragraph [ref=e344]: 0 zł
+              - paragraph [ref=e345]: za godzinę
+            - button "Sprawdź" [ref=e346]:
+              - generic [ref=e347]: Sprawdź
+              - img [ref=e348]
+      - generic [ref=e352] [cursor=pointer]:
+        - generic [ref=e353]:
+          - button [ref=e354]:
+            - img [ref=e355]
+          - img [ref=e358]
+          - generic [ref=e361]: Kategoria
+        - generic [ref=e362]:
+          - heading "Usługa bez nazwy" [level=3] [ref=e363]
+          - paragraph [ref=e364]: Serwis komputerowy w Katowicach - przyjazd do klienta w ciągu 24h. Naprawa komputerów stacjonarnych i laptopów, wymiana podzespołów, czyszczenie z kurzu, wymiana past termoprzewodzących. Instalacja systemów Windows/Linux, usuwanie wirusów, konfiguracja sieci domowych, odzyskiwanie danych. Diagnoza gratis. Gwarancja na części i robociznę. Uczciwe ceny, faktury VAT.
+          - generic [ref=e365]:
+            - img "IT Solutions Pro" [ref=e366]
+            - paragraph [ref=e368]: IT Solutions Pro
+          - generic [ref=e369]:
+            - img [ref=e370]
+            - generic [ref=e373]: Cała Polska
+          - generic [ref=e374]:
+            - generic [ref=e375]:
+              - paragraph [ref=e376]: 100 zł
+              - paragraph [ref=e377]: za godzinę
+            - button "Sprawdź" [ref=e378]:
+              - generic [ref=e379]: Sprawdź
+              - img [ref=e380]
+    - generic [ref=e383]: To już wszystkie wyniki
+```

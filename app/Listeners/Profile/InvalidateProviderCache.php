@@ -2,7 +2,7 @@
 
 namespace App\Listeners\Profile;
 
-use App\Events\ProfileUpdated;
+use Illuminate\Cache\TaggableStore;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Cache;
 
@@ -16,8 +16,13 @@ class InvalidateProviderCache implements ShouldQueue
     /**
      * Handle the event.
      */
-    public function handle(ProfileUpdated $event): void
+    public function handle($event): void
     {
+        // Obsłuż zarówno ProfileUpdated jak i AvatarUpdated (oba mają $user)
+        if (!property_exists($event, 'user')) {
+            return;
+        }
+
         $user = $event->user;
 
         // Tylko dla providerów
@@ -25,7 +30,10 @@ class InvalidateProviderCache implements ShouldQueue
             return;
         }
 
-        // Flush cache tagów providera
-        Cache::tags(['providers', "provider.{$user->id}"])->flush();
+        // Flush cache tagów providera (tylko jeśli store wspiera tagi)
+        $store = Cache::getStore();
+        if ($store instanceof TaggableStore) {
+            Cache::tags(['providers', "provider.{$user->id}"])->flush();
+        }
     }
 }

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { uploadAvatar } from '../../api/v1/profileApi';
-import { User, ApiError } from '../../types/profile';
+import { uploadAvatar } from '../../../api/v1/profileApi';
+import { User, ApiError } from '../../../types/profile';
 import { useState } from 'react';
 
 /**

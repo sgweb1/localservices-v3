@@ -16,10 +16,14 @@ export const ServiceClient = {
     if (filters.page) params.append('page', filters.page.toString());
     if (filters.per_page) params.append('per_page', filters.per_page.toString());
     if (filters.category) params.append('category', filters.category);
-    if (filters.city) params.append('city', filters.city);
+    if (filters.location_id) params.append('location_id', filters.location_id.toString());
     if (filters.search) params.append('search', filters.search);
     if (filters.min_price !== undefined) params.append('min_price', filters.min_price.toString());
     if (filters.max_price !== undefined) params.append('max_price', filters.max_price.toString());
+    if (filters.rating_min !== undefined) params.append('rating_min', filters.rating_min.toString());
+    if (filters.trust_min !== undefined) params.append('trust_min', filters.trust_min.toString());
+    if (filters.instant_only !== undefined) params.append('instant_only', String(filters.instant_only ? 1 : 0));
+    if (filters.sort) params.append('sort', filters.sort);
 
     const response = await apiClient.get(
       `/services${params.toString() ? `?${params.toString()}` : ''}`
@@ -60,9 +64,9 @@ export const ServiceClient = {
   },
 
   /**
-   * Wyszukaj usługi w mieście
+   * Wyszukaj usługi w mieście (nie używane - używaj location_id w filters)
    */
   async searchByCity(city: string, filters: ServiceFilters = {}): Promise<ServiceListResponse> {
-    return this.list({ ...filters, city });
+    return this.list(filters);
   },
 };

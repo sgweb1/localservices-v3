@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useProfileUpdate } from '../hooks/useProfileUpdate';
-import { User, UserType } from '../../../types/profile';
+import { User, UserType, ProfileUpdateRequest } from '../../../types/profile';
 
 /**
  * Schemat walidacji Zod - mirror server validation
@@ -71,7 +71,10 @@ export function ProfileEditForm({ user, onSuccess }: ProfileEditFormProps) {
   });
 
   const onSubmit = (data: ProfileFormData) => {
-    mutate(data, {
+    const cleanData = Object.fromEntries(
+      Object.entries(data).map(([key, value]) => [key, value === null ? undefined : value])
+    ) as ProfileUpdateRequest;
+    mutate(cleanData, {
       onSuccess: () => {
         onSuccess?.();
       },
@@ -181,7 +184,7 @@ export function ProfileEditForm({ user, onSuccess }: ProfileEditFormProps) {
             <ul className="mt-2 text-sm text-red-700">
               {Object.entries(error.errors).map(([field, messages]) => (
                 <li key={field}>
-                  {field}: {messages.join(', ')}
+                  {field}: {Array.isArray(messages) ? messages.join(', ') : String(messages)}
                 </li>
               ))}
             </ul>

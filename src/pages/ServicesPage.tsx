@@ -1,13 +1,20 @@
 import React from 'react';
 import { ServiceList } from '../features/customer/components/ServiceList';
+import { SearchBarWithData } from '../components/SearchBarWithData';
 
 /**
  * ServicesPage - Strona główna z listą usług
  */
 export const ServicesPage: React.FC = () => {
   return (
-    <div className="bg-gray-50 min-h-screen py-12">
-      <ServiceList />
+    <div className="relative min-h-screen bg-gray-50 dark:bg-gray-900 py-8 sm:py-12 px-4 sm:px-6 transition-colors overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle,#80808014_1.5px,transparent_1.5px)] bg-[size:32px_32px] dark:bg-[radial-gradient(circle,#ffffff18_1.5px,transparent_1.5px)]"></div>
+      <div className="relative z-10">
+        <div className="mb-8">
+          <SearchBarWithData />
+        </div>
+        <ServiceList />
+      </div>
     </div>
   );
 };

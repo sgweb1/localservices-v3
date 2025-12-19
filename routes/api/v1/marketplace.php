@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\V1\ChatController;
 use App\Http\Controllers\Api\V1\ProviderController;
 use App\Http\Controllers\Api\V1\AnalyticsController;
 use App\Http\Controllers\Api\V1\ServiceController;
+use App\Http\Controllers\Api\V1\LocationController;
+use App\Http\Controllers\Api\V1\CategoryController;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -13,6 +15,16 @@ use Illuminate\Support\Facades\Route;
  */
 
 Route::middleware(['api'])->group(function () {
+    // Lokalizacje - publiczne
+    Route::get('/locations', [LocationController::class, 'index']);
+    Route::get('/locations/major-cities', [LocationController::class, 'majorCities']);
+    Route::get('/locations/{id}', [LocationController::class, 'show']);
+    Route::get('/locations/by-slug/{slug}', [LocationController::class, 'bySlug']);
+
+    // Kategorie usług - publiczne
+    Route::get('/categories', [CategoryController::class, 'index']);
+    Route::get('/categories/{slug}', [CategoryController::class, 'show']);
+
     // Usługi - publiczne
     Route::get('/services', [ServiceController::class, 'index']);
     Route::get('/services/{id}', [ServiceController::class, 'show']);

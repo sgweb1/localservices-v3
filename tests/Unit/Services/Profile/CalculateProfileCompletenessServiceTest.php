@@ -111,7 +111,8 @@ class CalculateProfileCompletenessServiceTest extends TestCase
      */
     public function test_score_is_saved_to_database(): void
     {
-        $profile = UserProfile::factory()->create([
+        // Użyj profilu "pustego", aby nie doliczać domyślnych pól z fabryki
+        $profile = UserProfile::factory()->empty()->create([
             'first_name' => 'Jan',
             'last_name' => 'Kowalski',
             'profile_completion_percentage' => 0,

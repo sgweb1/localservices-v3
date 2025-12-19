@@ -2,6 +2,7 @@
 
 namespace App\Services\Profile;
 
+use Illuminate\Cache\TaggableStore;
 use App\Events\ProfileUpdated;
 use App\Exceptions\Profile\ProfileUpdateException;
 use App\Models\User;
@@ -98,7 +99,10 @@ class UpdateUserProfileService
             // Invalidacja cache (po commit transakcji)
             Cache::forget("user.profile.{$user->id}");
             if ($user->isProvider()) {
-                Cache::tags(['providers', "provider.{$user->id}"])->flush();
+                $store = Cache::getStore();
+                if ($store instanceof TaggableStore) {
+                    Cache::tags(['providers', "provider.{$user->id}"])->flush();
+                }
             }
 
             // Log zmian
