@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDashboardWidgets } from '../../hooks/useDashboardWidgets';
-import { Layers, Photo, Users, Star } from 'lucide-react';
+import { Layers, Image, Users, Star } from 'lucide-react';
 
 interface LimitCardProps {
   title: string;
@@ -76,7 +76,7 @@ export const SubscriptionLimitsSection: React.FC = () => {
           title="Zdjęcia w galerii"
           current={limits.max_gallery_images?.current ?? 0}
           limit={limits.max_gallery_images?.limit ?? 50}
-          icon={<Photo className="w-5 h-5" />}
+          icon={<Image className="w-5 h-5" />}
         />
         <LimitCard
           title="Członkowie zespołu"

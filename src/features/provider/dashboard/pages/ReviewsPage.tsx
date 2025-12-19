@@ -1,57 +1,102 @@
 import React from 'react';
 import { useReviews } from '../hooks/useReviews';
-import { Star } from 'lucide-react';
+import { Star, TrendingUp } from 'lucide-react';
 
+/**
+ * Reviews Page - zgodny z localservices
+ * 
+ * Średnia rating, łączna liczba, lista opinii z avatarami.
+ */
 export const ReviewsPage: React.FC = () => {
   const { data, isLoading, error } = useReviews();
   const items = data?.data ?? [];
+  const avgRating = data?.averageRating ?? 0;
+  const totalReviews = data?.totalReviews ?? 0;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Opinie</h1>
-        {data && (
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
-              <span className="text-xl font-bold text-gray-900">{data.averageRating.toFixed(1)}</span>
-            </div>
-            <span className="text-sm text-gray-500">({data.totalReviews} opinii)</span>
+    <div className="space-y-6">
+      {/* Header ze statystykami */}
+      <div className="glass-card rounded-2xl p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Opinie klientów</h1>
+            <p className="text-sm text-gray-500">Monitoruj swoją reputację i odpowiadaj na feedback</p>
           </div>
-        )}
+          <div className="text-center">
+            <div className="flex items-center gap-2 mb-1">
+              <Star className="w-8 h-8 text-amber-500 fill-amber-500" />
+              <span className="text-4xl font-bold text-gray-900">{avgRating.toFixed(1)}</span>
+            </div>
+            <p className="text-sm text-gray-500">{totalReviews} opinii</p>
+          </div>
+        </div>
+
+        {/* Rating breakdown */}
+        <div className="mt-6 grid grid-cols-5 gap-2">
+          {[5,4,3,2,1].map(stars => (
+            <div key={stars} className="text-center">
+              <div className="flex items-center justify-center gap-0.5 mb-1">
+                {Array.from({ length: stars }, (_, i) => (
+                  <Star key={i} className="w-3 h-3 text-amber-500 fill-amber-500" />
+                ))}
+              </div>
+              <p className="text-xs text-gray-500">0</p>
+            </div>
+          ))}
+        </div>
       </div>
 
+      {/* Lista opinii */}
       <div className="glass-card rounded-2xl overflow-hidden">
         <div className="divide-y divide-gray-100">
           {isLoading && (
-            <div className="px-4 py-6 text-center text-gray-500">Ładowanie...</div>
+            <div className="px-6 py-12 text-center text-gray-500">Ładowanie...</div>
           )}
           {error && !isLoading && (
-            <div className="px-4 py-6 text-center text-error">Błąd ładowania listy</div>
+            <div className="px-6 py-12 text-center text-error">Błąd ładowania opinii</div>
           )}
           {!isLoading && items.map(r => (
-            <div key={r.id} className="px-4 py-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="font-semibold text-gray-900">{r.customerName}</div>
-                  <div className="flex items-center gap-1 mt-1">
-                    {Array.from({ length: 5 }, (_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-4 h-4 ${
-                          i < r.rating ? 'text-amber-500 fill-amber-500' : 'text-gray-300'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <p className="text-sm text-gray-700 mt-2">{r.comment}</p>
+            <div key={r.id} className="px-6 py-6">
+              <div className="flex items-start gap-4">
+                {/* Avatar */}
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center text-white font-bold">
+                  {r.customerName.charAt(0).toUpperCase()}
                 </div>
-                <span className="text-xs text-gray-500 ml-4 whitespace-nowrap">{r.date}</span>
+
+                {/* Content */}
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <p className="font-semibold text-gray-900">{r.customerName}</p>
+                      <div className="flex items-center gap-1 mt-1">
+                        {Array.from({ length: 5 }, (_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-4 h-4 ${
+                              i < r.rating ? 'text-amber-500 fill-amber-500' : 'text-gray-300'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <span className="text-xs text-gray-500">{r.date}</span>
+                  </div>
+                  <p className="text-sm text-gray-700 leading-relaxed">{r.comment}</p>
+                  
+                  {/* Odpowiedz button */}
+                  <button className="mt-3 text-sm text-cyan-600 hover:text-cyan-800 font-medium">
+                    Odpowiedz
+                  </button>
+                </div>
               </div>
             </div>
           ))}
           {!isLoading && items.length===0 && (
-            <div className="px-4 py-6 text-center text-gray-500">Brak opinii</div>
+            <div className="px-6 py-12 text-center">
+              <Star className="w-16 h-16 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500 font-medium">Brak opinii</p>
+              <p className="text-sm text-gray-400 mt-1">Poproś klientów o feedback po zrealizowanych usługach</p>
+            </div>
           )}
         </div>
       </div>
