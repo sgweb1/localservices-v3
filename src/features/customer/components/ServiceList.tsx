@@ -1,14 +1,14 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronRight, Search, Filter, MapPin, Star, Sparkles, X, ShieldCheck, Zap, SortAsc, Compass, Map, Navigation, Heart, Menu, Wrench, Lightbulb, Leaf, Home as HomeIcon } from 'lucide-react';
+import { ChevronRight, Search, Filter, MapPin, Star, Sparkles, X, ShieldCheck, Zap, SortAsc, Compass, Map, Navigation, Heart, Menu } from 'lucide-react';
 import { useGeolocation } from '../../../hooks/useGeolocation';
 import { useLocations } from '../../../hooks/useLocations';
 import { useCategories } from '../../../hooks/useCategories';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
-import { Select } from '../../../components/ui/select';
-import { Combobox } from '../../../components/ui/combobox';
 import { Label } from '../../../components/ui/label';
+import { CategorySelect } from '../../../components/CategorySelect';
+import { LocationSelect } from '../../../components/LocationSelect';
 import { Switch } from '../../../components/ui/switch';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Badge } from '../../../components/ui/badge';
@@ -21,6 +21,8 @@ import { ServiceCard } from './ServiceCard';
 import { ServiceMap } from '../../../components/map/ServiceMap';
 import { ServiceDetailsDialog } from './ServiceDetailsDialog';
 import { Service } from '../../../types/service';
+import type { ServiceCategory } from '../../../types/service';
+import type { Location } from '../../../types/location';
 
 /**
  * ServiceFilter - Komponent filtru usług
@@ -30,8 +32,8 @@ const ServiceFilter: React.FC<{
   initialFilters: Record<string, any>;
 }> = ({ onFilterChange, initialFilters }) => {
   const [isOpen, setIsOpen] = useState(true);
-  const [category, setCategory] = useState('');
-  const [locationId, setLocationId] = useState<number | undefined>(undefined);
+  const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [search, setSearch] = useState('');
   const [minPrice, setMinPrice] = useState<string>('');
   const [maxPrice, setMaxPrice] = useState<string>('');
@@ -44,20 +46,18 @@ const ServiceFilter: React.FC<{
   const { getCurrentPosition, loading: geoLoading } = useGeolocation();
   const { locations, loading: locationsLoading } = useLocations();
   const { categories, loading: categoriesLoading } = useCategories();
-  const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-    'heroicon-o-wrench': Wrench,
-    'heroicon-o-bolt': Zap,
-    'heroicon-o-sparkles': Sparkles,
-    'heroicon-o-heart': Heart,
-    'heroicon-o-leaf': Leaf,
-    'heroicon-o-home': HomeIcon,
-    'heroicon-o-academic-cap': Lightbulb,
-    'heroicon-o-star': Star,
-  };
 
   useEffect(() => {
-    setCategory(initialFilters.category ?? '');
-    setLocationId(initialFilters.location_id ?? undefined);
+    // Find category by slug if provided
+    if (initialFilters.category && categories.length > 0) {
+      const cat = categories.find((c) => c.slug === initialFilters.category);
+      setSelectedCategory(cat ?? null);
+    }
+    // Find location by id if provided
+    if (initialFilters.location_id && locations.length > 0) {
+      const loc = locations.find((l) => l.id === initialFilters.location_id);
+      setSelectedLocation(loc ?? null);
+    }
     setSearch(initialFilters.search ?? '');
     setMinPrice(initialFilters.min_price?.toString() ?? '');
     setMaxPrice(initialFilters.max_price?.toString() ?? '');
@@ -65,12 +65,12 @@ const ServiceFilter: React.FC<{
     setTrustMin(initialFilters.trust_min ?? 0);
     setInstantOnly(initialFilters.instant_only ?? false);
     setSort(initialFilters.sort ?? 'newest');
-  }, [initialFilters]);
+  }, [initialFilters, categories, locations]);
 
   const emitFilters = (closePanel = false) => {
     onFilterChange({
-      category: category || undefined,
-      location_id: locationId || undefined,
+      category: selectedCategory?.slug || undefined,
+      location_id: selectedLocation?.id || undefined,
       search: search || undefined,
       min_price: minPrice ? Number(minPrice) : undefined,
       max_price: maxPrice ? Number(maxPrice) : undefined,
@@ -211,56 +211,28 @@ const ServiceFilter: React.FC<{
     {isOpen && (
       <div className="bg-white/90 dark:bg-gray-950/90 border border-gray-200 dark:border-gray-600 rounded-2xl p-4 sm:p-6 mb-4 backdrop-blur-xl shadow-[0_12px_40px_rgba(6,182,212,0.12)]">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* City */}
+            {/* Location Select */}
             <div>
               <Label className="mb-2 block">Miasto</Label>
-              <Combobox
-                value={locationId ? String(locationId) : ''}
-                onChange={(value) => setLocationId(value ? Number(value) : undefined)}
+              <LocationSelect
+                locations={locations}
+                selected={selectedLocation}
+                onChange={setSelectedLocation}
                 placeholder="Wybierz miasto"
-                searchPlaceholder="Szukaj miasta..."
-                emptyText={locationsLoading ? 'Ładowanie...' : 'Nie znaleziono miasta'}
-                options={[
-                  { value: '', label: 'Wszystkie miasta' },
-                  ...locations.map((loc) => ({
-                    value: String(loc.id),
-                    label: loc.name,
-                  })),
-                ]}
+                loading={locationsLoading}
               />
             </div>
 
-            {/* Category (z API, z ikoną) */}
-            <div className="space-y-2">
-              <Label htmlFor="category-select" className="mb-2 block">Kategoria</Label>
-              <div className="relative">
-                <select
-                  id="category-select"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full h-11 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm pr-10"
-                  disabled={categoriesLoading}
-                >
-                  <option value="">Wszystkie</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.slug}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
-                {categoriesLoading && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">...</span>}
-              </div>
-              {category && categories.length > 0 && (
-                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                  {(() => {
-                    const cat = categories.find((c) => c.slug === category);
-                    if (!cat) return null;
-                    const Icon = iconMap[cat.icon ?? ''] || Sparkles;
-                    return <Icon className="w-4 h-4 text-sky-600 dark:text-sky-400" />;
-                  })()}
-                  <span>Wybrano: {category}</span>
-                </div>
-              )}
+            {/* Category Select */}
+            <div>
+              <Label className="mb-2 block">Kategoria</Label>
+              <CategorySelect
+                categories={categories}
+                selected={selectedCategory}
+                onChange={setSelectedCategory}
+                placeholder="Wszystkie"
+                loading={categoriesLoading}
+              />
             </div>
 
             {/* Price min */}
