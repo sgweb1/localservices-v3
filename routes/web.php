@@ -7,9 +7,9 @@ Route::view('/', 'app');
 // React SPA - wyszukiwarka usług (catch-all dla SEO URLs)
 Route::view('/szukaj/{any?}', 'app')->where('any', '.*');
 
-// React SPA - DEV login i dashboard providera
-Route::view('/dev/login', 'app');
-Route::view('/provider/dashboard', 'app');
+// React SPA - DEV i Provider: catch-all, aby odświeżanie nie dawało 404
+Route::view('/dev/{any?}', 'app')->where('any', '.*');
+Route::view('/provider/{any?}', 'app')->where('any', '.*');
 
 // Strona demonstracyjna dla SPA auth przez Sanctum (React)
 Route::view('/auth-demo', 'auth-demo');

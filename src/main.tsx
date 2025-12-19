@@ -8,6 +8,15 @@ import { HomePage } from './pages/HomePage';
 import { ServicesPage } from './pages/ServicesPage';
 import { DevLoginPage } from './pages/DevLoginPage';
 import { DashboardPage } from './features/provider/dashboard/components';
+import { ProviderLayout } from './features/provider/dashboard/components/ProviderLayout';
+import { BookingsPage } from './features/provider/dashboard/pages/BookingsPage';
+import { MessagesPage } from './features/provider/dashboard/pages/MessagesPage';
+import { ServicesPage as ProviderServicesPage } from './features/provider/dashboard/pages/ServicesPage';
+import { ReviewsPage } from './features/provider/dashboard/pages/ReviewsPage';
+import { NotificationsPage } from './features/provider/dashboard/pages/NotificationsPage';
+import { SubscriptionPage } from './features/provider/dashboard/pages/SubscriptionPage';
+import { SettingsPage } from './features/provider/dashboard/pages/SettingsPage';
+import { SupportPage } from './features/provider/dashboard/pages/SupportPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Footer } from './components/Footer';
 import '../resources/css/app.css';
@@ -132,7 +141,17 @@ const App = () => {
           <Route path="/szukaj/:category" element={<ServicesPage />} />
           <Route path="/szukaj/:category/:city" element={<ServicesPage />} />
           <Route path="/dev/login" element={<DevLoginPage />} />
-          <Route path="/provider/dashboard" element={<DashboardPage />} />
+          <Route path="/provider" element={<ProviderLayout />}>
+            <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="bookings" element={<BookingsPage />} />
+            <Route path="messages" element={<MessagesPage />} />
+            <Route path="services" element={<ProviderServicesPage />} />
+            <Route path="reviews" element={<ReviewsPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="subscription" element={<SubscriptionPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+            <Route path="support" element={<SupportPage />} />
+          </Route>
         </Routes>
       </main>
 
