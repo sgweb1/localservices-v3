@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useDashboardWidgets } from '../hooks/useDashboardWidgets';
 import { DashboardHero } from './DashboardHero';
 import { DashboardGrid } from './DashboardGrid';
 import { DevToolsPopup } from './DevToolsPopup';
 import { useAuth } from '@/contexts/AuthContext';
+import { mockDashboardData } from '../mocks/mockData';
 import { Loader2, AlertTriangle } from 'lucide-react';
 
 /**
@@ -14,34 +15,18 @@ import { Loader2, AlertTriangle } from 'lucide-react';
  */
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
-  const { data, isLoading, error, isError } = useDashboardWidgets();
+  const [useMockData, setUseMockData] = useState(true); // DEV: Start z mock data
+  const { data: apiData, isLoading, error, isError } = useDashboardWidgets();
 
-  if (isLoading) {
+  // Używaj mock data jeśli włączone lub API error
+  const data = useMockData || isError ? mockDashboardData : apiData;
+
+  if (isLoading && !useMockData) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-16 h-16 text-primary-600 animate-spin mx-auto mb-4" />
           <p className="text-gray-600 font-semibold">Ładowanie dashboardu...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="glass-card rounded-2xl p-8 max-w-md text-center">
-          <AlertTriangle className="w-16 h-16 text-error mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Błąd ładowania</h2>
-          <p className="text-gray-600 mb-4">
-            {error?.message || 'Nie udało się załadować dashboardu'}
-          </p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="btn-gradient"
-          >
-            Odśwież stronę
-          </button>
         </div>
       </div>
     );
@@ -59,6 +44,35 @@ export const DashboardPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-[1600px] mx-auto px-4 py-8">
+        {/* DEV Banner - Mock Data Info */}
+        {import.meta.env.DEV && (
+          <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold">
+                DEV
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900">
+                  {useMockData ? '📊 Mock Data Mode' : '🔌 API Mode'}
+                </p>
+                <p className="text-sm text-gray-600">
+                  {useMockData 
+                    ? 'Wyświetlane są przykładowe dane testowe' 
+                    : isError 
+                      ? '⚠️ API error - fallback do mock data'
+                      : 'Dane z API Laravel'}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setUseMockData(!useMockData)}
+              className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-shadow"
+            >
+              {useMockData ? 'Przełącz na API' : 'Przełącz na Mock'}
+            </button>
+          </div>
+        )}
+
         <DashboardHero 
           userName={userName}
           trustScore={trustScore}
