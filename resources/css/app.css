@@ -82,10 +82,10 @@
 /* Hero gradient background (for DashboardHero) */
 .hero-gradient {
     background:
-        radial-gradient(circle at 20% 30%, rgba(34,211,238,0.12) 0%, transparent 40%),
-        radial-gradient(circle at 80% 70%, rgba(8,145,178,0.10) 0%, transparent 40%),
-        radial-gradient(circle at 50% 50%, rgba(238, 73, 112, 0.05) 0%, transparent 60%),
-        linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%);
+        radial-gradient(circle at 20% 30%, rgba(34,211,238,0.22) 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(8,145,178,0.18) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(238, 73, 112, 0.12) 0%, transparent 60%),
+        linear-gradient(180deg, #F8FAFF 0%, #FFF5FA 100%);
     position: relative;
 }
 
@@ -109,10 +109,10 @@
     left: 0;
     right: 0;
     bottom: 0;
-    /* Delikatne przyciemnienie tła dla lepszego kontrastu tekstu */
-    background: linear-gradient(180deg, rgba(0,0,0,0.04), rgba(0,0,0,0.06));
+    /* Delikatne przyciemnienie tła dla lepszego kontrastu tekstu (bardziej żywe tło pod spodem) */
+    background: linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.08));
     z-index: 0;
-    opacity: 0.8;
+    opacity: 0.35;
 }
 
 .hero-gradient > * {
