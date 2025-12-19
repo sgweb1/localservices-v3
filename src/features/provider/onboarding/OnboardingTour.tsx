@@ -11,7 +11,8 @@ import {
   TrendingUp,
   User,
   Lightbulb,
-  ChevronRight
+  ChevronRight,
+  Briefcase
 } from 'lucide-react';
 
 export interface OnboardingStep {
