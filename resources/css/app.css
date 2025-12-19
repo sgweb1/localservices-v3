@@ -57,3 +57,52 @@
 ::-webkit-scrollbar-thumb:hover {
     @apply bg-gray-400 dark:bg-gray-500;
 }
+
+/* Gradient text utilities */
+.text-gradient {
+    background: linear-gradient(90deg, var(--color-primary-600), var(--color-accent-600));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.text-gradient-strong {
+    background: linear-gradient(90deg, var(--color-primary-700), var(--color-accent-700));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: contrast(1.06);
+}
+
+/* Glass card utility */
+.glass-card {
+    @apply bg-white/80 backdrop-blur-xl border border-white/40;
+}
+
+/* Hero gradient background (for DashboardHero) */
+.hero-gradient {
+    background:
+        radial-gradient(circle at 20% 30%, rgba(34,211,238,0.12) 0%, transparent 40%) 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(8,145,178,0.10) 0%, transparent 40%) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(238, 73, 112, 0.05) 0%, transparent 60%),
+        linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%);
+    position: relative;
+}
+
+.hero-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23EE4970' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 1;
+    z-index: 0;
+}
+
+.hero-gradient > * {
+    position: relative;
+    z-index: 1;
+}
