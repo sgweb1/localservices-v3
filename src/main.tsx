@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, LayoutDashboard } from 'lucide-react';
 import { AuthDemo } from './features/auth/components/AuthDemo';
 import { HomePage } from './pages/HomePage';
 import { ServicesPage } from './pages/ServicesPage';
+import { DashboardPage } from './features/provider/dashboard/components';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Footer } from './components/Footer';
 import '../resources/css/app.css';
 
@@ -13,6 +15,25 @@ const rootEl = document.getElementById('root');
 if (!rootEl) throw new Error('Root element not found');
 
 const qc = new QueryClient();
+
+// Provider Dashboard Link (tylko dla providerów)
+const ProviderDashboardLink = () => {
+  const { user, isAuthenticated } = useAuth();
+  
+  if (!isAuthenticated || user?.role !== 'provider') {
+    return null;
+  }
+
+  return (
+    <Link
+      to="/provider/dashboard"
+      className="px-3 sm:px-4 py-2 rounded-xl font-semibold transition-all bg-gradient-to-r from-primary-600 to-accent-600 text-white hover:shadow-lg flex items-center gap-2"
+    >
+      <LayoutDashboard size={16} />
+      <span className="hidden sm:inline">Dashboard</span>
+    </Link>
+  );
+};
 
 // App with routing
 const App = () => {
@@ -52,6 +73,9 @@ const App = () => {
               Auth
             </Link>
 
+            {/* Provider Dashboard Link - tylko dla providerów */}
+            <ProviderDashboardLink />
+
             {/* Dark Mode Toggle */}
             <button
               onClick={() => setDarkMode(!darkMode)}
@@ -67,11 +91,14 @@ const App = () => {
       {/* Page Content */}
       <main className="flex-1 transition-colors">
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          uthProvider>
+          <App />
+        </AuthProviderte path="/" element={<HomePage />} />
           <Route path="/szukaj" element={<ServicesPage />} />
           <Route path="/szukaj/:category" element={<ServicesPage />} />
           <Route path="/szukaj/:category/:city" element={<ServicesPage />} />
           <Route path="/auth-demo" element={<AuthDemo />} />
+          <Route path="/provider/dashboard" element={<DashboardPage />} />
         </Routes>
       </main>
 

@@ -3,6 +3,7 @@ import { useDashboardWidgets } from '../hooks/useDashboardWidgets';
 import { DashboardHero } from './DashboardHero';
 import { DashboardGrid } from './DashboardGrid';
 import { DevToolsPopup } from './DevToolsPopup';
+import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, AlertTriangle } from 'lucide-react';
 
 /**
@@ -12,6 +13,7 @@ import { Loader2, AlertTriangle } from 'lucide-react';
  * Loading/error states + auto-refresh co 5min.
  */
 export const DashboardPage: React.FC = () => {
+  const { user } = useAuth();
   const { data, isLoading, error, isError } = useDashboardWidgets();
 
   if (isLoading) {
@@ -52,8 +54,7 @@ export const DashboardPage: React.FC = () => {
   // Oblicz Trust Score z insights_card
   const trustScore = data.insights_card.trust_score;
   const planName = data.plan_card.plan_name;
-  // Nazwa użytkownika z kontekstu auth (do dodania później)
-  const userName = 'Użytkowniku';
+  const userName = user?.name.split(' ')[0] || 'Użytkowniku';
 
   return (
     <div className="min-h-screen bg-gray-50">
