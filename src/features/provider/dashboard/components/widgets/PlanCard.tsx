@@ -4,7 +4,7 @@ import { BadgeGradient } from '@/components/ui/BadgeGradient';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { IconGradient } from '@/components/ui/IconGradient';
 import { PlanCard as PlanCardType } from '../../types';
-import { RectangleStack, AlertTriangle, ChevronRight } from 'lucide-react';
+import { Layers, AlertTriangle, ChevronRight } from 'lucide-react';
 
 interface PlanCardProps {
   data: PlanCardType;
@@ -47,7 +47,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({ data }) => {
           <div key={item.key} className="space-y-2">
             <div className="flex items-center gap-3">
               <IconGradient variant={1}>
-                <RectangleStack className="w-5 h-5 text-white" />
+                <Layers className="w-5 h-5 text-white" />
               </IconGradient>
               <div className="flex-1">
                 <p className="font-semibold text-sm text-gray-900">{item.title}</p>
