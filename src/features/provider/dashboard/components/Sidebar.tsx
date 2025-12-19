@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Calendar, MessagesSquare, Briefcase, Star, Bell, CreditCard, Settings, LifeBuoy, CalendarDays, Lightbulb, TrendingUp } from 'lucide-react';
+import { LayoutDashboard, Calendar, MessagesSquare, Briefcase, Star, Bell, CreditCard, Settings, LifeBuoy, CalendarDays, Lightbulb, TrendingUp, User } from 'lucide-react';
 
 const navItems = [
   { to: '/provider/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -10,6 +10,8 @@ const navItems = [
   { to: '/provider/services', label: 'Usługi', icon: Briefcase },
   { to: '/provider/reviews', label: 'Opinie', icon: Star },
   { to: '/provider/marketing', label: 'Porady', icon: Lightbulb, badge: 'PRO' },
+  { to: '/provider/analytics', label: 'Analityka', icon: TrendingUp },
+  { to: '/provider/profile', label: 'Profil', icon: User },
   { to: '/provider/notifications', label: 'Powiadomienia', icon: Bell },
   { to: '/provider/subscription', label: 'Subskrypcja', icon: CreditCard },
   { to: '/provider/settings', label: 'Ustawienia', icon: Settings },
@@ -22,7 +24,7 @@ export const Sidebar: React.FC = () => {
       {/* Main nav */}
       <div className="glass-card rounded-2xl p-3 mb-3">
         <nav className="space-y-1">
-          {navItems.slice(0,7).map(({ to, label, icon: Icon, badge }) => (
+          {navItems.slice(0,9).map(({ to, label, icon: Icon, badge }) => (
             <NavLink
               key={to}
               to={to}
@@ -50,7 +52,7 @@ export const Sidebar: React.FC = () => {
       </div>
       <div className="glass-card rounded-2xl p-3 mb-3">
         <nav className="space-y-1">
-          {navItems.slice(7).map(({ to, label, icon: Icon }) => (
+          {navItems.slice(9).map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}

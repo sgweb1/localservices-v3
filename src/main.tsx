@@ -20,6 +20,7 @@ import { SupportPage } from './features/provider/dashboard/pages/SupportPage';
 import { CalendarPage } from './features/provider/calendar/CalendarPage';
 import { MarketingTipsPage } from './features/provider/marketing/MarketingTipsPage';
 import { AnalyticsPage } from './features/provider/analytics/AnalyticsPage';
+import { ProfilePage } from './features/provider/profile/ProfilePage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Footer } from './components/Footer';
 import '../resources/css/app.css';
@@ -153,6 +154,7 @@ const App = () => {
             <Route path="reviews" element={<ReviewsPage />} />
             <Route path="marketing" element={<MarketingTipsPage />} />
             <Route path="analytics" element={<AnalyticsPage />} />
+            <Route path="profile" element={<ProfilePage />} />
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="subscription" element={<SubscriptionPage />} />
             <Route path="settings" element={<SettingsPage />} />
