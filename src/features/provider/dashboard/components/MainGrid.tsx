@@ -9,13 +9,15 @@ import { RecentActivity } from './widgets/RecentActivity';
 import { ProfileCompletionCard } from './widgets/ProfileCompletionCard';
 import { ServicesCard } from './widgets/ServicesCard';
 import { TipsSidebar } from './widgets/TipsSidebar';
+import { QuickActionsWidget } from './widgets/QuickActionsWidget';
+import { PerformanceDashboardWidget } from './widgets/PerformanceDashboardWidget';
 import { useDashboardWidgets } from '../hooks/useDashboardWidgets';
 
 /**
- * Main Grid Layout - zgodny z localservices/provider/dashboard/partials/main-grid.blade.php
+ * Main Grid Layout - interaktywny layout z nowymi widgetami
  * 
  * Layout 2/3 + 1/3:
- * - Lewa kolumna: Limity planu, pending actions, rezerwacje, powiadomienia
+ * - Lewa kolumna: Quick actions, Performance dashboard, limity planu, pending actions, rezerwacje, powiadomienia
  * - Prawa kolumna (sidebar): Recent activity, profile completion, services, tips
  */
 export const MainGrid: React.FC = () => {
@@ -32,6 +34,12 @@ export const MainGrid: React.FC = () => {
           
           {/* Kolumna główna (2 kolumny) */}
           <div className="lg:col-span-2 space-y-4">
+            {/* Quick Actions Widget */}
+            <QuickActionsWidget />
+
+            {/* Performance Dashboard Widget - NEW */}
+            <PerformanceDashboardWidget />
+
             {/* Limity planu subskrypcji */}
             <SubscriptionLimitsSection />
 
@@ -52,7 +60,7 @@ export const MainGrid: React.FC = () => {
           </div>
 
           {/* Sidebar (1 kolumna) */}
-          <div className="lg:col-span-1 space-y-8">
+          <div className="lg:col-span-1 space-y-4">
             {/* Recent Activity */}
             <RecentActivity />
 
