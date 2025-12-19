@@ -33,13 +33,13 @@ export const DashboardHero: React.FC<DashboardHeroProps> = ({
         <div className="flex items-start justify-between">
           {/* Left: Greeting */}
           <div>
-            <p className="text-white/80 text-sm font-medium mb-2">
+            <p className="text-gray-700 text-sm font-medium mb-2">
               {getGreeting()}, {userName}!
             </p>
-            <h1 className="text-4xl font-bold text-white mb-4">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
               Panel Providera
             </h1>
-            <p className="text-white/70 text-sm">
+            <p className="text-gray-600 text-sm">
               Zarządzaj swoją działalnością w jednym miejscu
             </p>
           </div>
@@ -50,7 +50,7 @@ export const DashboardHero: React.FC<DashboardHeroProps> = ({
               <TextGradient strong className="text-3xl font-bold block mb-1">
                 {trustScore}
               </TextGradient>
-              <p className="text-xs text-white/70">Trust Score™</p>
+              <p className="text-xs text-gray-700">Trust Score™</p>
             </div>
 
             <BadgeGradient className="px-4 py-2">
