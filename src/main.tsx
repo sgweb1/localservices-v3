@@ -148,7 +148,9 @@ createRoot(rootEl).render(
   <React.StrictMode>
     <BrowserRouter>
       <QueryClientProvider client={qc}>
-        <App />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
       </QueryClientProvider>
     </BrowserRouter>
   </React.StrictMode>
