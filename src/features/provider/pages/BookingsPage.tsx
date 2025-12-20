@@ -3,6 +3,7 @@ import { useBookings } from '../dashboard/hooks/useBookings';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/api/client';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import { 
   Calendar, 
   Clock, 
@@ -191,13 +192,14 @@ export const BookingsPage: React.FC = () => {
                 Znaleziono potwierdzone rezerwacje, których termin już minął. Oznaczenie ich jako zrealizowanych zwiększa Twój <span className="font-semibold text-emerald-700">Trust Score™</span> i buduje wiarygodność w oczach klientów.
               </p>
               <div className="flex items-center gap-3">
-                <button 
+                <Button 
                   onClick={handleMarkAllOverdueCompleted}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 transition-all hover:shadow-xl hover:shadow-emerald-500/40 hover:scale-[1.02] active:scale-95"
+                  variant="success"
+                  size="lg"
                 >
                   <CheckCircle className="w-5 h-5" />
                   Oznacz jako zrealizowane
-                </button>
+                </Button>
                 <span className="text-xs text-slate-500 flex items-center gap-1">
                   <ArrowUpRight className="w-4 h-4" />
                   Zwiększ Trust Score i widoczność
@@ -491,69 +493,80 @@ export const BookingsPage: React.FC = () => {
                           {/* Akcje */}
                           {isPending && (
                             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                              <button 
+                              <Button 
                                 onClick={() => handleAcceptBooking(booking.id)}
-                                className="flex-1 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition-all hover:shadow-xl hover:shadow-emerald-500/40 hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2"
+                                variant="success"
+                                size="lg"
+                                className="flex-1"
                               >
                                 <CheckCircle className="w-5 h-5" />
                                 Zaakceptuj
-                              </button>
-                              <button 
+                              </Button>
+                              <Button 
                                 onClick={() => handleRejectBooking(booking.id)}
-                                className="flex-1 rounded-xl bg-gradient-to-r from-red-500 to-rose-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-red-500/30 transition-all hover:shadow-xl hover:shadow-red-500/40 hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2"
+                                variant="danger"
+                                size="lg"
+                                className="flex-1"
                               >
                                 <XCircle className="w-5 h-5" />
                                 Odrzuć
-                              </button>
-                              <button 
+                              </Button>
+                              <Button 
                                 onClick={() => setDeleteConfirmId(booking.id)}
-                                className="rounded-xl bg-gradient-to-r from-slate-500 to-slate-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-slate-500/20 transition-all hover:shadow-xl hover:shadow-slate-500/30 hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2"
+                                variant="neutral"
+                                size="lg"
                               >
                                 <EyeOff className="w-4 h-4" />
                                 Ukryj
-                              </button>
+                              </Button>
                             </div>
                           )}
                           
                           {isConfirmed && (
                             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                              <button 
+                              <Button 
                                 onClick={() => handleCompleteBooking(booking.id)}
-                                className="flex-1 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-cyan-500/30 transition-all hover:shadow-xl hover:shadow-cyan-500/40 hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2"
+                                variant="info"
+                                size="lg"
+                                className="flex-1"
                               >
                                 <CheckCircle className="w-5 h-5" />
                                 Oznacz jako zrealizowane
-                              </button>
-                              <button 
+                              </Button>
+                              <Button 
                                 onClick={() => setDeleteConfirmId(booking.id)}
-                                className="rounded-xl bg-gradient-to-r from-slate-500 to-slate-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-slate-500/20 transition-all hover:shadow-xl hover:shadow-slate-500/30 hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2"
+                                variant="neutral"
+                                size="lg"
                               >
                                 <EyeOff className="w-4 h-4" />
                                 Ukryj
-                              </button>
+                              </Button>
                             </div>
                           )}
                           
                           {(booking.status === 'completed' || booking.status === 'cancelled' || booking.status === 'rejected') && (
                             <div className="mt-6">
-                              <button 
+                              <Button 
                                 onClick={() => setDeleteConfirmId(booking.id)}
-                                className="rounded-xl bg-gradient-to-r from-slate-500 to-slate-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-slate-500/20 transition-all hover:shadow-xl hover:shadow-slate-500/30 hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2"
+                                variant="neutral"
+                                size="lg"
                               >
                                 <EyeOff className="w-4 h-4" />
                                 Ukryj
-                              </button>
+                              </Button>
                             </div>
                           )}
                           {isConfirmedOverdue && (
                             <div className="mt-6 flex gap-3">
-                              <button 
+                              <Button 
                                 onClick={() => handleMarkCompleted(booking.id)}
-                                className="flex-1 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 transition-all hover:shadow-xl hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2"
+                                variant="warning"
+                                size="lg"
+                                className="flex-1"
                               >
                                 <BadgeCheck className="w-4 h-4" />
                                 Oznacz jako ukończone
-                              </button>
+                              </Button>
                             </div>
                           )}
                         </>
@@ -694,16 +707,18 @@ export const BookingsPage: React.FC = () => {
                   Czy na pewno chcesz ukryć tę rezerwację? Rezerwacja zniknie z Twojego panelu, ale klient nadal będzie ją widzieć.
                 </p>
                 <div className="flex gap-3 justify-end mt-6">
-                  <button
+                  <Button
                     onClick={() => setDeleteConfirmId(null)}
-                    className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-all hover:scale-[1.02] active:scale-95"
+                    variant="secondary"
+                    size="lg"
                   >
                     Anuluj
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => deleteMutation.mutate(deleteConfirmId)}
                     disabled={deleteMutation.isPending}
-                    className="px-5 py-2.5 bg-gradient-to-r from-slate-500 to-slate-600 text-white rounded-xl shadow-lg shadow-slate-500/30 hover:shadow-xl hover:shadow-slate-500/40 disabled:opacity-50 text-sm font-bold transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-2"
+                    variant="neutral"
+                    size="lg"
                   >
                     {deleteMutation.isPending ? (
                       <>
@@ -716,7 +731,7 @@ export const BookingsPage: React.FC = () => {
                         Ukryj
                       </>
                     )}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
