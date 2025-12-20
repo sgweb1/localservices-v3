@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { useBookings } from '../hooks/useBookings';
+import { useBookings } from '../dashboard/hooks/useBookings';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '@/api/client';
+import { toast } from 'sonner';
 import { 
   Calendar, 
   Clock, 
@@ -18,7 +21,8 @@ import {
   AlertTriangle,
   BadgeCheck,
   XCircle,
-  Edit
+  Edit,
+  EyeOff
 } from 'lucide-react';
 
 /**
@@ -28,9 +32,18 @@ import {
  * szczegóły rezerwacji, akcje, sidebar, modal edycji, paginacja.
  */
 export const BookingsPage: React.FC = () => {
+  console.log('[BookingsPage] Rendering...');
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage] = useState(15);
   const { data, isLoading, error } = useBookings();
+  
+  console.log('[BookingsPage] Data:', { data, isLoading, error });
+  
+  const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   
   const items = data?.data ?? [];
   const stats = data?.counts ?? { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0 };
@@ -41,6 +54,70 @@ export const BookingsPage: React.FC = () => {
   const showTrialInfo = data?.showTrialInfo ?? false;
   const trialDays = data?.trialDays ?? 14;
   const maxBookingDate = data?.maxBookingDate;
+  const pagination = data?.pagination;
+
+  // Mutations
+  const acceptMutation = useMutation({
+    mutationFn: (bookingId: number) => apiClient.post(`/provider/bookings/${bookingId}/accept`),
+    onSuccess: (response) => {
+      toast.success(response.data.message || 'Rezerwacja została zaakceptowana');
+      queryClient.invalidateQueries({ queryKey: ['provider', 'bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['provider', 'dashboard', 'widgets'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.error || 'Wystąpił błąd podczas akceptacji rezerwacji');
+    },
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: (bookingId: number) => apiClient.post(`/provider/bookings/${bookingId}/reject`),
+    onSuccess: (response) => {
+      toast.success(response.data.message || 'Rezerwacja została odrzucona');
+      queryClient.invalidateQueries({ queryKey: ['provider', 'bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['provider', 'dashboard', 'widgets'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.error || 'Wystąpił błąd podczas odrzucania rezerwacji');
+    },
+  });
+
+  const completeMutation = useMutation({
+    mutationFn: (bookingId: number) => apiClient.post(`/provider/bookings/${bookingId}/complete`),
+    onSuccess: (response) => {
+      toast.success(response.data.message || 'Rezerwacja została oznaczona jako ukończona');
+      queryClient.invalidateQueries({ queryKey: ['provider', 'bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['provider', 'dashboard', 'widgets'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.error || 'Wystąpił błąd podczas oznaczania rezerwacji jako ukończona');
+    },
+  });
+
+  const completeOverdueMutation = useMutation({
+    mutationFn: () => apiClient.post('/provider/bookings/complete-overdue'),
+    onSuccess: (response) => {
+      const count = response.data.count || 0;
+      toast.success(`Oznaczono ${count} rezerwacji jako ukończone`);
+      queryClient.invalidateQueries({ queryKey: ['provider', 'bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['provider', 'dashboard', 'widgets'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.error || 'Wystąpił błąd podczas oznaczania przeterminowanych rezerwacji');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (bookingId: number) => apiClient.delete(`/provider/bookings/${bookingId}`),
+    onSuccess: (response) => {
+      toast.success(response.data.message || 'Rezerwacja została ukryta w Twoim panelu');
+      queryClient.invalidateQueries({ queryKey: ['provider', 'bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['provider', 'dashboard', 'widgets'] });
+      setDeleteConfirmId(null);
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.error || 'Wystąpił błąd podczas ukrywania rezerwacji');
+    },
+  });
 
   // Filtrowanie
   let filteredItems = items;
@@ -57,28 +134,44 @@ export const BookingsPage: React.FC = () => {
 
   // Akcje na rezerwacjach
   const handleAcceptBooking = (bookingId: number) => {
-    console.log('Accept booking:', bookingId);
-    // TODO: wywołać API mutation
+    acceptMutation.mutate(bookingId);
   };
 
   const handleRejectBooking = (bookingId: number) => {
-    console.log('Reject booking:', bookingId);
-    // TODO: wywołać API mutation
+    rejectMutation.mutate(bookingId);
   };
 
   const handleMarkCompleted = (bookingId: number) => {
-    console.log('Mark as completed:', bookingId);
-    // TODO: wywołać API mutation
+    completeMutation.mutate(bookingId);
+  };
+
+  const handleCompleteBooking = (bookingId: number) => {
+    completeMutation.mutate(bookingId);
   };
 
   const handleMarkAllOverdueCompleted = () => {
-    console.log('Mark all overdue as completed');
-    // TODO: wywołać API mutation
+    completeOverdueMutation.mutate();
   };
 
   const handleOpenConversation = (customerId: number) => {
     console.log('Open conversation with customer:', customerId);
     // TODO: navigate do messages z customerId
+  };
+
+  // Format date helper
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pl-PL', { 
+      year: 'numeric', 
+      month: '2-digit', 
+      day: '2-digit' 
+    });
+  };
+
+  // Format time helper  
+  const formatTime = (timeString: string) => {
+    if (!timeString) return '';
+    return timeString.substring(0, 5); // HH:MM
   };
 
   return (
@@ -100,7 +193,7 @@ export const BookingsPage: React.FC = () => {
               <div className="flex items-center gap-3">
                 <button 
                   onClick={handleMarkAllOverdueCompleted}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 transition-all hover:shadow-xl hover:shadow-emerald-500/40 hover:scale-[1.02] active:scale-95"
                 >
                   <CheckCircle className="w-5 h-5" />
                   Oznacz jako zrealizowane
@@ -282,6 +375,7 @@ export const BookingsPage: React.FC = () => {
                 {filteredItems.map(booking => {
                   const hasAccess = booking.canAccess !== false;
                   const isPending = booking.status === 'pending';
+                  const isConfirmed = booking.status === 'confirmed';
                   const isConfirmedOverdue = booking.status === 'confirmed' && booking.bookingDate && booking.bookingDate <= '2025-12-19';
                   
                   return (
@@ -356,16 +450,21 @@ export const BookingsPage: React.FC = () => {
                             </span>
                           </div>
 
-                          <div className="mt-4 grid grid-cols-2 md:grid-cols-5 gap-4 text-sm text-slate-500">
+                          <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 text-sm text-slate-500">
                             <div>
                               <p className="text-xs uppercase tracking-wide text-slate-400">Data</p>
-                              <p className="mt-1 font-semibold text-slate-900">{booking.bookingDate || 'TBD'}</p>
+                              <p className="mt-1 font-semibold text-slate-900">{formatDate(booking.bookingDate) || 'TBD'}</p>
                             </div>
                             <div>
                               <p className="text-xs uppercase tracking-wide text-slate-400">Godzina</p>
                               <p className="mt-1 font-semibold text-slate-900">
-                                {booking.startTime ? booking.startTime.substring(0, 5) : 'TBD'}
-                                {booking.endTime && <><span className="text-slate-400">-</span>{booking.endTime.substring(0, 5)}</>}
+                                {booking.startTime ? formatTime(booking.startTime) : 'TBD'}
+                                {booking.endTime && (
+                                  <>
+                                    <span className="text-slate-400"> - </span>
+                                    {formatTime(booking.endTime)}
+                                  </>
+                                )}
                               </p>
                             </div>
                             <div>
@@ -377,22 +476,9 @@ export const BookingsPage: React.FC = () => {
                             <div>
                               <p className="text-xs uppercase tracking-wide text-slate-400">Wartość</p>
                               <p className="mt-1 font-semibold text-slate-900">
-                                {(booking.totalPrice ?? booking.servicePrice ?? 0).toFixed(2)} zł
+                                {parseFloat(booking.totalPrice ?? booking.servicePrice ?? 0).toFixed(2)} zł
                               </p>
                             </div>
-                            {booking.paymentStatus && (
-                              <div>
-                                <p className="text-xs uppercase tracking-wide text-slate-400">Płatność</p>
-                                <p className={`mt-1 font-semibold ${
-                                  booking.paymentStatus === 'paid' ? 'text-emerald-600' : 'text-amber-600'
-                                }`}>
-                                  {booking.paymentStatus === 'paid' && 'Opłacona'}
-                                  {booking.paymentStatus === 'pending' && 'Oczekuje'}
-                                  {booking.paymentStatus === 'failed' && 'Nieudana'}
-                                  {booking.paymentStatus === 'refunded' && 'Zwrócona'}
-                                </p>
-                              </div>
-                            )}
                           </div>
 
                           {booking.customerNotes && (
@@ -404,28 +490,66 @@ export const BookingsPage: React.FC = () => {
 
                           {/* Akcje */}
                           {isPending && (
-                            <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                               <button 
                                 onClick={() => handleAcceptBooking(booking.id)}
-                                className="flex-1 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 inline-flex items-center justify-center gap-2"
+                                className="flex-1 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition-all hover:shadow-xl hover:shadow-emerald-500/40 hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2"
                               >
-                                <CheckCircle className="w-4 h-4" />
+                                <CheckCircle className="w-5 h-5" />
                                 Zaakceptuj
                               </button>
                               <button 
                                 onClick={() => handleRejectBooking(booking.id)}
-                                className="flex-1 rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 inline-flex items-center justify-center gap-2"
+                                className="flex-1 rounded-xl bg-gradient-to-r from-red-500 to-rose-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-red-500/30 transition-all hover:shadow-xl hover:shadow-red-500/40 hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2"
                               >
-                                <XCircle className="w-4 h-4" />
+                                <XCircle className="w-5 h-5" />
                                 Odrzuć
+                              </button>
+                              <button 
+                                onClick={() => setDeleteConfirmId(booking.id)}
+                                className="rounded-xl bg-gradient-to-r from-slate-500 to-slate-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-slate-500/20 transition-all hover:shadow-xl hover:shadow-slate-500/30 hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2"
+                              >
+                                <EyeOff className="w-4 h-4" />
+                                Ukryj
+                              </button>
+                            </div>
+                          )}
+                          
+                          {isConfirmed && (
+                            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                              <button 
+                                onClick={() => handleCompleteBooking(booking.id)}
+                                className="flex-1 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-cyan-500/30 transition-all hover:shadow-xl hover:shadow-cyan-500/40 hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2"
+                              >
+                                <CheckCircle className="w-5 h-5" />
+                                Oznacz jako zrealizowane
+                              </button>
+                              <button 
+                                onClick={() => setDeleteConfirmId(booking.id)}
+                                className="rounded-xl bg-gradient-to-r from-slate-500 to-slate-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-slate-500/20 transition-all hover:shadow-xl hover:shadow-slate-500/30 hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2"
+                              >
+                                <EyeOff className="w-4 h-4" />
+                                Ukryj
+                              </button>
+                            </div>
+                          )}
+                          
+                          {(booking.status === 'completed' || booking.status === 'cancelled' || booking.status === 'rejected') && (
+                            <div className="mt-6">
+                              <button 
+                                onClick={() => setDeleteConfirmId(booking.id)}
+                                className="rounded-xl bg-gradient-to-r from-slate-500 to-slate-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-slate-500/20 transition-all hover:shadow-xl hover:shadow-slate-500/30 hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2"
+                              >
+                                <EyeOff className="w-4 h-4" />
+                                Ukryj
                               </button>
                             </div>
                           )}
                           {isConfirmedOverdue && (
-                            <div className="mt-4 flex gap-3">
+                            <div className="mt-6 flex gap-3">
                               <button 
                                 onClick={() => handleMarkCompleted(booking.id)}
-                                className="flex-1 rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 inline-flex items-center justify-center gap-2"
+                                className="flex-1 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 transition-all hover:shadow-xl hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2"
                               >
                                 <BadgeCheck className="w-4 h-4" />
                                 Oznacz jako ukończone
@@ -446,6 +570,63 @@ export const BookingsPage: React.FC = () => {
                         : `Brak rezerwacji ze statusem "${statusFilter}"`
                       }
                     </p>
+                  </div>
+                )}
+
+                {/* Paginacja */}
+                {pagination && pagination.last_page > 1 && (
+                  <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 glass-card p-4 rounded-2xl">
+                    <div className="text-sm text-slate-600">
+                      Pokazano {pagination.from ?? 0} - {pagination.to ?? 0} z {pagination.total} rezerwacji
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Poprzednia
+                      </button>
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: pagination.last_page }, (_, i) => i + 1)
+                          .filter(page => {
+                            // Pokaż pierwsze 2, ostatnie 2 i strony wokół obecnej
+                            return page === 1 || 
+                                   page === 2 || 
+                                   page === pagination.last_page - 1 || 
+                                   page === pagination.last_page ||
+                                   (page >= currentPage - 1 && page <= currentPage + 1);
+                          })
+                          .map((page, idx, arr) => {
+                            const prevPage = arr[idx - 1];
+                            const showEllipsis = prevPage && page - prevPage > 1;
+                            return (
+                              <React.Fragment key={page}>
+                                {showEllipsis && (
+                                  <span className="px-2 text-slate-400">...</span>
+                                )}
+                                <button
+                                  onClick={() => setCurrentPage(page)}
+                                  className={`w-10 h-10 text-sm font-medium rounded-lg transition-colors ${
+                                    currentPage === page
+                                      ? 'bg-gradient-to-r from-cyan-500 to-teal-500 text-white'
+                                      : 'text-slate-700 hover:bg-slate-100'
+                                  }`}
+                                >
+                                  {page}
+                                </button>
+                              </React.Fragment>
+                            );
+                          })}
+                      </div>
+                      <button
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                        disabled={currentPage === pagination.last_page}
+                        className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Następna
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -493,6 +674,50 @@ export const BookingsPage: React.FC = () => {
                   Poproś o opinię
                   <ArrowUpRight className="w-4 h-4" />
                 </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal potwierdzenia usunięcia */}
+      {deleteConfirmId !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setDeleteConfirmId(null)}>
+          <div className="glass-card rounded-2xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                <EyeOff className="w-5 h-5 text-red-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">Potwierdź ukrycie</h3>
+                <p className="text-sm text-slate-600 mb-4">
+                  Czy na pewno chcesz ukryć tę rezerwację? Rezerwacja zniknie z Twojego panelu, ale klient nadal będzie ją widzieć.
+                </p>
+                <div className="flex gap-3 justify-end mt-6">
+                  <button
+                    onClick={() => setDeleteConfirmId(null)}
+                    className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-all hover:scale-[1.02] active:scale-95"
+                  >
+                    Anuluj
+                  </button>
+                  <button
+                    onClick={() => deleteMutation.mutate(deleteConfirmId)}
+                    disabled={deleteMutation.isPending}
+                    className="px-5 py-2.5 bg-gradient-to-r from-slate-500 to-slate-600 text-white rounded-xl shadow-lg shadow-slate-500/30 hover:shadow-xl hover:shadow-slate-500/40 disabled:opacity-50 text-sm font-bold transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-2"
+                  >
+                    {deleteMutation.isPending ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                        Ukrywanie...
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff className="w-5 h-5" />
+                        Ukryj
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

@@ -5,6 +5,7 @@ export interface User {
   name: string;
   email: string;
   role: 'customer' | 'provider' | 'admin';
+  password?: string; // DEV only - dla testowego logowania
 }
 
 export interface AuthContextType {
@@ -31,24 +32,25 @@ interface AuthProviderProps {
 /**
  * Mock Users - DEV Only
  * Testowi użytkownicy dla różnych ról
+ * Hasło dla wszystkich: 'password'
  */
 export const MOCK_USERS: User[] = [
-  // Providers
-  { id: 1, name: 'Jan Kowalski', email: 'jan.kowalski@provider.pl', role: 'provider' },
-  { id: 2, name: 'Anna Nowak', email: 'anna.nowak@provider.pl', role: 'provider' },
-  { id: 3, name: 'Piotr Wiśniewski', email: 'piotr.wisniewski@provider.pl', role: 'provider' },
-  { id: 4, name: 'Maria Lewandowska', email: 'maria.lewandowska@provider.pl', role: 'provider' },
-  { id: 5, name: 'Tomasz Dąbrowski', email: 'tomasz.dabrowski@provider.pl', role: 'provider' },
+  // Providers (z bazy danych UserSeeder)
+  { id: 6, name: 'Marek Hydraulik', email: 'hydraulik1@example.com', role: 'provider', password: 'password' },
+  { id: 7, name: 'Andrzej Nowak - Elektryk', email: 'elektryk1@example.com', role: 'provider', password: 'password' },
+  { id: 8, name: 'Sprzątanie Express', email: 'sprzatanie1@example.com', role: 'provider', password: 'password' },
+  { id: 9, name: 'Anna Korepetycje', email: 'korepetycje1@example.com', role: 'provider', password: 'password' },
+  { id: 10, name: 'Opieka Senior Care', email: 'opieka1@example.com', role: 'provider', password: 'password' },
   
-  // Customers
-  { id: 11, name: 'Krzysztof Zieliński', email: 'krzysztof.zielinski@customer.pl', role: 'customer' },
-  { id: 12, name: 'Magdalena Szymańska', email: 'magdalena.szymanska@customer.pl', role: 'customer' },
-  { id: 13, name: 'Andrzej Woźniak', email: 'andrzej.wozniak@customer.pl', role: 'customer' },
-  { id: 14, name: 'Katarzyna Kamińska', email: 'katarzyna.kaminska@customer.pl', role: 'customer' },
-  { id: 15, name: 'Michał Kozłowski', email: 'michal.kozlowski@customer.pl', role: 'customer' },
+  // Customers (z bazy danych UserSeeder)
+  { id: 1, name: 'Jan Kowalski', email: 'customer1@example.com', role: 'customer', password: 'password' },
+  { id: 2, name: 'Anna Nowak', email: 'customer2@example.com', role: 'customer', password: 'password' },
+  { id: 3, name: 'Piotr Wiśniewski', email: 'customer3@example.com', role: 'customer', password: 'password' },
+  { id: 4, name: 'Maria Wójcik', email: 'customer4@example.com', role: 'customer', password: 'password' },
+  { id: 5, name: 'Krzysztof Kamiński', email: 'customer5@example.com', role: 'customer', password: 'password' },
   
   // Admin
-  { id: 100, name: 'Admin System', email: 'admin@localservices.pl', role: 'admin' },
+  { id: 100, name: 'Admin System', email: 'admin@localservices.test', role: 'admin', password: 'password' },
 ];
 
 /**

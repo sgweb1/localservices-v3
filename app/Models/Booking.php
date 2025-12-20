@@ -64,6 +64,8 @@ class Booking extends Model
         'completed_at',
         'customer_reviewed',
         'provider_reviewed',
+        'hidden_by_provider',
+        'hidden_by_customer',
     ];
 
     protected function casts(): array
@@ -89,6 +91,8 @@ class Booking extends Model
             'completed_at' => 'datetime',
             'customer_reviewed' => 'boolean',
             'provider_reviewed' => 'boolean',
+            'hidden_by_provider' => 'boolean',
+            'hidden_by_customer' => 'boolean',
         ];
     }
 

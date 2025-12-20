@@ -17,7 +17,22 @@ class SubscriptionPlanSeeder extends Seeder
     {
         $plans = [
             [
+                'name' => 'FREE',
+                'slug' => 'free',
+                'description' => 'Plan startowy - dostęp do podstawowych funkcji',
+                'price_monthly' => 0.00,
+                'price_yearly' => 0.00,
+                'max_services' => 1,
+                'max_bookings_per_month' => 5,
+                'featured_listing' => false,
+                'priority_support' => false,
+                'analytics_dashboard' => false,
+                'features' => ['Profil providera', '1 usługa', 'Podstawowy chat', 'Do 5 rezerwacji/miesiąc'],
+                'display_order' => 0,
+            ],
+            [
                 'name' => 'Basic',
+                'slug' => 'basic',
                 'description' => 'Idealny dla początkujących providerów',
                 'price_monthly' => 29.99,
                 'price_yearly' => 299.99,
@@ -31,6 +46,7 @@ class SubscriptionPlanSeeder extends Seeder
             ],
             [
                 'name' => 'Professional',
+                'slug' => 'professional',
                 'description' => 'Dla aktywnych providerów szukających wzrostu',
                 'price_monthly' => 79.99,
                 'price_yearly' => 799.99,
@@ -44,6 +60,7 @@ class SubscriptionPlanSeeder extends Seeder
             ],
             [
                 'name' => 'Premium',
+                'slug' => 'premium',
                 'description' => 'Dla profesjonalnych firm z pełnym dostępem',
                 'price_monthly' => 199.99,
                 'price_yearly' => 1999.99,

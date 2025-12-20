@@ -1,5 +1,5 @@
 import React from 'react';
-import { useConversations } from '../hooks/useConversations';
+import { useConversations } from '../dashboard/hooks/useConversations';
 import { MessageSquare, Search } from 'lucide-react';
 
 /**

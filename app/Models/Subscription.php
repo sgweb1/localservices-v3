@@ -71,6 +71,14 @@ class Subscription extends Model
     }
 
     /**
+     * Alias dla plan() - zgodność z kodem LocalServices
+     */
+    public function subscriptionPlan(): BelongsTo
+    {
+        return $this->plan();
+    }
+
+    /**
      * Płatności przypisane do tej subskrypcji
      */
     public function payments(): HasMany

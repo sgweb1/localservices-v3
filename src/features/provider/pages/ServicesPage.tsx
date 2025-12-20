@@ -1,5 +1,5 @@
 import React from 'react';
-import { useServices } from '../hooks/useServices';
+import { useServices } from '../dashboard/hooks/useServices';
 import { Briefcase, Plus, Edit, Eye } from 'lucide-react';
 
 /**

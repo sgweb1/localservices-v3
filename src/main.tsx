@@ -3,20 +3,21 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Moon, Sun, LayoutDashboard, Users } from 'lucide-react';
+import { Toaster } from 'sonner';
 import { AuthDemo } from './features/auth/components/AuthDemo';
 import { HomePage } from './pages/HomePage';
 import { ServicesPage } from './pages/ServicesPage';
 import { DevLoginPage } from './pages/DevLoginPage';
 import { DashboardPage } from './features/provider/dashboard/components';
 import { ProviderLayout } from './features/provider/dashboard/components/ProviderLayout';
-import { BookingsPage } from './features/provider/dashboard/pages/BookingsPage';
-import { MessagesPage } from './features/provider/dashboard/pages/MessagesPage';
-import { ServicesPage as ProviderServicesPage } from './features/provider/dashboard/pages/ServicesPage';
-import { ReviewsPage } from './features/provider/dashboard/pages/ReviewsPage';
-import { NotificationsPage } from './features/provider/dashboard/pages/NotificationsPage';
-import { SubscriptionPage } from './features/provider/dashboard/pages/SubscriptionPage';
-import { SettingsPage } from './features/provider/dashboard/pages/SettingsPage';
-import { SupportPage } from './features/provider/dashboard/pages/SupportPage';
+import { BookingsPage } from './features/provider/pages/BookingsPage';
+import { MessagesPage } from './features/provider/pages/MessagesPage';
+import { ServicesPage as ProviderServicesPage } from './features/provider/pages/ServicesPage';
+import { ReviewsPage } from './features/provider/pages/ReviewsPage';
+import { NotificationsPage } from './features/provider/pages/NotificationsPage';
+import { SubscriptionPage } from './features/provider/pages/SubscriptionPage';
+import { SettingsPage } from './features/provider/pages/SettingsPage';
+import { SupportPage } from './features/provider/pages/SupportPage';
 import { CalendarPage } from './features/provider/calendar/CalendarPage';
 import { MarketingTipsPage } from './features/provider/marketing/MarketingTipsPage';
 import { AnalyticsPage } from './features/provider/analytics/AnalyticsPage';
@@ -145,7 +146,10 @@ const App = () => {
           <Route path="/szukaj/:category" element={<ServicesPage />} />
           <Route path="/szukaj/:category/:city" element={<ServicesPage />} />
           <Route path="/dev/login" element={<DevLoginPage />} />
+          
+          {/* Provider Routes */}
           <Route path="/provider" element={<ProviderLayout />}>
+            <Route index element={<DashboardPage />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="bookings" element={<BookingsPage />} />
             <Route path="calendar" element={<CalendarPage />} />
@@ -175,6 +179,7 @@ createRoot(rootEl).render(
       <QueryClientProvider client={qc}>
         <AuthProvider>
           <App />
+          <Toaster position="top-right" richColors closeButton />
         </AuthProvider>
       </QueryClientProvider>
     </BrowserRouter>

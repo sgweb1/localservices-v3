@@ -28,8 +28,12 @@ class ProviderDashboardApiService
         // Załaduj relacje potrzebne dla wszystkich widgetów
         $provider->load([
             'providerProfile:id,user_id,trust_score,response_time_hours,completion_rate,repeat_customers,cancellation_rate',
-            'subscription.subscriptionPlan',
         ]);
+
+        // Załaduj subscription tylko jeśli istnieje (opcjonalne eager loading)
+        $provider->loadMissing(['subscription' => function ($query) {
+            $query->with('subscriptionPlan');
+        }]);
 
         return [
             'plan' => $this->preparePlanCard($provider),
@@ -42,6 +46,7 @@ class ProviderDashboardApiService
             'messages' => $this->prepareMessageCenter($provider),
             'notifications' => $this->prepareNotificationsCard($provider),
             'services' => $this->prepareServicesCard($provider),
+            'live_activity' => $this->prepareLiveActivityFeed($provider),
         ];
     }
 
@@ -213,12 +218,17 @@ class ProviderDashboardApiService
      */
     protected function prepareInsightsCard(User $provider): array
     {
-        // TODO: Zaimplementować ProviderTrafficService w LS2 (CTR, źródła ruchu)
-        // Na razie mock data
-        $traffic = [
-            'ctr' => null,
-            'sources' => [],
-        ];
+        // Oblicz CTR z service_listings (views_count jako podstawa)
+        $totalViews = (int) $provider->serviceListings()->sum('views_count');
+        
+        // CTR estimation: zakładamy że 1 booking request = 1 click
+        // Realny CTR = (booking_requests / views) * 100
+        $recentRequests = BookingRequest::query()
+            ->where('provider_id', $provider->id)
+            ->whereBetween('created_at', [now()->subDays(30), now()])
+            ->count();
+        
+        $ctr = $totalViews > 0 ? round(($recentRequests / $totalViews) * 100, 2) : null;
 
         $completed = Booking::query()
             ->where('provider_id', $provider->id)
@@ -227,17 +237,14 @@ class ProviderDashboardApiService
             ->count();
 
         $trustScore = $provider->getTrustScore();
-        $sources = $traffic['sources'] ?? [];
-
-        if (empty($sources)) {
-            $fallbackViews = (int) $provider->serviceListings()->sum('views_count');
-            $sources = $this->defaultTrafficSplit($fallbackViews);
-        }
+        
+        // Traffic sources na podstawie views_count
+        $sources = $totalViews > 0 ? $this->defaultTrafficSplit($totalViews) : [];
 
         return [
             'trust_score' => $trustScore,
             'trust_delta' => $trustScore - 70,
-            'click_rate' => $traffic['ctr'] ?? null,
+            'click_rate' => $ctr,
             'completed' => $completed,
             'traffic_sources' => $sources,
             'period_label' => 'Ostatnie 30 dni',
@@ -455,5 +462,113 @@ class ProviderDashboardApiService
         return [
             'services' => $services,
         ];
+    }
+
+    /**
+     * Widget: Live Activity Feed
+     * 
+     * Ostatnie aktywności providera (booking requests, reviews, notifications)
+     * posortowane chronologicznie.
+     * 
+     * @param User $provider
+     * @return array{activities: array}
+     */
+    protected function prepareLiveActivityFeed(User $provider): array
+    {
+        $activities = collect();
+
+        // 1. Ostatnie booking requests (max 5)
+        $recentRequests = BookingRequest::query()
+            ->where('provider_id', $provider->id)
+            ->latest()
+            ->limit(5)
+            ->get()
+            ->map(fn (BookingRequest $req) => [
+                'type' => 'inquiry',
+                'title' => 'Nowe zapytanie',
+                'description' => 'Zapytanie o ' . ($req->service?->title ?? 'usługę'),
+                'icon' => 'MessageSquare',
+                'color' => 'teal',
+                'timestamp' => $req->created_at->toISOString(),
+                'created_at' => $req->created_at->diffForHumans(),
+            ]);
+
+        $activities = $activities->merge($recentRequests);
+
+        // 2. Ostatnie reviews (max 5)
+        $recentReviews = \App\Models\Review::query()
+            ->where('reviewed_id', $provider->id)
+            ->latest()
+            ->limit(5)
+            ->with('reviewer:id,name')
+            ->get()
+            ->map(fn ($review) => [
+                'type' => 'review',
+                'title' => 'Nowa opinia',
+                'description' => sprintf('Otrzymałeś %d gwiazdek od %s', 
+                    $review->rating, 
+                    $review->reviewer?->name ?? 'klienta'
+                ),
+                'icon' => 'Star',
+                'color' => 'orange',
+                'timestamp' => $review->created_at->toISOString(),
+                'created_at' => $review->created_at->diffForHumans(),
+            ]);
+
+        $activities = $activities->merge($recentReviews);
+
+        // 3. Ostatnie notifications (max 5)
+        $recentNotifications = $provider->notifications()
+            ->latest()
+            ->limit(5)
+            ->get()
+            ->map(fn ($notification) => [
+                'type' => $this->mapNotificationType($notification->type),
+                'title' => $notification->data['title'] ?? 'Powiadomienie',
+                'description' => $notification->data['message'] ?? '',
+                'icon' => $this->mapNotificationIcon($notification->type),
+                'color' => 'cyan',
+                'timestamp' => $notification->created_at->toISOString(),
+                'created_at' => $notification->created_at->diffForHumans(),
+            ]);
+
+        $activities = $activities->merge($recentNotifications);
+
+        // Sortuj wszystko po czasie (najnowsze pierwsze)
+        $sortedActivities = $activities
+            ->sortByDesc('timestamp')
+            ->take(10)
+            ->values()
+            ->all();
+
+        return [
+            'activities' => $sortedActivities,
+        ];
+    }
+
+    /**
+     * Mapuje typ notyfikacji na typ aktywności
+     */
+    protected function mapNotificationType(string $notificationType): string
+    {
+        return match (true) {
+            str_contains($notificationType, 'Booking') => 'booking',
+            str_contains($notificationType, 'Review') => 'review',
+            str_contains($notificationType, 'Message') => 'message',
+            default => 'notification',
+        };
+    }
+
+    /**
+     * Mapuje typ notyfikacji na ikonę
+     */
+    protected function mapNotificationIcon(string $notificationType): string
+    {
+        return match (true) {
+            str_contains($notificationType, 'Booking') => 'Calendar',
+            str_contains($notificationType, 'Review') => 'Star',
+            str_contains($notificationType, 'Message') => 'MessageSquare',
+            default => 'Bell',
+        };
     }
 }

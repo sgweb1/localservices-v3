@@ -13,6 +13,7 @@ class ApiClient {
   constructor() {
     this.client = axios.create({
       baseURL: '/api/v1',
+      withCredentials: true, // Sanctum SPA cookie-based auth
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',

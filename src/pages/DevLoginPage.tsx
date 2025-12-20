@@ -1,27 +1,49 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth, MOCK_USERS } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { User, Shield, Briefcase, LogOut, CheckCircle2 } from 'lucide-react';
+import { User, Shield, Briefcase, LogOut, CheckCircle2, Loader2 } from 'lucide-react';
+import axios from 'axios';
 
 /**
  * DEV Login Page
  * 
  * Strona testowego logowania - tylko DEV mode.
  * Pozwala szybko przełączać się między różnymi użytkownikami.
+ * Używa prawdziwego endpointu POST /api/v1/login (email + password).
  */
 export const DevLoginPage: React.FC = () => {
   const { user, login, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  const handleLogin = (mockUser: typeof MOCK_USERS[0]) => {
-    login(mockUser);
-    // Redirect based on role
-    if (mockUser.role === 'provider') {
-      navigate('/provider/dashboard');
-    } else if (mockUser.role === 'admin') {
-      navigate('/'); // TODO: admin panel
-    } else {
-      navigate('/szukaj');
+  const handleLogin = async (mockUser: typeof MOCK_USERS[0]) => {
+    setIsLoggingIn(true);
+    try {
+      // 1. Pobierz CSRF cookie
+      await axios.get(`/sanctum/csrf-cookie`, { withCredentials: true });
+      
+      // 2. Zaloguj przez prawdziwy endpoint Sanctum
+      await axios.post(`/api/v1/login`, {
+        email: mockUser.email,
+        password: mockUser.password || 'password',
+      }, { withCredentials: true });
+      
+      // 3. Zapisz lokalnie w React state
+      login(mockUser);
+      
+      // 4. Redirect based on role
+      if (mockUser.role === 'provider') {
+        navigate('/provider/dashboard');
+      } else if (mockUser.role === 'admin') {
+        navigate('/'); // TODO: admin panel
+      } else {
+        navigate('/szukaj');
+      }
+    } catch (error) {
+      console.error('Login failed:', error);
+      alert('Błąd logowania. Sprawdź email/hasło w konsoli.');
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -107,16 +129,22 @@ export const DevLoginPage: React.FC = () => {
                 <button
                   key={mockUser.id}
                   onClick={() => handleLogin(mockUser)}
-                  disabled={isActive}
+                  disabled={isActive || isLoggingIn}
                   className={`p-4 rounded-2xl border-2 transition-all text-left ${
                     isActive
                       ? 'border-success bg-success/5 cursor-not-allowed'
+                      : isLoggingIn
+                      ? 'border-gray-300 bg-gray-50 cursor-wait opacity-50'
                       : 'border-gray-200 bg-white hover:border-primary-400 hover:shadow-lg'
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getRoleColor(mockUser.role)} flex items-center justify-center flex-shrink-0`}>
-                      <Icon className="w-6 h-6 text-white" />
+                      {isLoggingIn && !isActive ? (
+                        <Loader2 className="w-6 h-6 text-white animate-spin" />
+                      ) : (
+                        <Icon className="w-6 h-6 text-white" />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
@@ -150,16 +178,22 @@ export const DevLoginPage: React.FC = () => {
                 <button
                   key={mockUser.id}
                   onClick={() => handleLogin(mockUser)}
-                  disabled={isActive}
+                  disabled={isActive || isLoggingIn}
                   className={`p-4 rounded-2xl border-2 transition-all text-left ${
                     isActive
                       ? 'border-success bg-success/5 cursor-not-allowed'
+                      : isLoggingIn
+                      ? 'border-gray-300 bg-gray-50 cursor-wait opacity-50'
                       : 'border-gray-200 bg-white hover:border-gray-400 hover:shadow-lg'
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getRoleColor(mockUser.role)} flex items-center justify-center flex-shrink-0`}>
-                      <Icon className="w-6 h-6 text-white" />
+                      {isLoggingIn && !isActive ? (
+                        <Loader2 className="w-6 h-6 text-white animate-spin" />
+                      ) : (
+                        <Icon className="w-6 h-6 text-white" />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
@@ -193,16 +227,22 @@ export const DevLoginPage: React.FC = () => {
                 <button
                   key={mockUser.id}
                   onClick={() => handleLogin(mockUser)}
-                  disabled={isActive}
+                  disabled={isActive || isLoggingIn}
                   className={`p-4 rounded-2xl border-2 transition-all text-left ${
                     isActive
                       ? 'border-success bg-success/5 cursor-not-allowed'
+                      : isLoggingIn
+                      ? 'border-gray-300 bg-gray-50 cursor-wait opacity-50'
                       : 'border-gray-200 bg-white hover:border-purple-400 hover:shadow-lg'
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getRoleColor(mockUser.role)} flex items-center justify-center flex-shrink-0`}>
-                      <Icon className="w-6 h-6 text-white" />
+                      {isLoggingIn && !isActive ? (
+                        <Loader2 className="w-6 h-6 text-white animate-spin" />
+                      ) : (
+                        <Icon className="w-6 h-6 text-white" />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
@@ -225,11 +265,12 @@ export const DevLoginPage: React.FC = () => {
         <div className="mt-8 p-6 bg-white rounded-2xl border-2 border-gray-200">
           <h3 className="font-bold text-gray-900 mb-2">ℹ️ Informacje</h3>
           <ul className="text-sm text-gray-600 space-y-1">
-            <li>• Kliknij użytkownika aby się zalogować</li>
+            <li>• Kliknij użytkownika aby się zalogować (POST <code className="bg-gray-100 px-2 py-0.5 rounded">/api/v1/login</code>)</li>
+            <li>• Hasło dla wszystkich: <code className="bg-gray-100 px-2 py-0.5 rounded font-bold">password</code></li>
             <li>• Provider zostanie przekierowany do <code className="bg-gray-100 px-2 py-0.5 rounded">/provider/dashboard</code></li>
             <li>• Customer zostanie przekierowany do <code className="bg-gray-100 px-2 py-0.5 rounded">/szukaj</code></li>
-            <li>• Wybór użytkownika zostaje zapisany w localStorage</li>
-            <li>• Strona dostępna tylko w DEV mode (<code className="bg-gray-100 px-2 py-0.5 rounded">npm run dev</code>)</li>
+            <li>• Logowanie tworzy prawdziwą sesję Sanctum (cookie-based SPA auth)</li>
+            <li>• Użytkownicy pochodzą z bazy danych (UserSeeder)</li>
           </ul>
         </div>
       </div>

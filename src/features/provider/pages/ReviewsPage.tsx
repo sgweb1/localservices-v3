@@ -1,5 +1,5 @@
 import React from 'react';
-import { useReviews } from '../hooks/useReviews';
+import { useReviews } from '../dashboard/hooks/useReviews';
 import { Star, TrendingUp } from 'lucide-react';
 
 /**

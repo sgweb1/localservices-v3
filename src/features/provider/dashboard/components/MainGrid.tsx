@@ -31,10 +31,10 @@ export const MainGrid: React.FC = () => {
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-12 mt-12 md:mt-16">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
           
           {/* Kolumna główna (2 kolumny) */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="xl:col-span-2 space-y-4">
             {/* Quick Actions Widget */}
             <QuickActionsWidget />
 
@@ -61,7 +61,7 @@ export const MainGrid: React.FC = () => {
           </div>
 
           {/* Sidebar (1 kolumna) */}
-          <div className="lg:col-span-1 space-y-4">
+          <div className="xl:col-span-1 space-y-4">
             {/* Live Activity Feed - NEW */}
             <LiveActivityFeedWidget />
 

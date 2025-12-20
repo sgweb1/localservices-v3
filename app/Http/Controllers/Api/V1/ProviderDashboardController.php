@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\UserType;
 use App\Http\Controllers\Controller;
 use App\Services\Api\ProviderDashboardApiService;
 use Illuminate\Http\JsonResponse;
@@ -31,8 +32,8 @@ class ProviderDashboardController extends Controller
     {
         $user = $request->user();
 
-        // Sprawdź czy użytkownik jest providerem
-        if (! $user || $user->user_type !== 'provider') {
+        // Sprawdź czy użytkownik jest providerem (porównanie z ENUMem)
+        if (! $user || $user->user_type !== UserType::Provider) {
             return response()->json([
                 'message' => 'Tylko providery mają dostęp do tego dashboardu',
             ], 403);

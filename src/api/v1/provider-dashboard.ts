@@ -6,7 +6,9 @@
 
 import { DashboardWidgetsResponse } from '@/features/provider/dashboard/types';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.DEV
+  ? '' // DEV: same-origin via Vite proxy
+  : (import.meta.env.VITE_API_BASE_URL || '');
 
 /**
  * Pobiera wszystkie widgety dashboardu providera
@@ -15,12 +17,6 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000
  * Cache: 60s (zarządzane przez React Query w hooku)
  */
 export async function fetchDashboardWidgets(): Promise<DashboardWidgetsResponse> {
-  // W dev bez auth - używaj mocków
-  if (import.meta.env.DEV) {
-    const { mockDashboardData } = await import('@/features/provider/dashboard/mocks/mockData');
-    return { data: mockDashboardData };
-  }
-
   const response = await fetch(`${API_BASE_URL}/api/v1/provider/dashboard/widgets`, {
     method: 'GET',
     headers: {
@@ -35,17 +31,7 @@ export async function fetchDashboardWidgets(): Promise<DashboardWidgetsResponse>
       throw new Error('Tylko providery mają dostęp do dashboardu');
     }
     if (response.status === 401) {
-      // Fallback do mocków przy 401 w dev
-      if (import.meta.env.DEV) {
-        const { mockDashboardData } = await import('@/features/provider/dashboard/mocks/mockData');
-        return { data: mockDashboardData };
-      }
       throw new Error('Musisz być zalogowany');
-    }
-    // Fallback do mocków przy innych błędach w dev
-    if (import.meta.env.DEV) {
-      const { mockDashboardData } = await import('@/features/provider/dashboard/mocks/mockData');
-      return { data: mockDashboardData };
     }
     throw new Error(`Błąd API: ${response.status}`);
   }

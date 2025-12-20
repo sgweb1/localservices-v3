@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNotifications } from '../hooks/useNotifications';
+import { useNotifications } from '../dashboard/hooks/useNotifications';
 import { 
   Calendar, 
   MessageSquare, 

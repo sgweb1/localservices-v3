@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Booking;
 use App\Models\Event;
 use App\Models\ProviderMetric;
 use App\Models\SearchAnalytic;
@@ -207,6 +208,7 @@ class AnalyticsSeeder extends Seeder
 
         $customers = User::where('user_type', 'customer')->take(5)->pluck('id');
         $providers = User::where('user_type', 'provider')->take(10)->pluck('id');
+        $bookings = Booking::limit(10)->pluck('id');
 
         for ($i = 0; $i < 25; $i++) {
             $stage = $stages[$i % count($stages)];
@@ -218,7 +220,7 @@ class AnalyticsSeeder extends Seeder
                 'uuid' => fake()->uuid(),
                 'customer_id' => fake()->randomElement($customers->toArray()),
                 'provider_id' => fake()->randomElement($providers->toArray()),
-                'booking_id' => $completed ? fake()->numberBetween(1, 8) : null,
+                'booking_id' => $completed && $bookings->isNotEmpty() ? $bookings->random() : null,
                 'funnel_name' => 'booking_flow',
                 'stage' => $stage['stage'],
                 'stage_name' => $stage['stage_name'],

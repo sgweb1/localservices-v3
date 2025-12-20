@@ -147,6 +147,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Relacja do aktywnej subskrypcji providera
+     */
+    public function subscription(): HasOne
+    {
+        return $this->hasOne(Subscription::class)->where('status', 'active');
+    }
+
+    /**
      * Sprawdza czy użytkownik jest providerem
      * Sprawdza zarówno user_type jak i rolę (Spatie)
      */
@@ -486,5 +494,32 @@ class User extends Authenticatable
         // Fallback do Gravatar
         $hash = md5(strtolower(trim($this->email)));
         return "https://www.gravatar.com/avatar/{$hash}?d=mp&s=200";
+    }
+
+    /**
+     * Pobiera Trust Score użytkownika (0-100)
+     * 
+     * Dla providerów: z providerProfile
+     * Dla customerów: obliczany na podstawie aktywności
+     */
+    public function getTrustScore(): int
+    {
+        if ($this->isProvider() && $this->providerProfile) {
+            return $this->providerProfile->trust_score ?? 0;
+        }
+
+        // Dla customerów: prosty wskaźnik aktywności
+        $score = 20; // Bazowy
+
+        if ($this->email_verified_at) {
+            $score += 20;
+        }
+
+        // Sprawdź czy ma rezerwacje (customer side)
+        if ($this->relationLoaded('bookings') && $this->bookings->count() > 0) {
+            $score += 20;
+        }
+
+        return min($score, 100);
     }
 }
