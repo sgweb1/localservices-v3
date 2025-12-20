@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\CalendarController;
 use App\Http\Controllers\Api\V1\Dev\DevEventController;
 use App\Http\Controllers\Api\V1\ProviderBookingController;
 use App\Http\Controllers\Api\V1\ProviderDashboardController;
@@ -25,6 +26,12 @@ Route::middleware(['auth:sanctum'])->prefix('provider')->group(function () {
     Route::post('/bookings/{id}/reject', [ProviderBookingController::class, 'reject'])->name('api.provider.bookings.reject');
     Route::post('/bookings/{id}/complete', [ProviderBookingController::class, 'complete'])->name('api.provider.bookings.complete');
     Route::delete('/bookings/{id}', [ProviderBookingController::class, 'destroy'])->name('api.provider.bookings.destroy');
+    
+    // Calendar & Availability
+    Route::get('/calendar', [CalendarController::class, 'index'])->name('api.provider.calendar.index');
+    Route::post('/calendar/slots', [CalendarController::class, 'storeSlot'])->name('api.provider.calendar.slots.store');
+    Route::put('/calendar/slots/{id}', [CalendarController::class, 'updateSlot'])->name('api.provider.calendar.slots.update');
+    Route::delete('/calendar/slots/{id}', [CalendarController::class, 'deleteSlot'])->name('api.provider.calendar.slots.delete');
 });
 
 // DEV ONLY: Symulacja eventów (tylko w local/dev)
