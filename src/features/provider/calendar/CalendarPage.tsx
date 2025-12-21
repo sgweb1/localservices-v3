@@ -232,7 +232,7 @@ export const CalendarPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4 md:space-y-6 pb-24 md:pb-6">
+    <div className="space-y-4 md:space-y-6 pb-24 md:pb-6 max-w-[990px]">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-4 md:p-0">
         <div>
@@ -365,7 +365,7 @@ export const CalendarPage: React.FC = () => {
         />
       ) : (
         <div className="glass-card rounded-2xl overflow-hidden px-4 md:px-0">
-          <div className="grid grid-cols-1 md:grid-cols-7 gap-px bg-slate-200">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-px bg-slate-200">
             {DAYS_OF_WEEK.map(day => (
             <div key={day.value} className="bg-white">
               {/* Nagłówek dnia */}
