@@ -1,7 +1,7 @@
 import React from 'react';
 import { useConversations } from '../dashboard/hooks/useConversations';
 import { MessageSquare, Search } from 'lucide-react';
-import { PageTitle, Text, Badge, EmptyText } from '@/components/ui/typography';
+import { PageTitle, Text, Badge, EmptyText, Caption } from '@/components/ui/typography';
 import { Card } from '@/components/ui/card';
 
 /**
