@@ -3,7 +3,7 @@ import { Calendar, Clock, Plus, Edit2, Trash2, AlertCircle, Power, PowerOff } fr
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { DayCard, SlotCard, StatCard } from '@/components/ui/card';
-import { PageTitle, Text, Label, Badge, EmptyText, Caption } from '@/components/ui/typography';
+import { PageTitle, Text, Label, Badge, EmptyText, Caption, CardTitle } from '@/components/ui/typography';
 import { 
   useCalendar, 
   useCreateSlot, 
@@ -115,7 +115,7 @@ export const CalendarPage: React.FC = () => {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto"></div>
-          <p className="mt-4 text-slate-600">Ładowanie kalendarza...</p>
+          <Text muted className="mt-4">Ładowanie kalendarza...</Text>
         </div>
       </div>
     );
@@ -127,8 +127,8 @@ export const CalendarPage: React.FC = () => {
         <div className="flex items-center gap-3 text-red-600">
           <AlertCircle className="w-6 h-6" />
           <div>
-            <h3 className="font-semibold">Błąd ładowania</h3>
-            <p className="text-sm text-slate-600">Nie udało się pobrać kalendarza</p>
+            <CardTitle>Błąd ładowania</CardTitle>
+            <Text size="sm" muted>Nie udało się pobrać kalendarza</Text>
           </div>
         </div>
       </div>
@@ -270,7 +270,7 @@ export const CalendarPage: React.FC = () => {
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowAddModal(false)}>
           <div className="backdrop-blur-xl bg-white/95 rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl border border-slate-200" onClick={(e) => e.stopPropagation()}>
-            <PageTitle className="text-2xl mb-2" gradient>Dodaj slot</PageTitle>
+            <PageTitle className="mb-2" gradient>Dodaj slot</PageTitle>
             <Text muted size="sm" className="mb-6">Uzupełnij informacje o dostępności</Text>
 
             <div className="space-y-4">
