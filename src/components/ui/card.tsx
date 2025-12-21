@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { cn } from '../../lib/utils';
+import { Caption, CardTitle } from './typography';
 
 export const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
   <div
@@ -124,18 +125,18 @@ export const DayCard: React.FC<{
   return (
     <div className={cn('bg-white rounded-xl border border-slate-200 overflow-hidden', className)}>
       {/* Nagłówek dnia */}
-      <div className="bg-gradient-to-r from-cyan-50 to-teal-50 px-4 py-3 border-b border-slate-200">
+      <div className="bg-gradient-to-r from-cyan-50 to-teal-50 px-3 py-2 sm:px-4 sm:py-3 border-b border-slate-200">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-slate-900">{day}</h3>
+          <CardTitle className="text-base sm:text-lg">{day}</CardTitle>
           {count !== undefined && (
-            <span className="text-xs font-medium text-slate-600 bg-white px-2 py-1 rounded-full">
+            <Caption className="bg-white px-2 py-1 rounded-full">
               {count} {count === 1 ? 'slot' : 'slotów'}
-            </span>
+            </Caption>
           )}
         </div>
       </div>
       {/* Zawartość */}
-      <div className="p-3 space-y-2 min-h-[200px] max-h-[500px] overflow-y-auto">
+      <div className="p-2 sm:p-3 space-y-2 min-h-[120px] sm:min-h-[200px] max-h-[500px] overflow-y-auto">
         {children}
       </div>
     </div>
@@ -155,7 +156,7 @@ export const SlotCard: React.FC<{
     <div
       onClick={onClick}
       className={cn(
-        'p-3 rounded-lg border-2 transition-all',
+        'p-2 sm:p-3 rounded-lg border-2 transition-all',
         active
           ? 'bg-emerald-50 border-emerald-200 hover:border-emerald-300 hover:shadow-sm'
           : 'bg-slate-50 border-slate-300 hover:border-slate-400',

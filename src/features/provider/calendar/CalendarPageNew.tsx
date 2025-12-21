@@ -174,7 +174,7 @@ export const CalendarPage: React.FC = () => {
       </div>
 
       {/* Kalendarz tygodniowy */}
-      <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">
         {DAYS_OF_WEEK.map(day => (
           <DayCard
             key={day.value}
