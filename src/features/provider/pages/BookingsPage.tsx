@@ -187,12 +187,12 @@ export const BookingsPage: React.FC = () => {
               <Trophy className="w-10 h-10 text-emerald-600" />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-slate-900 mb-1">
+              <SectionTitle className="text-lg mb-1">
                 Masz {overdueCount} {overdueCount === 1 ? 'zrealizowaną rezerwację' : 'zrealizowane rezerwacje'} do oznaczenia jako ukończona
-              </h3>
-              <p className="text-sm text-slate-600 mb-4">
-                Znaleziono potwierdzone rezerwacje, których termin już minął. Oznaczenie ich jako zrealizowanych zwiększa Twój <span className="font-semibold text-emerald-700">Trust Score™</span> i buduje wiarygodność w oczach klientów.
-              </p>
+              </SectionTitle>
+              <Text size="sm" className="mb-4">
+                Znaleziono potwierdzone rezerwacje, których termin już minął. Oznaczenie ich jako zrealizowanych zwiększa Twój <strong className="font-semibold text-emerald-700">Trust Score™</strong> i buduje wiarygodność w oczach klientów.
+              </Text>
               <div className="flex items-center gap-3">
                 <Button 
                   onClick={handleMarkAllOverdueCompleted}
@@ -202,10 +202,10 @@ export const BookingsPage: React.FC = () => {
                   <CheckCircle className="w-5 h-5" />
                   Oznacz jako zrealizowane
                 </Button>
-                <span className="text-xs text-slate-500 flex items-center gap-1">
+                <Caption className="flex items-center gap-1">
                   <ArrowUpRight className="w-4 h-4" />
                   Zwiększ Trust Score i widoczność
-                </span>
+                </Caption>
               </div>
             </div>
           </div>
@@ -221,13 +221,13 @@ export const BookingsPage: React.FC = () => {
             </div>
             
             <div className="space-y-3">
-              <h2 className="text-3xl font-bold text-gradient">
+              <PageTitle gradient>
                 Zarządzanie rezerwacjami
-              </h2>
-              <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-                Twój plan <span className="font-semibold">Free</span> nie obejmuje zarządzania rezerwacjami instant booking. 
-                Przejdź na plan <span className="font-semibold text-teal-600">Basic</span>, aby:
-              </p>
+              </PageTitle>
+              <Text size="lg" className="max-w-2xl mx-auto">
+                Twój plan <strong>Free</strong> nie obejmuje zarządzania rezerwacjami instant booking. 
+                Przejdź na plan <strong className="text-teal-600">Basic</strong>, aby:
+              </Text>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 text-left">
@@ -242,8 +242,8 @@ export const BookingsPage: React.FC = () => {
                     <item.icon className="w-5 h-5 text-teal-600" />
                   </div>
                   <div>
-                    <p className="font-semibold text-slate-900">{item.title}</p>
-                    <p className="text-sm text-slate-600">{item.desc}</p>
+                    <Caption className="font-semibold text-slate-900">{item.title}</Caption>
+                    <Text size="sm">{item.desc}</Text>
                   </div>
                 </div>
               ))}
@@ -255,9 +255,9 @@ export const BookingsPage: React.FC = () => {
                 <Sparkles className="w-6 h-6" />
                 Przejdź na plan Basic
               </a>
-              <p className="text-sm text-slate-500">
-                Od <span className="font-semibold text-teal-600">49 zł/mies</span> • Anuluj w każdej chwili
-              </p>
+              <Caption muted>
+                Od <strong className="text-teal-600">49 zł/mies</strong> • Anuluj w każdej chwili
+              </Caption>
             </div>
           </div>
         </div>
@@ -270,17 +270,17 @@ export const BookingsPage: React.FC = () => {
             <div className="space-y-2 flex-1">
               <div className="flex items-center gap-2">
                 <Gift className="w-6 h-6 text-teal-600" />
-                <p className="text-lg font-semibold text-slate-900">🎉 Tryb promocyjny aktywny!</p>
+                <Text size="lg" className="font-semibold">🎉 Tryb promocyjny aktywny!</Text>
               </div>
-              <p className="text-sm text-slate-700">
+              <Text size="sm">
                 Masz dostęp do zarządzania rezerwacjami na <strong>{trialDays} dni w przód</strong> 
                 {maxBookingDate && ` (do ${maxBookingDate})`}.
                 Rezerwacje w tym okresie są w pełni dostępne - możesz akceptować, odrzucać i przeglądać szczegóły.
-              </p>
-              <div className="flex items-center gap-2 text-xs text-teal-700 mt-2">
+              </Text>
+              <Caption className="flex items-center gap-2 text-teal-700 mt-2">
                 <Clock className="w-4 h-4" />
                 <span>Rezerwacje poza tym okresem wymagają planu Basic (49 zł/mies)</span>
-              </div>
+              </Caption>
             </div>
             <div className="flex flex-col gap-3">
               <a href="/provider/subscription" className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-teal-700 hover:to-cyan-700 transition-all shadow-lg hover:shadow-xl">
@@ -299,15 +299,15 @@ export const BookingsPage: React.FC = () => {
             <div className="space-y-2 flex-1">
               <div className="flex items-center gap-2">
                 <Lock className="w-5 h-5 text-teal-600" />
-                <p className="text-lg font-semibold text-slate-900">Zarządzanie rezerwacjami zablokowane</p>
+                <Text size="lg" className="font-semibold">Zarządzanie rezerwacjami zablokowane</Text>
               </div>
-              <p className="text-sm text-slate-700">Twój plan Free nie obejmuje zarządzania rezerwacjami. Przejdź na plan Basic, aby akceptować/odrzucać rezerwacje, przeglądać szczegóły klientów i otrzymywać powiadomienia.</p>
+              <Text size="sm">Twój plan Free nie obejmuje zarządzania rezerwacjami. Przejdź na plan Basic, aby akceptować/odrzucać rezerwacje, przeglądać szczegóły klientów i otrzymywać powiadomienia.</Text>
               <div className="flex flex-wrap gap-3 mt-3">
                 {['Instant Booking', 'Czat z klientami', 'Powiadomienia push', 'Kalendarz dostępności'].map(feature => (
-                  <div key={feature} className="flex items-center gap-2 text-xs text-slate-600">
+                  <Caption key={feature} className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-teal-600" />
                     <span>{feature}</span>
-                  </div>
+                  </Caption>
                 ))}
               </div>
             </div>
@@ -316,7 +316,7 @@ export const BookingsPage: React.FC = () => {
                 <Sparkles className="w-5 h-5" />
                 Ulepsz do planu Basic
               </a>
-              <p className="text-xs text-slate-500 text-center">Od 49 zł/mies</p>
+              <Caption muted className="text-center">Od 49 zł/mies</Caption>
             </div>
           </div>
         </div>
