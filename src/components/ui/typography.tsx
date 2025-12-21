@@ -15,7 +15,7 @@ export const PageTitle: React.FC<TypographyProps> = ({ children, className, grad
   return (
     <h1
       className={cn(
-        'text-3xl md:text-4xl font-bold tracking-tight',
+        'text-3xl md:text-4xl font-semibold tracking-tight',
         gradient ? 'bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent' : 'text-slate-900',
         className
       )}
@@ -33,7 +33,7 @@ export const SectionTitle: React.FC<TypographyProps> = ({ children, className, g
   return (
     <h2
       className={cn(
-        'text-2xl md:text-3xl font-bold tracking-tight',
+        'text-2xl md:text-3xl font-semibold tracking-tight',
         gradient ? 'bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent' : 'text-slate-900',
         className
       )}
@@ -50,7 +50,7 @@ export const SubsectionTitle: React.FC<TypographyProps> = ({ children, className
   return (
     <h3
       className={cn(
-        'text-xl md:text-2xl font-semibold tracking-tight',
+        'text-xl md:text-2xl font-medium tracking-tight',
         gradient ? 'bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent' : 'text-slate-900',
         className
       )}
@@ -65,7 +65,7 @@ export const SubsectionTitle: React.FC<TypographyProps> = ({ children, className
  */
 export const CardTitle: React.FC<TypographyProps> = ({ children, className }) => {
   return (
-    <h4 className={cn('text-lg font-semibold text-slate-900', className)}>
+    <h4 className={cn('text-lg font-medium text-slate-900', className)}>
       {children}
     </h4>
   );
@@ -105,7 +105,7 @@ export const Text: React.FC<TypographyProps & { size?: 'sm' | 'base' | 'lg'; mut
  */
 export const Strong: React.FC<TypographyProps> = ({ children, className }) => {
   return (
-    <strong className={cn('font-semibold text-slate-900', className)}>
+    <strong className={cn('font-medium text-slate-900', className)}>
       {children}
     </strong>
   );
@@ -163,7 +163,7 @@ export const Link: React.FC<
       href={href}
       onClick={onClick}
       className={cn(
-        'text-cyan-600 hover:text-cyan-700 transition-colors cursor-pointer font-medium',
+        'text-cyan-600 hover:text-cyan-700 transition-colors cursor-pointer',
         underline && 'underline underline-offset-2',
         className
       )}
@@ -193,7 +193,7 @@ export const Badge: React.FC<
   return (
     <span
       className={cn(
-        'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+        'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs',
         variantClasses[variant],
         className
       )}
@@ -216,7 +216,7 @@ export const StatValue: React.FC<TypographyProps & { description?: string; gradi
     <div className="space-y-1">
       <div
         className={cn(
-          'text-3xl md:text-4xl font-bold tracking-tight',
+          'text-3xl md:text-4xl font-semibold tracking-tight',
           gradient ? 'bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent' : 'text-slate-900',
           className
         )}
