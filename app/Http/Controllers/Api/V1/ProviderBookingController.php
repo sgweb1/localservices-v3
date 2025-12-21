@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Enums\UserType;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Services\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,9 +17,14 @@ use Illuminate\Http\Request;
  * - Lista bookings z filtrowaniem
  * - Akcje: accept, reject, complete
  * - Bulk actions
+ * - Integracja z systemem powiadomień
  */
 class ProviderBookingController extends Controller
 {
+    public function __construct(
+        private NotificationService $notificationService
+    ) {}
+
     /**
      * Lista bookings providera z paginacją
      * 
@@ -146,6 +152,34 @@ class ProviderBookingController extends Controller
 
         $booking->update(['status' => 'confirmed']);
 
+        // Wyślij powiadomienie do customera
+        if ($booking->customer) {
+            $this->notificationService->send(
+                'booking.confirmed',
+                $booking->customer,
+                'customer',
+                [
+                    'customer_name' => $booking->customer->name,
+                    'provider_name' => $user->name,
+                    'service_name' => $booking->service->title ?? 'Usługa',
+                    'booking_date' => Carbon::parse($booking->booking_date)->format('d.m.Y'),
+                    'booking_time' => substr($booking->start_time ?? '00:00:00', 0, 5),
+                    'booking_id' => $booking->id,
+                ]
+            );
+        }
+
+        // Pobierz dane toast dla response
+        $toastData = $this->notificationService->getToastData(
+            'booking.confirmed',
+            'provider',
+            [
+                'customer_name' => $booking->customer?->name ?? 'Klient',
+                'service_name' => $booking->service->title ?? 'Usługa',
+                'booking_date' => Carbon::parse($booking->booking_date)->format('d.m.Y'),
+            ]
+        );
+
         return response()->json([
             'success' => true,
             'message' => 'Rezerwacja została zaakceptowana',
@@ -153,6 +187,7 @@ class ProviderBookingController extends Controller
                 'id' => $booking->id,
                 'status' => $booking->status,
             ],
+            'toast' => $toastData,
         ]);
     }
 
@@ -184,6 +219,24 @@ class ProviderBookingController extends Controller
         }
 
         $booking->update(['status' => 'rejected']);
+
+        // Wyślij powiadomienie do customera
+        if ($booking->customer) {
+            $this->notificationService->send(
+                'booking.rejected',
+                $booking->customer,
+                'customer',
+                [
+                    'customer_name' => $booking->customer->name,
+                    'provider_name' => $user->name,
+                    'service_name' => $booking->service->title ?? 'Usługa',
+                    'booking_date' => Carbon::parse($booking->booking_date)->format('d.m.Y'),
+                    'booking_time' => substr($booking->start_time ?? '00:00:00', 0, 5),
+                    'booking_id' => $booking->id,
+                    'rejection_reason' => 'Brak dostępności w wybranym terminie',
+                ]
+            );
+        }
 
         return response()->json([
             'success' => true,
@@ -224,6 +277,23 @@ class ProviderBookingController extends Controller
 
         $booking->update(['status' => 'completed']);
 
+        // Wyślij powiadomienie do customera (prośba o opinię)
+        if ($booking->customer) {
+            $this->notificationService->send(
+                'booking.completed',
+                $booking->customer,
+                'customer',
+                [
+                    'customer_name' => $booking->customer->name,
+                    'provider_name' => $user->name,
+                    'service_name' => $booking->service->title ?? 'Usługa',
+                    'booking_date' => Carbon::parse($booking->booking_date)->format('d.m.Y'),
+                    'booking_time' => substr($booking->start_time ?? '00:00:00', 0, 5),
+                    'booking_id' => $booking->id,
+                ]
+            );
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Rezerwacja została oznaczona jako ukończona',
@@ -249,10 +319,33 @@ class ProviderBookingController extends Controller
         }
 
         // Znajdź wszystkie potwierdzone bookings z datą < dzisiaj
-        $updated = Booking::where('provider_id', $user->id)
+        $bookings = Booking::where('provider_id', $user->id)
             ->where('status', 'confirmed')
             ->where('booking_date', '<', Carbon::today())
-            ->update(['status' => 'completed']);
+            ->get();
+
+        $updated = 0;
+        foreach ($bookings as $booking) {
+            $booking->update(['status' => 'completed']);
+            $updated++;
+
+            // Wyślij powiadomienie do każdego customera
+            if ($booking->customer) {
+                $this->notificationService->send(
+                    'booking.completed',
+                    $booking->customer,
+                    'customer',
+                    [
+                        'customer_name' => $booking->customer->name,
+                        'provider_name' => $user->name,
+                        'service_name' => $booking->service->title ?? 'Usługa',
+                        'booking_date' => Carbon::parse($booking->booking_date)->format('d.m.Y'),
+                        'booking_time' => substr($booking->start_time ?? '00:00:00', 0, 5),
+                        'booking_id' => $booking->id,
+                    ]
+                );
+            }
+        }
 
         return response()->json([
             'success' => true,
