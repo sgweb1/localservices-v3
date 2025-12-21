@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { cn } from '../../lib/utils';
-import { Caption, CardTitle } from './typography';
+import { Caption } from './typography';
 
 export const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
   <div
@@ -17,7 +17,7 @@ export const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<
 CardHeader.displayName = 'CardHeader';
 
 export const CardTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(({ className, ...props }, ref) => (
-  <h3 ref={ref} className={cn('text-lg font-bold leading-tight tracking-tight text-gray-900 dark:text-white', className)} {...props} />
+  <h3 ref={ref} className={cn('text-lg font-medium leading-tight tracking-tight text-gray-900 dark:text-white', className)} {...props} />
 ));
 CardTitle.displayName = 'CardTitle';
 
