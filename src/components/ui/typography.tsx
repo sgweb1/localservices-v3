@@ -15,7 +15,7 @@ export const PageTitle: React.FC<TypographyProps> = ({ children, className, grad
   return (
     <h1
       className={cn(
-        'text-2xl md:text-3xl font-medium tracking-normal',
+        'text-lg md:text-xl font-normal tracking-normal',
         gradient ? 'bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent' : 'text-slate-900',
         className
       )}
@@ -33,7 +33,7 @@ export const SectionTitle: React.FC<TypographyProps> = ({ children, className, g
   return (
     <h2
       className={cn(
-        'text-xl md:text-2xl font-medium tracking-normal',
+        'text-base md:text-lg font-normal tracking-normal',
         gradient ? 'bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent' : 'text-slate-900',
         className
       )}
@@ -50,7 +50,7 @@ export const SubsectionTitle: React.FC<TypographyProps> = ({ children, className
   return (
     <h3
       className={cn(
-        'text-lg md:text-xl font-normal tracking-normal',
+        'text-sm md:text-base font-normal tracking-normal',
         gradient ? 'bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent' : 'text-slate-900',
         className
       )}
@@ -65,7 +65,7 @@ export const SubsectionTitle: React.FC<TypographyProps> = ({ children, className
  */
 export const CardTitle: React.FC<TypographyProps> = ({ children, className }) => {
   return (
-    <h4 className={cn('text-lg font-medium text-slate-900', className)}>
+    <h4 className={cn('text-base font-normal text-slate-900', className)}>
       {children}
     </h4>
   );
@@ -81,9 +81,9 @@ export const Text: React.FC<TypographyProps & { size?: 'sm' | 'base' | 'lg'; mut
   muted = false,
 }) => {
   const sizeClasses = {
-    sm: 'text-sm',
-    base: 'text-base',
-    lg: 'text-lg',
+    sm: 'text-xs',
+    base: 'text-sm',
+    lg: 'text-base',
   };
 
   return (
@@ -141,7 +141,7 @@ export const Label: React.FC<TypographyProps & { required?: boolean }> = ({
   required = false,
 }) => {
   return (
-    <label className={cn('block text-sm font-medium text-slate-700 mb-2', className)}>
+    <label className={cn('block text-xs font-normal text-slate-700 mb-1.5', className)}>
       {children}
       {required && <span className="text-red-500 ml-1">*</span>}
     </label>
@@ -193,7 +193,7 @@ export const Badge: React.FC<
   return (
     <span
       className={cn(
-        'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs',
+        'inline-flex items-center px-2 py-0.5 rounded-full text-[11px]',
         variantClasses[variant],
         className
       )}
@@ -216,7 +216,7 @@ export const StatValue: React.FC<TypographyProps & { description?: string; gradi
     <div className="space-y-1">
       <div
         className={cn(
-          'text-2xl md:text-3xl font-medium tracking-normal',
+          'text-xl md:text-2xl font-normal tracking-normal',
           gradient ? 'bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent' : 'text-slate-900',
           className
         )}

@@ -236,8 +236,8 @@ export const CalendarPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-4 md:p-0">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Kalendarz Dostępności</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="text-xl md:text-2xl font-semibold text-slate-900">Kalendarz Dostępności</h1>
+          <p className="text-xs text-slate-500 mt-1">
             {stats.total} {stats.total === 1 ? 'slot' : 'slotów'} • {data?.bookings.length || 0} {data?.bookings.length === 1 ? 'rezerwacja' : 'rezerwacji'}
           </p>
         </div>
@@ -246,21 +246,21 @@ export const CalendarPage: React.FC = () => {
         <div className="hidden md:flex items-center gap-2">
           <button
             onClick={() => setSelectionMode(!selectionMode)}
-            className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-normal rounded-lg transition-all ${
               selectionMode
-                ? 'bg-cyan-100 text-cyan-700 border-2 border-cyan-300'
-                : 'bg-white text-slate-700 border-2 border-slate-200 hover:border-slate-300'
+                ? 'bg-cyan-100 text-cyan-700 border border-cyan-300'
+                : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300'
             }`}
           >
-            <CheckSquare className="w-4 h-4" />
+            <CheckSquare className="w-3.5 h-3.5" />
             {selectionMode ? 'Anuluj zaznaczanie' : 'Zaznacz'}
           </button>
           
           <button
             onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 to-teal-500 rounded-xl hover:shadow-lg transition-all"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-cyan-500 to-teal-500 rounded-lg hover:shadow-md transition-all"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Dodaj dostępność</span>
           </button>
         </div>
@@ -268,30 +268,30 @@ export const CalendarPage: React.FC = () => {
 
       {/* Stats cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 px-4 md:px-0">
-        <div className="glass-card p-4 rounded-xl animate-in slide-in-from-left-2 duration-300">
+        <div className="glass-card p-3 rounded-xl animate-in slide-in-from-left-2 duration-300">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-slate-500 uppercase">Aktywne</span>
+            <span className="text-xs font-normal text-slate-500 uppercase">Aktywne</span>
             <TrendingUp className="w-4 h-4 text-emerald-500" />
           </div>
-          <div className="text-2xl font-bold text-slate-900">{stats.active}</div>
+          <div className="text-xl font-semibold text-slate-900">{stats.active}</div>
           <div className="text-xs text-slate-500 mt-1">z {stats.total} slotów</div>
         </div>
 
-        <div className="glass-card p-4 rounded-xl animate-in slide-in-from-left-2 duration-300" style={{animationDelay: '50ms'}}>
+        <div className="glass-card p-3 rounded-xl animate-in slide-in-from-left-2 duration-300" style={{animationDelay: '50ms'}}>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-slate-500 uppercase">Rezerwacje</span>
+            <span className="text-xs font-normal text-slate-500 uppercase">Rezerwacje</span>
             <Calendar className="w-4 h-4 text-cyan-500" />
           </div>
-          <div className="text-2xl font-bold text-slate-900">{stats.bookings}</div>
+          <div className="text-xl font-semibold text-slate-900">{stats.bookings}</div>
           <div className="text-xs text-slate-500 mt-1">z {stats.capacity} miejsc</div>
         </div>
 
-        <div className="glass-card p-4 rounded-xl animate-in slide-in-from-left-2 duration-300" style={{animationDelay: '100ms'}}>
+        <div className="glass-card p-3 rounded-xl animate-in slide-in-from-left-2 duration-300" style={{animationDelay: '100ms'}}>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-slate-500 uppercase">Zapełnienie</span>
+            <span className="text-xs font-normal text-slate-500 uppercase">Zapełnienie</span>
             <Clock className="w-4 h-4 text-amber-500" />
           </div>
-          <div className="text-2xl font-bold text-slate-900">
+          <div className="text-xl font-semibold text-slate-900">
             {stats.capacity > 0 ? Math.round((stats.bookings / stats.capacity) * 100) : 0}%
           </div>
           <div className="text-xs text-slate-500 mt-1">średnia</div>
@@ -369,66 +369,66 @@ export const CalendarPage: React.FC = () => {
             {DAYS_OF_WEEK.map(day => (
             <div key={day.value} className="bg-white">
               {/* Nagłówek dnia */}
-              <div className="p-4 bg-gradient-to-r from-cyan-50 to-teal-50 border-b border-slate-200">
-                <div className="font-semibold text-slate-900">{day.short}</div>
-                <div className="text-xs text-slate-500 mt-1">
+              <div className="p-2 bg-gradient-to-r from-cyan-50 to-teal-50 border-b border-slate-200">
+                <div className="text-sm font-medium text-slate-900">{day.short}</div>
+                <div className="text-xs text-slate-500 mt-0.5">
                   {slotsByDay[day.value]?.length || 0} slotów
                 </div>
               </div>
 
                 {/* Sloty dostępności */}
-              <div className="p-3 space-y-2 min-h-[300px]">
+              <div className="p-2 space-y-2 min-h-[200px]">
                 {slotsByDay[day.value]?.map((slot, index) => (
                   <div
                     key={slot.id}
                     onClick={() => selectionMode && toggleSlotSelection(slot.id)}
                     className={`
-                      group relative p-3 rounded-xl border-2 transition-all duration-300 cursor-pointer
+                      group relative p-2 rounded-lg border transition-all duration-300 cursor-pointer
                       animate-in slide-in-from-left-2
                       ${selectionMode && selectedSlots.has(slot.id)
-                        ? 'ring-4 ring-cyan-400 ring-offset-2'
+                        ? 'ring-2 ring-cyan-400 ring-offset-1'
                         : ''
                       }
                       ${slot.is_available
-                        ? 'bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-300 hover:shadow-lg hover:scale-105 active:scale-100'
-                        : 'bg-gradient-to-br from-slate-50 to-slate-100 border-slate-300 hover:shadow-md hover:scale-105 active:scale-100'
+                        ? 'bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-300 hover:shadow-md hover:scale-105 active:scale-100'
+                        : 'bg-gradient-to-br from-slate-50 to-slate-100 border-slate-300 hover:shadow-sm hover:scale-105 active:scale-100'
                       }
                     `}
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
                     {/* Progress ring */}
-                    <div className="absolute -top-2 -right-2 w-8 h-8">
-                      <svg className="w-8 h-8 transform -rotate-90">
+                    <div className="absolute -top-1 -right-1 w-6 h-6">
+                      <svg className="w-6 h-6 transform -rotate-90">
                         <circle
-                          cx="16"
-                          cy="16"
-                          r="12"
+                          cx="12"
+                          cy="12"
+                          r="9"
                           fill="white"
                           stroke="currentColor"
-                          strokeWidth="2"
+                          strokeWidth="1.5"
                           className="text-slate-200"
                         />
                         <circle
-                          cx="16"
-                          cy="16"
-                          r="12"
+                          cx="12"
+                          cy="12"
+                          r="9"
                           fill="none"
                           stroke="currentColor"
-                          strokeWidth="2"
+                          strokeWidth="1.5"
                           strokeLinecap="round"
                           className={slot.current_bookings >= slot.max_bookings ? 'text-red-500' : 'text-emerald-500'}
-                          strokeDasharray={`${(slot.current_bookings / slot.max_bookings) * 75.4} 75.4`}
+                          strokeDasharray={`${(slot.current_bookings / slot.max_bookings) * 56.5} 56.5`}
                         />
                       </svg>
-                      <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-slate-700">
+                      <span className="absolute inset-0 flex items-center justify-center text-[9px] font-semibold text-slate-700">
                         {slot.current_bookings}
                       </span>
                     </div>
 
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Clock className={`w-4 h-4 ${slot.is_available ? 'text-emerald-600' : 'text-slate-400'}`} />
-                        <span className="text-sm font-bold text-slate-900">
+                    <div className="flex items-start justify-between mb-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className={`w-3.5 h-3.5 ${slot.is_available ? 'text-emerald-600' : 'text-slate-400'}`} />
+                        <span className="text-xs font-semibold text-slate-900">
                           {slot.start_time} - {slot.end_time}
                         </span>
                       </div>
@@ -444,23 +444,23 @@ export const CalendarPage: React.FC = () => {
                           `}
                           title={slot.is_available ? 'Wyłącz slot' : 'Włącz slot'}
                         >
-                          {slot.is_available ? <Power className="w-4 h-4" /> : <PowerOff className="w-4 h-4" />}
+                          {slot.is_available ? <Power className="w-3.5 h-3.5" /> : <PowerOff className="w-3.5 h-3.5" />}
                         </button>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteSlot(slot.id);
                           }}
-                          className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 hover:text-red-600 transition-all active:scale-90"
+                          className="p-1 rounded-md hover:bg-red-50 text-red-500 hover:text-red-600 transition-all active:scale-90"
                           title="Usuń"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
 
                     {/* Progress bar */}
-                    <div className="relative h-1.5 bg-slate-200 rounded-full overflow-hidden mb-2">
+                    <div className="relative h-1 bg-slate-200 rounded-full overflow-hidden mb-1.5">
                       <div
                         className={`h-full transition-all duration-500 ${
                           slot.current_bookings >= slot.max_bookings
@@ -471,19 +471,19 @@ export const CalendarPage: React.FC = () => {
                       />
                     </div>
 
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-600 font-medium">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-slate-600 font-normal">
                         Rezerwacje: {slot.current_bookings}/{slot.max_bookings}
                       </span>
                       {slot.current_bookings >= slot.max_bookings && (
-                        <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded-full font-semibold">
+                        <span className="px-1.5 py-0.5 bg-red-100 text-red-700 rounded-full text-[10px] font-medium">
                           Pełne
                         </span>
                       )}
                     </div>
 
                     {slot.break_time_start && (
-                      <div className="text-xs text-slate-500 mt-2 flex items-center gap-1">
+                      <div className="text-[11px] text-slate-500 mt-1.5 flex items-center gap-1">
                         <Clock className="w-3 h-3" />
                         Przerwa: {slot.break_time_start} - {slot.break_time_end}
                       </div>
@@ -496,7 +496,7 @@ export const CalendarPage: React.FC = () => {
                   <div
                     key={booking.id}
                     className={`
-                      p-3 rounded-xl border-2 transition-all duration-300 hover:scale-105 hover:shadow-lg cursor-pointer
+                      p-2 rounded-lg border transition-all duration-300 hover:scale-105 hover:shadow-md cursor-pointer
                       animate-in slide-in-from-right-2
                       ${booking.status === 'confirmed'
                         ? 'bg-gradient-to-br from-cyan-50 to-blue-50 border-cyan-300'
