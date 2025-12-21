@@ -2,9 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Calendar, Clock, Plus, Trash2, AlertCircle, Power, PowerOff, Sparkles, Copy, Filter, LayoutGrid, List, TrendingUp, CheckSquare, Repeat } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { TimePicker } from '@/components/ui/time-picker';
-import { NumberStepper } from '@/components/ui/number-stepper';
 import { DayMultiSelect } from '@/components/ui/day-multi-select';
 import { BulkActionsBar } from '@/components/ui/bulk-actions-bar';
 import { SkeletonLoader } from '@/components/ui/skeleton-loader';
@@ -58,7 +56,7 @@ export const CalendarPage: React.FC = () => {
     day_of_week: 1,
     start_time: '09:00',
     end_time: '17:00',
-    max_bookings: 10,
+    max_bookings: 1,
   });
 
   // Grupuj sloty po dniu tygodnia i filtruj
@@ -492,13 +490,6 @@ export const CalendarPage: React.FC = () => {
                         </span>
                       )}
                     </div>
-
-                    {slot.break_time_start && (
-                      <div className="text-[11px] text-slate-500 mt-1.5 flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        Przerwa: {slot.break_time_start} - {slot.break_time_end}
-                      </div>
-                    )}
                   </div>
                 ))}
 
@@ -606,22 +597,26 @@ export const CalendarPage: React.FC = () => {
             <div className="space-y-4">
               {/* Tryb cykliczny */}
               <div className="bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 rounded-lg p-3 border border-teal-200">
-                <Checkbox
-                  checked={isRecurring}
-                  onChange={(e) => {
-                    setIsRecurring(e.target.checked);
-                    if (!e.target.checked) {
-                      setSelectedDays([newSlot.day_of_week]);
-                    }
-                  }}
-                  label={
-                    <span className="flex items-center gap-1.5 text-sm">
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isRecurring}
+                    onChange={(e) => {
+                      setIsRecurring(e.target.checked);
+                      if (!e.target.checked) {
+                        setSelectedDays([newSlot.day_of_week]);
+                      }
+                    }}
+                    className="mt-0.5 w-4 h-4 rounded border-gray-300 text-cyan-600 focus:ring-2 focus:ring-cyan-500 focus:ring-offset-0"
+                  />
+                  <div className="flex-1">
+                    <span className="flex items-center gap-1.5 text-sm font-medium text-slate-900">
                       <Repeat className="w-3.5 h-3.5" />
                       Dodaj cyklicznie
                     </span>
-                  }
-                  description="Dodaj ten sam slot dla wielu dni"
-                />
+                    <p className="text-xs text-slate-600 mt-0.5">Dodaj ten sam slot dla wielu dni</p>
+                  </div>
+                </label>
               </div>
 
               {/* Wybór dni */}
@@ -675,14 +670,19 @@ export const CalendarPage: React.FC = () => {
               </div>
 
               {/* Max rezerwacji */}
-              <NumberStepper
-                label="📌 Max rezerwacji"
-                value={newSlot.max_bookings || 10}
-                onChange={(value) => setNewSlot({ ...newSlot, max_bookings: value })}
-                min={1}
-                max={50}
-                helperText="Ile osób może zarezerwować jednocześnie"
-              />
+              <div>
+                <label className="block text-xs font-normal text-slate-700 mb-1.5">
+                  📌 Max rezerwacji na slot
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="50"
+                  value={newSlot.max_bookings || 1}
+                  onChange={(e) => setNewSlot({ ...newSlot, max_bookings: parseInt(e.target.value) || 1 })}
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                />
+              </div>
 
               {/* Podsumowanie */}
               {isRecurring && selectedDays.length > 0 && (
