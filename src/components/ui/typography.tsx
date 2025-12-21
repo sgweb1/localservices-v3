@@ -15,7 +15,7 @@ export const PageTitle: React.FC<TypographyProps> = ({ children, className, grad
   return (
     <h1
       className={cn(
-        'text-3xl md:text-4xl font-semibold tracking-tight',
+        'text-2xl md:text-3xl font-medium tracking-normal',
         gradient ? 'bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent' : 'text-slate-900',
         className
       )}
@@ -33,7 +33,7 @@ export const SectionTitle: React.FC<TypographyProps> = ({ children, className, g
   return (
     <h2
       className={cn(
-        'text-2xl md:text-3xl font-semibold tracking-tight',
+        'text-xl md:text-2xl font-medium tracking-normal',
         gradient ? 'bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent' : 'text-slate-900',
         className
       )}
@@ -50,7 +50,7 @@ export const SubsectionTitle: React.FC<TypographyProps> = ({ children, className
   return (
     <h3
       className={cn(
-        'text-xl md:text-2xl font-medium tracking-tight',
+        'text-lg md:text-xl font-normal tracking-normal',
         gradient ? 'bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent' : 'text-slate-900',
         className
       )}
@@ -216,7 +216,7 @@ export const StatValue: React.FC<TypographyProps & { description?: string; gradi
     <div className="space-y-1">
       <div
         className={cn(
-          'text-3xl md:text-4xl font-semibold tracking-tight',
+          'text-2xl md:text-3xl font-medium tracking-normal',
           gradient ? 'bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent' : 'text-slate-900',
           className
         )}
