@@ -82,51 +82,51 @@ export const SubscriptionPage: React.FC = () => {
                   <StatValue className="text-2xl">{sub.limits.prioritySupport ? '✔️' : '❌'}</StatValue>
                 </div>
                 <div className="p-4 bg-white rounded-lg border border-gray-200">
-                  <div className="text-xs text-gray-500 mb-1">Analityka</div>
-                  <div className="text-2xl font-bold text-gray-900">{sub.limits.analytics ? '✔️' : '❌'}</div>
+                  <Caption muted className="mb-1">Analityka</Caption>
+                  <StatValue className="text-2xl">{sub.limits.analytics ? '✔️' : '❌'}</StatValue>
                 </div>
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* Upgrade CTA */}
           {sub.plan === 'free' && (
-            <div className="glass-card rounded-2xl p-8 bg-gradient-to-r from-cyan-50 to-teal-50 border-2 border-cyan-200">
+            <Card className="p-8 bg-gradient-to-r from-cyan-50 to-teal-50 border-2 border-cyan-200">
               <div className="flex items-start gap-6">
                 <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-cyan-500 to-teal-500 rounded-2xl flex items-center justify-center">
                   <Zap className="w-8 h-8 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                  <SectionTitle className="mb-2">
                     Odblokuj pełny potencjał LocalServices
-                  </h3>
-                  <p className="text-gray-600 mb-4">
+                  </SectionTitle>
+                  <Text className="mb-4">
                     Przejdź na plan Pro i zyskaj więcej klientów dzięki zaawansowanym funkcjom.
-                  </p>
+                  </Text>
                   <ul className="space-y-2 mb-6">
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
+                    <li className="flex items-center gap-2">
                       <TrendingUp className="w-4 h-4 text-cyan-600" />
-                      <span>Nieograniczona liczba usług i zdjęć</span>
+                      <Text size="sm">Nieograniczona liczba usług i zdjęć</Text>
                     </li>
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
+                    <li className="flex items-center gap-2">
                       <TrendingUp className="w-4 h-4 text-cyan-600" />
-                      <span>Wyższa pozycja w wynikach wyszukiwania</span>
+                      <Text size="sm">Wyższa pozycja w wynikach wyszukiwania</Text>
                     </li>
-                    <li className="flex items-center gap-2 text-sm text-gray-700">
+                    <li className="flex items-center gap-2">
                       <TrendingUp className="w-4 h-4 text-cyan-600" />
-                      <span>Analityka i raporty w czasie rzeczywistym</span>
+                      <Text size="sm">Analityka i raporty w czasie rzeczywistym</Text>
                     </li>
                   </ul>
-                  <a
-                    href="/provider/subscription/plans"
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-lg font-bold hover:shadow-lg transition"
+                  <Button
+                    onClick={() => window.location.href = '/provider/subscription/plans'}
+                    className="bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white"
                   >
                     <Crown className="w-5 h-5" />
                     Sprawdź plany
-                  </a>
+                  </Button>
                 </div>
               </div>
-            </div>
+            </Card>
           )}
         </>
       )}
