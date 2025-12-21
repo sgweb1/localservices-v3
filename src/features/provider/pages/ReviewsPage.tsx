@@ -1,6 +1,8 @@
 import React from 'react';
 import { useReviews } from '../dashboard/hooks/useReviews';
 import { Star, TrendingUp } from 'lucide-react';
+import { PageTitle, Text, Caption, StatValue, EmptyText } from '@/components/ui/typography';
+import { Card } from '@/components/ui/card';
 
 /**
  * Reviews Page - zgodny z localservices
@@ -16,18 +18,18 @@ export const ReviewsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header ze statystykami */}
-      <div className="glass-card rounded-2xl p-6">
+      <Card className="p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Opinie klientów</h1>
-            <p className="text-sm text-gray-500">Monitoruj swoją reputację i odpowiadaj na feedback</p>
+            <PageTitle gradient>Opinie klientów</PageTitle>
+            <Text muted size="sm" className="mt-2">Monitoruj swoją reputację i odpowiadaj na feedback</Text>
           </div>
           <div className="text-center">
             <div className="flex items-center gap-2 mb-1">
               <Star className="w-8 h-8 text-amber-500 fill-amber-500" />
-              <span className="text-4xl font-bold text-gray-900">{avgRating.toFixed(1)}</span>
+              <StatValue gradient className="text-4xl">{avgRating.toFixed(1)}</StatValue>
             </div>
-            <p className="text-sm text-gray-500">{totalReviews} opinii</p>
+            <Caption muted>{totalReviews} opinii</Caption>
           </div>
         </div>
 
@@ -40,20 +42,20 @@ export const ReviewsPage: React.FC = () => {
                   <Star key={i} className="w-3 h-3 text-amber-500 fill-amber-500" />
                 ))}
               </div>
-              <p className="text-xs text-gray-500">0</p>
+              <Caption muted>0</Caption>
             </div>
           ))}
         </div>
-      </div>
+      </Card>
 
       {/* Lista opinii */}
-      <div className="glass-card rounded-2xl overflow-hidden">
+      <Card className="overflow-hidden">
         <div className="divide-y divide-gray-100">
           {isLoading && (
-            <div className="px-6 py-12 text-center text-gray-500">Ładowanie...</div>
+            <div className="px-6 py-12 text-center"><EmptyText>Ładowanie...</EmptyText></div>
           )}
           {error && !isLoading && (
-            <div className="px-6 py-12 text-center text-error">Błąd ładowania opinii</div>
+            <div className="px-6 py-12 text-center"><EmptyText className="text-red-600">Błąd ładowania opinii</EmptyText></div>
           )}
           {!isLoading && items.map(r => (
             <div key={r.id} className="px-6 py-6">

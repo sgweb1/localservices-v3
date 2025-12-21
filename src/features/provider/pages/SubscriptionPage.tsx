@@ -1,6 +1,9 @@
 import React from 'react';
 import { useSubscription } from '../dashboard/hooks/useSubscription';
 import { Check, Crown, Zap, TrendingUp } from 'lucide-react';
+import { PageTitle, Text, SectionTitle, Caption, StatValue, EmptyText } from '@/components/ui/typography';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 /**
  * Subscription Page - zgodny z localservices
@@ -15,48 +18,48 @@ export const SubscriptionPage: React.FC = () => {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Subskrypcja</h1>
-        <p className="text-sm text-gray-500 mt-1">Zarządzaj planem i funkcjami</p>
+        <PageTitle gradient>Subskrypcja</PageTitle>
+        <Text muted size="sm" className="mt-2">Zarządzaj planem i funkcjami</Text>
       </div>
 
       {isLoading && (
-        <div className="glass-card rounded-2xl p-12 text-center text-gray-500">Ładowanie...</div>
+        <Card className="p-12 text-center"><EmptyText>Ładowanie...</EmptyText></Card>
       )}
       {error && !isLoading && (
-        <div className="glass-card rounded-2xl p-12 text-center text-error">Błąd ładowania danych subskrypcji</div>
+        <Card className="p-12 text-center"><EmptyText className="text-red-600">Błąd ładowania danych subskrypcji</EmptyText></Card>
       )}
       {sub && !isLoading && (
         <>
           {/* Aktualny plan */}
-          <div className="glass-card rounded-2xl p-8 border-2 border-cyan-200">
+          <Card className="p-8 border-2 border-cyan-200">
             <div className="flex items-start justify-between mb-6">
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   {(sub.plan === 'pro' || sub.plan === 'premium') && (
                     <Crown className="w-8 h-8 text-amber-500" />
                   )}
-                  <h2 className="text-3xl font-bold text-gradient capitalize">{sub.plan}</h2>
+                  <StatValue gradient className="text-3xl capitalize">{sub.plan}</StatValue>
                 </div>
                 {sub.expiresAt && (
-                  <p className="text-sm text-gray-500">Wygasa: {sub.expiresAt}</p>
+                  <Caption muted>Wygasa: {sub.expiresAt}</Caption>
                 )}
               </div>
-              <a
-                href="/provider/subscription/plans"
-                className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-teal-500 text-white rounded-lg font-semibold hover:shadow-lg transition"
+              <Button
+                onClick={() => window.location.href = '/provider/subscription/plans'}
+                className="bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white"
               >
                 Zmień plan
-              </a>
+              </Button>
             </div>
 
             {/* Funkcje */}
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Funkcje w Twoim planie</h3>
+              <SectionTitle className="text-sm mb-3">Funkcje w Twoim planie</SectionTitle>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {sub.features.map((f, i) => (
                   <div key={i} className="flex items-center gap-2 p-3 bg-cyan-50 rounded-lg">
                     <Check className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                    <span className="text-sm text-gray-700">{f}</span>
+                    <Text size="sm" className="text-slate-700">{f}</Text>
                   </div>
                 ))}
               </div>
@@ -64,19 +67,19 @@ export const SubscriptionPage: React.FC = () => {
 
             {/* Limity */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Limity i wykorzystanie</h3>
+              <SectionTitle className="text-sm mb-3">Limity i wykorzystanie</SectionTitle>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="p-4 bg-white rounded-lg border border-gray-200">
-                  <div className="text-xs text-gray-500 mb-1">Max usług</div>
-                  <div className="text-2xl font-bold text-gray-900">{sub.limits.maxServices}</div>
+                  <Caption muted className="mb-1">Max usług</Caption>
+                  <StatValue className="text-2xl">{sub.limits.maxServices}</StatValue>
                 </div>
                 <div className="p-4 bg-white rounded-lg border border-gray-200">
-                  <div className="text-xs text-gray-500 mb-1">Max zdjęć</div>
-                  <div className="text-2xl font-bold text-gray-900">{sub.limits.maxPhotos}</div>
+                  <Caption muted className="mb-1">Max zdjęć</Caption>
+                  <StatValue className="text-2xl">{sub.limits.maxPhotos}</StatValue>
                 </div>
                 <div className="p-4 bg-white rounded-lg border border-gray-200">
-                  <div className="text-xs text-gray-500 mb-1">Wsparcie priorytetowe</div>
-                  <div className="text-2xl font-bold text-gray-900">{sub.limits.prioritySupport ? '✔️' : '❌'}</div>
+                  <Caption muted className="mb-1">Wsparcie priorytetowe</Caption>
+                  <StatValue className="text-2xl">{sub.limits.prioritySupport ? '✔️' : '❌'}</StatValue>
                 </div>
                 <div className="p-4 bg-white rounded-lg border border-gray-200">
                   <div className="text-xs text-gray-500 mb-1">Analityka</div>

@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { mockDashboardData } from '../mocks/mockData';
 import { Loader2 } from 'lucide-react';
 import { OnboardingTour, OnboardingChecklist, PROVIDER_ONBOARDING_STEPS, PROVIDER_CHECKLIST_ITEMS } from '../../onboarding/OnboardingTour';
+import { EmptyText } from '@/components/ui/typography';
 
 /**
  * Provider Dashboard Page
@@ -54,7 +55,7 @@ export const DashboardPage: React.FC = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-16 h-16 text-primary-600 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 font-semibold">Ładowanie dashboardu...</p>
+          <EmptyText className="font-semibold text-base">Ładowanie dashboardu...</EmptyText>
         </div>
       </div>
     );
@@ -65,7 +66,7 @@ export const DashboardPage: React.FC = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-16 h-16 text-primary-600 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 font-semibold">Ładowanie dashboardu...</p>
+          <EmptyText className="font-semibold text-base">Ładowanie dashboardu...</EmptyText>
         </div>
       </div>
     );
