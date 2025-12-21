@@ -9,6 +9,7 @@ import { DayMultiSelect } from '@/components/ui/day-multi-select';
 import { BulkActionsBar } from '@/components/ui/bulk-actions-bar';
 import { SkeletonLoader } from '@/components/ui/skeleton-loader';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   useCalendar, 
   useCreateSlot, 
@@ -45,6 +46,8 @@ export const CalendarPage: React.FC = () => {
   const deleteSlotMutation = useDeleteSlot();
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [slotToDelete, setSlotToDelete] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filterMode, setFilterMode] = useState<'all' | 'active' | 'full'>('all');
   const [selectionMode, setSelectionMode] = useState(false);
@@ -144,15 +147,23 @@ export const CalendarPage: React.FC = () => {
   };
 
   const handleDeleteSlot = async (id: number) => {
-    if (!confirm('Czy na pewno chcesz usunąć ten slot?')) return;
+    setSlotToDelete(id);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteSlot = async () => {
+    if (!slotToDelete) return;
     
     try {
-      await deleteSlotMutation.mutateAsync(id);
+      await deleteSlotMutation.mutateAsync(slotToDelete);
       toast.success('Slot został usunięty');
-      selectedSlots.delete(id);
+      selectedSlots.delete(slotToDelete);
       setSelectedSlots(new Set(selectedSlots));
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Nie można usunąć slotu z aktywnymi rezerwacjami');
+    } finally {
+      setShowDeleteModal(false);
+      setSlotToDelete(null);
     }
   };
 
@@ -740,6 +751,51 @@ export const CalendarPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertCircle className="w-5 h-5" />
+              Potwierdzenie usunięcia
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 pt-4">
+            <p className="text-sm text-slate-600">
+              Czy na pewno chcesz usunąć ten slot dostępności?
+            </p>
+            
+            <p className="text-xs text-slate-500 bg-amber-50 border border-amber-200 rounded-lg p-3">
+              ⚠️ Tej operacji nie można cofnąć. Jeśli slot ma aktywne rezerwacje, usunięcie nie będzie możliwe.
+            </p>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 px-4 py-2 text-sm font-normal text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+              >
+                Anuluj
+              </button>
+              <button
+                onClick={confirmDeleteSlot}
+                disabled={deleteSlotMutation.isPending}
+                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {deleteSlotMutation.isPending ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Usuwanie...
+                  </span>
+                ) : (
+                  'Usuń slot'
+                )}
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
