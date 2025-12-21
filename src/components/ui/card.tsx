@@ -79,32 +79,32 @@ export const StatCard: React.FC<{
   return (
     <div
       className={cn(
-        'bg-gradient-to-br rounded-2xl shadow-sm border p-6 transition-all duration-200 hover:shadow-md hover:scale-[1.02]',
+        'bg-gradient-to-br rounded-xl shadow-sm border p-4 transition-all duration-200',
         variantClasses[variant],
         className
       )}
     >
       <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <div className="text-sm font-medium text-slate-600">{label}</div>
-          <div className="text-3xl font-bold text-slate-900">{value}</div>
+        <div className="space-y-1">
+          <div className="text-xs text-slate-500">{label}</div>
+          <div className="text-xl font-normal text-slate-900">{value}</div>
           {trend && (
             <div className="flex items-center gap-1 text-xs">
               <span
                 className={cn(
-                  'font-medium',
+                  'font-normal',
                   trend.value > 0 ? 'text-emerald-600' : 'text-red-600'
                 )}
               >
                 {trend.value > 0 ? '+' : ''}
                 {trend.value}%
               </span>
-              <span className="text-slate-500">{trend.label}</span>
+              <span className="text-slate-400">{trend.label}</span>
             </div>
           )}
         </div>
         {icon && (
-          <div className="p-3 bg-white/50 rounded-xl">
+          <div className="p-2 bg-white/30 rounded-lg">
             {icon}
           </div>
         )}
@@ -125,18 +125,18 @@ export const DayCard: React.FC<{
   return (
     <div className={cn('bg-white rounded-xl border border-slate-200 overflow-hidden', className)}>
       {/* Nagłówek dnia */}
-      <div className="bg-gradient-to-r from-cyan-50 to-teal-50 px-3 py-2 sm:px-4 sm:py-3 border-b border-slate-200">
+      <div className="bg-slate-50 px-3 py-2 border-b border-slate-100">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base sm:text-lg">{day}</CardTitle>
+          <CardTitle className="text-sm font-normal text-slate-700">{day}</CardTitle>
           {count !== undefined && (
-            <Caption className="bg-white px-2 py-1 rounded-full">
-              {count} {count === 1 ? 'slot' : 'slotów'}
+            <Caption className="bg-white px-1.5 py-0.5 rounded text-slate-500">
+              {count}
             </Caption>
           )}
         </div>
       </div>
       {/* Zawartość */}
-      <div className="p-2 sm:p-3 space-y-2 min-h-[120px] sm:min-h-[200px] max-h-[500px] overflow-y-auto">
+      <div className="p-2 space-y-2 min-h-[120px] sm:min-h-[180px] max-h-[400px] overflow-y-auto">
         {children}
       </div>
     </div>
@@ -156,11 +156,11 @@ export const SlotCard: React.FC<{
     <div
       onClick={onClick}
       className={cn(
-        'p-2 sm:p-3 rounded-lg border-2 transition-all',
+        'p-2 rounded-lg border transition-all text-xs',
         active
-          ? 'bg-emerald-50 border-emerald-200 hover:border-emerald-300 hover:shadow-sm'
-          : 'bg-slate-50 border-slate-300 hover:border-slate-400',
-        onClick && 'cursor-pointer hover:scale-[1.02] active:scale-100',
+          ? 'bg-emerald-50/30 border-emerald-100 hover:border-emerald-200'
+          : 'bg-slate-50/50 border-slate-200 hover:border-slate-300',
+        onClick && 'cursor-pointer',
         className
       )}
     >

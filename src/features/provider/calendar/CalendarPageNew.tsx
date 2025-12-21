@@ -186,37 +186,37 @@ export const CalendarPage: React.FC = () => {
                 key={slot.id}
                 active={slot.is_available}
               >
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-slate-600" />
-                    <Caption className="text-slate-900">
+                <div className="flex items-start justify-between mb-1">
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3 h-3 text-slate-400" />
+                    <Caption className="text-slate-700 text-[10px]">
                       {slot.start_time} - {slot.end_time}
                     </Caption>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-0.5">
                     <button
                       onClick={() => handleUpdateSlot(slot.id, !slot.is_available)}
-                      className="p-1.5 hover:bg-white rounded-lg transition-colors"
+                      className="p-1 hover:bg-white/50 rounded transition-colors"
                       title={slot.is_available ? 'Wyłącz slot' : 'Włącz slot'}
                     >
                       {slot.is_available ? (
-                        <Power className="w-3.5 h-3.5 text-emerald-600" />
+                        <Power className="w-3 h-3 text-emerald-500" />
                       ) : (
-                        <PowerOff className="w-3.5 h-3.5 text-red-600" />
+                        <PowerOff className="w-3 h-3 text-red-500" />
                       )}
                     </button>
                     <button
                       onClick={() => handleDeleteSlot(slot.id)}
-                      className="p-1.5 hover:bg-white rounded-lg transition-colors"
+                      className="p-1 hover:bg-white/50 rounded transition-colors"
                       title="Usuń slot"
                     >
-                      <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                      <Trash2 className="w-3 h-3 text-red-400" />
                     </button>
                   </div>
                 </div>
 
-                <Caption>
-                  Rezerwacje: <strong>{slot.current_bookings}/{slot.max_bookings}</strong>
+                <Caption className="text-[10px] text-slate-500">
+                  {slot.current_bookings}/{slot.max_bookings}
                 </Caption>
 
                 {slot.break_time_start && (
@@ -231,26 +231,26 @@ export const CalendarPage: React.FC = () => {
             {bookingsByDay[day.value]?.map(booking => (
               <div
                 key={booking.id}
-                className={`p-3 rounded-lg border-2 ${
+                className={`p-2 rounded-lg border ${
                   booking.status === 'confirmed'
-                    ? 'bg-cyan-50/50 border-cyan-200'
-                    : 'bg-amber-50/50 border-amber-200'
+                    ? 'bg-cyan-50/20 border-cyan-100'
+                    : 'bg-amber-50/20 border-amber-100'
                 }`}
               >
-                <div className="flex items-center gap-2 mb-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-slate-600" />
-                  <Caption className="text-slate-900">
+                <div className="flex items-center gap-1 mb-1">
+                  <Calendar className="w-3 h-3 text-slate-400" />
+                  <Caption className="text-slate-700 text-[10px]">
                     {booking.start_time} - {booking.end_time}
                   </Caption>
                 </div>
-                <Caption className="text-slate-700">
+                <Caption className="text-slate-600 text-[10px]">
                   {booking.customer_name}
                 </Caption>
-                <Caption muted>
+                <Caption muted className="text-[9px]">
                   {booking.service_name}
                 </Caption>
-                <div className="mt-1.5">
-                  <Badge variant={booking.status === 'confirmed' ? 'success' : 'warning'}>
+                <div className="mt-1">
+                  <Badge variant={booking.status === 'confirmed' ? 'success' : 'warning'} className="text-[9px] px-1.5 py-0">
                     {booking.status === 'confirmed' ? 'Potwierdzona' : 'Oczekuje'}
                   </Badge>
                 </div>
