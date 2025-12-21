@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Calendar, Clock, Plus, Trash2, AlertCircle, Power, PowerOff, Sparkles, Copy, Filter, LayoutGrid, List, TrendingUp, CheckSquare } from 'lucide-react';
+import { Calendar, Clock, Plus, Trash2, AlertCircle, Power, PowerOff, Sparkles, Copy, Filter, LayoutGrid, List, TrendingUp, CheckSquare, Repeat } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -54,9 +54,6 @@ export const CalendarPage: React.FC = () => {
   const [newSlot, setNewSlot] = useState<CreateSlotData>({
     day_of_week: 1,
     start_time: '09:00',
-    end_time: '17:00',
-    max_bookings: 10,
-  });
     end_time: '17:00',
     max_bookings: 10,
   });
@@ -394,7 +391,7 @@ export const CalendarPage: React.FC = () => {
                       }
                       ${slot.is_available
                         ? 'bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-300 hover:shadow-lg hover:scale-105 active:scale-100'
-                        : 'bg-gradient-to-br from-slate-100 to-slate-200 border-slate-300 opacity-60 hover:opacity-80'
+                        : 'bg-gradient-to-br from-slate-50 to-slate-100 border-slate-300 hover:shadow-md hover:scale-105 active:scale-100'
                       }
                     `}
                     style={{ animationDelay: `${index * 50}ms` }}
@@ -435,7 +432,7 @@ export const CalendarPage: React.FC = () => {
                           {slot.start_time} - {slot.end_time}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -443,7 +440,7 @@ export const CalendarPage: React.FC = () => {
                           }}
                           className={`
                             p-1.5 rounded-lg hover:bg-white/80 transition-all active:scale-90
-                            ${slot.is_available ? 'text-emerald-600 hover:text-emerald-700' : 'text-slate-400 hover:text-slate-600'}
+                            ${slot.is_available ? 'text-emerald-600 hover:text-emerald-700' : 'text-red-600 hover:text-red-700'}
                           `}
                           title={slot.is_available ? 'Wyłącz slot' : 'Włącz slot'}
                         >

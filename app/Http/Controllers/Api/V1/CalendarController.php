@@ -35,9 +35,8 @@ class CalendarController extends Controller
     {
         $providerId = $request->user()->id;
 
-        // Pobierz sloty dostępności
+        // Pobierz sloty dostępności (wszystkie, włączone i wyłączone)
         $slots = Availability::where('provider_id', $providerId)
-            ->where('is_available', true)
             ->orderBy('day_of_week')
             ->orderBy('start_time')
             ->get()
@@ -102,10 +101,10 @@ class CalendarController extends Controller
         $validator = Validator::make($request->all(), [
             'day_of_week' => 'required|integer|min:1|max:7',
             'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
+            'end_time' => 'required|date_format:H:i',
             'max_bookings' => 'nullable|integer|min:1|max:100',
             'break_time_start' => 'nullable|date_format:H:i',
-            'break_time_end' => 'nullable|date_format:H:i|after:break_time_start',
+            'break_time_end' => 'nullable|date_format:H:i',
         ]);
 
         if ($validator->fails()) {
@@ -113,6 +112,24 @@ class CalendarController extends Controller
                 'error' => 'Nieprawidłowe dane',
                 'errors' => $validator->errors(),
             ], 422);
+        }
+
+        // Walidacja czasu (end_time > start_time)
+        if (strtotime($request->end_time) <= strtotime($request->start_time)) {
+            return response()->json([
+                'error' => 'Nieprawidłowe dane',
+                'errors' => ['end_time' => ['Czas zakończenia musi być późniejszy niż czas rozpoczęcia']],
+            ], 422);
+        }
+
+        // Walidacja break_time
+        if ($request->break_time_start && $request->break_time_end) {
+            if (strtotime($request->break_time_end) <= strtotime($request->break_time_start)) {
+                return response()->json([
+                    'error' => 'Nieprawidłowe dane',
+                    'errors' => ['break_time_end' => ['Czas zakończenia przerwy musi być późniejszy niż czas rozpoczęcia']],
+                ], 422);
+            }
         }
 
         $providerId = $request->user()->id;
@@ -180,6 +197,8 @@ class CalendarController extends Controller
             'end_time' => 'nullable|date_format:H:i',
             'max_bookings' => 'nullable|integer|min:1|max:100',
             'is_available' => 'nullable|boolean',
+            'break_time_start' => 'nullable|date_format:H:i',
+            'break_time_end' => 'nullable|date_format:H:i',
         ]);
 
         if ($validator->fails()) {
@@ -187,6 +206,27 @@ class CalendarController extends Controller
                 'error' => 'Nieprawidłowe dane',
                 'errors' => $validator->errors(),
             ], 422);
+        }
+
+        // Walidacja czasu (end_time > start_time) jeśli oba są podane
+        $startTime = $request->start_time ?? $slot->start_time;
+        $endTime = $request->end_time ?? $slot->end_time;
+        
+        if (strtotime($endTime) <= strtotime($startTime)) {
+            return response()->json([
+                'error' => 'Nieprawidłowe dane',
+                'errors' => ['end_time' => ['Czas zakończenia musi być późniejszy niż czas rozpoczęcia']],
+            ], 422);
+        }
+
+        // Walidacja break_time
+        if ($request->break_time_start && $request->break_time_end) {
+            if (strtotime($request->break_time_end) <= strtotime($request->break_time_start)) {
+                return response()->json([
+                    'error' => 'Nieprawidłowe dane',
+                    'errors' => ['break_time_end' => ['Czas zakończenia przerwy musi być późniejszy niż czas rozpoczęcia']],
+                ], 422);
+            }
         }
 
         $slot->update($request->only(['start_time', 'end_time', 'max_bookings', 'is_available', 'break_time_start', 'break_time_end']));
