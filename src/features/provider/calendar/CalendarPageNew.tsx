@@ -189,7 +189,7 @@ export const CalendarPage: React.FC = () => {
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-slate-600" />
-                    <Caption className="font-semibold text-slate-900">
+                    <Caption className="text-slate-900">
                       {slot.start_time} - {slot.end_time}
                     </Caption>
                   </div>
@@ -239,11 +239,11 @@ export const CalendarPage: React.FC = () => {
               >
                 <div className="flex items-center gap-2 mb-1.5">
                   <Calendar className="w-3.5 h-3.5 text-slate-600" />
-                  <Caption className="font-semibold text-slate-900">
+                  <Caption className="text-slate-900">
                     {booking.start_time} - {booking.end_time}
                   </Caption>
                 </div>
-                <Caption className="font-medium text-slate-700">
+                <Caption className="text-slate-700">
                   {booking.customer_name}
                 </Caption>
                 <Caption muted>

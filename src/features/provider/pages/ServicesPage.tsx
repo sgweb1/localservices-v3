@@ -1,7 +1,7 @@
 import React from 'react';
 import { useServices } from '../dashboard/hooks/useServices';
 import { Briefcase, Plus, Edit, Eye } from 'lucide-react';
-import { PageTitle, Text, Badge, Caption, EmptyText } from '@/components/ui/typography';
+import { PageTitle, Text, Badge, Caption, EmptyText, CardTitle, StatValue } from '@/components/ui/typography';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -53,7 +53,7 @@ export const ServicesPage: React.FC = () => {
             {/* Content */}
             <div className="p-6">
               <div className="flex items-start justify-between mb-2">
-                <h3 className="text-lg font-bold text-gray-900">{s.name}</h3>
+                <CardTitle>{s.name}</CardTitle>
                 <Badge variant={s.status==='active' ? 'success' : 'default'}>
                   {s.status === 'active' ? 'Aktywna' : 'Nieaktywna'}
                 </Badge>
@@ -88,7 +88,7 @@ export const ServicesPage: React.FC = () => {
         {!isLoading && items.length===0 && (
           <div className="col-span-full text-center py-12">
             <Briefcase className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-            <EmptyText className="font-medium mb-2 text-base">Brak usług w ofercie</EmptyText>
+            <EmptyText className="mb-2 text-base">Brak usług w ofercie</EmptyText>
             <Text muted size="sm" className="mb-6">Dodaj pierwszą usługę, aby klienci mogli Cię znaleźć</Text>
             <Button
               onClick={() => window.location.href = '/provider/services/create'}

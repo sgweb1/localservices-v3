@@ -61,7 +61,7 @@ export const ReviewsPage: React.FC = () => {
             <div key={r.id} className="px-6 py-6">
               <div className="flex items-start gap-4">
                 {/* Avatar */}
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center text-white font-bold">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center text-white">
                   {r.customerName.charAt(0).toUpperCase()}
                 </div>
 
@@ -69,7 +69,7 @@ export const ReviewsPage: React.FC = () => {
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-2">
                     <div>
-                      <p className="font-semibold text-gray-900">{r.customerName}</p>
+                      <Text className="text-gray-900">{r.customerName}</Text>
                       <div className="flex items-center gap-1 mt-1">
                         {Array.from({ length: 5 }, (_, i) => (
                           <Star
@@ -81,12 +81,12 @@ export const ReviewsPage: React.FC = () => {
                         ))}
                       </div>
                     </div>
-                    <span className="text-xs text-gray-500">{r.date}</span>
+                    <Caption muted>{r.date}</Caption>
                   </div>
-                  <p className="text-sm text-gray-700 leading-relaxed">{r.comment}</p>
+                  <Text size="sm" className="text-gray-700">{r.comment}</Text>
                   
                   {/* Odpowiedz button */}
-                  <button className="mt-3 text-sm text-cyan-600 hover:text-cyan-800 font-medium">
+                  <button className="mt-3 text-sm text-cyan-600 hover:text-cyan-800">
                     Odpowiedz
                   </button>
                 </div>
@@ -96,8 +96,8 @@ export const ReviewsPage: React.FC = () => {
           {!isLoading && items.length===0 && (
             <div className="px-6 py-12 text-center">
               <Star className="w-16 h-16 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500 font-medium">Brak opinii</p>
-              <p className="text-sm text-gray-400 mt-1">Poproś klientów o feedback po zrealizowanych usługach</p>
+              <Text className="text-gray-500">Brak opinii</Text>
+              <Text size="sm" muted className="mt-1">Poproś klientów o feedback po zrealizowanych usługach</Text>
             </div>
           )}
         </div>

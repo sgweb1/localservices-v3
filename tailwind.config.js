@@ -24,17 +24,6 @@ export default {
         heading: ['Archivo', 'Inter', ...defaultTheme.fontFamily.sans],
         archivo: ['Archivo', ...defaultTheme.fontFamily.sans],
       },
-      fontWeight: {
-        thin: '100',
-        extralight: '200',
-        light: '300',
-        normal: '400',
-        medium: '500',
-        semibold: '500',     // było 600, teraz 500 (delikatniejsze)
-        bold: '600',         // było 700, teraz 600 (delikatniejsze)
-        extrabold: '700',    // było 800, teraz 700 (delikatniejsze)
-        black: '800',        // było 900, teraz 800 (delikatniejsze)
-      },
       backdropBlur: {
         xs: '2px',
         '3xl': '64px',
