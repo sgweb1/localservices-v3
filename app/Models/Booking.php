@@ -66,14 +66,13 @@ class Booking extends Model
         'provider_reviewed',
         'hidden_by_provider',
         'hidden_by_customer',
+        'is_test_data',
     ];
 
     protected function casts(): array
     {
         return [
             'booking_date' => 'date',
-            'start_time' => 'datetime:H:i',
-            'end_time' => 'datetime:H:i',
             'duration_minutes' => 'integer',
             'latitude' => 'decimal:8',
             'longitude' => 'decimal:8',
@@ -93,6 +92,7 @@ class Booking extends Model
             'provider_reviewed' => 'boolean',
             'hidden_by_provider' => 'boolean',
             'hidden_by_customer' => 'boolean',
+            'is_test_data' => 'boolean',
         ];
     }
 

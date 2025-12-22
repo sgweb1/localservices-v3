@@ -95,36 +95,26 @@ export const DayMultiSelect: React.FC<DayMultiSelectProps> = ({
               type="button"
               onClick={() => toggleDay(day.value)}
               className={`
-                relative px-4 py-3 rounded-xl font-semibold text-sm
-                transition-all duration-200 transform
+                relative px-3 py-1.5 rounded-lg text-xs font-medium
+                transition-colors
                 ${isSelected
-                  ? `bg-gradient-to-br ${day.color} text-white shadow-lg scale-105 hover:scale-110`
-                  : 'bg-white border-2 border-slate-200 text-slate-700 hover:border-slate-300 hover:shadow-md'
+                  ? 'bg-cyan-500 text-white hover:bg-cyan-600'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }
               `}
             >
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-lg">{day.short}</span>
-                {isSelected && (
-                  <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                )}
-              </div>
-              
-              {/* Tooltip */}
-              <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                {day.label}
-              </div>
+              {day.short}
             </button>
           );
         })}
       </div>
 
       {/* Summary */}
-      <div className="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-xl">
-        <span className="text-sm text-slate-600">
+      <div className="flex items-center justify-between px-3 py-2 bg-slate-50 rounded-lg">
+        <span className="text-xs text-slate-600">
           Wybrano:
         </span>
-        <span className="text-sm font-bold text-slate-900">
+        <span className="text-xs font-medium text-slate-900">
           {selected.length === 0 
             ? 'brak'
             : selected.length === 7

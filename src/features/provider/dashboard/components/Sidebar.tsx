@@ -1,12 +1,13 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Calendar, MessagesSquare, Briefcase, Star, Bell, CreditCard, Settings, LifeBuoy, CalendarDays, Lightbulb, TrendingUp, User } from 'lucide-react';
+import { useConversations } from '@/features/provider/messages/hooks/useConversations';
 
 const navItems = [
   { to: '/provider/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/provider/bookings', label: 'Rezerwacje', icon: Calendar },
   { to: '/provider/calendar', label: 'Kalendarz', icon: CalendarDays, badge: 'NOWE' },
-  { to: '/provider/messages', label: 'Wiadomości', icon: MessagesSquare },
+  { to: '/provider/messages', label: 'Wiadomości', icon: MessagesSquare, dynamic: 'messages' },
   { to: '/provider/services', label: 'Usługi', icon: Briefcase },
   { to: '/provider/reviews', label: 'Opinie', icon: Star },
   { to: '/provider/marketing', label: 'Porady', icon: Lightbulb, badge: 'PRO' },
@@ -19,12 +20,18 @@ const navItems = [
 ];
 
 export const Sidebar: React.FC = () => {
+  const { data: conversationsData } = useConversations(false);
+  
+  // Policz wszystkie nieprzeczytane wiadomości
+  const totalUnread = (conversationsData?.data || []).reduce((sum, conv) => {
+    return sum + (conv.unread_count || 0);
+  }, 0);
   return (
     <aside className="w-64 shrink-0 hidden md:flex md:flex-col pr-4">
       {/* Main nav */}
       <div className="glass-card rounded-2xl p-3 mb-3">
         <nav className="space-y-1">
-          {navItems.slice(0,9).map(({ to, label, icon: Icon, badge }) => (
+          {navItems.slice(0,9).map(({ to, label, icon: Icon, badge, dynamic }) => (
             <NavLink
               key={to}
               to={to}
@@ -39,6 +46,11 @@ export const Sidebar: React.FC = () => {
               {badge && (
                 <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white">
                   {badge}
+                </span>
+              )}
+              {dynamic === 'messages' && totalUnread > 0 && (
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold bg-gradient-to-r from-cyan-500 to-teal-500 text-white">
+                  {totalUnread > 99 ? '99+' : totalUnread}
                 </span>
               )}
             </NavLink>

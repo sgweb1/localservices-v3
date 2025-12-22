@@ -13,6 +13,8 @@ return [
         'https://ls.test:5173',
         'https://localservices.test',
         'https://localservices.test:5173',
+        'http://localhost',
+        'http://127.0.0.1',
     ],
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],

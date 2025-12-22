@@ -34,6 +34,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // API bez przekierowania do login – zwracaj 401
         $middleware->redirectTo(fn () => null);
+        
+        // Update user presence on every API request
+        $middleware->append(\App\Http\Middleware\UpdateUserPresence::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // API powinno zawsze zwracać JSON (np. 401 zamiast redirect do 'login')

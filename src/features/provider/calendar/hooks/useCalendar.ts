@@ -65,16 +65,37 @@ export interface UpdateSlotData {
 
 /**
  * Hook do pobierania kalendarza
+ * @param startDate - Data początkowa (YYYY-MM-DD)
+ * @param endDate - Data końcowa (YYYY-MM-DD)
  */
-export function useCalendar() {
+export function useCalendar(startDate?: string, endDate?: string) {
   return useQuery<CalendarData>({
-    queryKey: ['provider', 'calendar'],
+    queryKey: ['provider', 'calendar', startDate, endDate],
     queryFn: async () => {
-      const response = await apiClient.get('/provider/calendar');
+      const params = new URLSearchParams();
+      if (startDate) params.append('start_date', startDate);
+      if (endDate) params.append('end_date', endDate);
+      
+      const response = await apiClient.get(`/provider/calendar?${params.toString()}`);
       return response.data;
     },
     staleTime: 30000, // 30 sekund
     refetchInterval: 60000, // Odśwież co minutę
+  });
+}
+
+/**
+ * Hook do pobierania globalnych statystyk (wszystkie sloty i rezerwacje)
+ */
+export function useGlobalCalendarStats() {
+  return useQuery<CalendarData>({
+    queryKey: ['provider', 'calendar', 'global-stats'],
+    queryFn: async () => {
+      const response = await apiClient.get('/provider/calendar');
+      return response.data;
+    },
+    staleTime: 60000, // 1 minuta
+    refetchInterval: 120000, // Odśwież co 2 minuty
   });
 }
 

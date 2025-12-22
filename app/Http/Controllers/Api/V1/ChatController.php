@@ -34,6 +34,7 @@ class ChatController extends Controller
             'per_page' => 'integer|min:1|max:50',
             'sort_by' => 'string|in:updated_at,created_at',
             'sort_order' => 'string|in:asc,desc',
+            'show_hidden' => 'boolean',
         ]);
 
         $conversations = $this->service->listConversations($userId, $validated);
@@ -60,6 +61,13 @@ class ChatController extends Controller
         if (!$userId) {
             return response()->json(['error' => 'Brak autoryzacji'], 401);
         }
+
+        // Aktualizuj last_seen_at dla zalogowanego użytkownika
+        $user = auth()->user();
+        $user->timestamps = false;
+        $user->last_seen_at = now();
+        $user->save();
+        $user->timestamps = true;
 
         $conversation = $this->service->getConversation($conversationId, $userId);
 
@@ -100,6 +108,49 @@ class ChatController extends Controller
     }
 
     /**
+     * POST /api/v1/conversations/{conversationId}/messages
+     * Wyślij nową wiadomość z opcjonalnymi załącznikami
+     */
+    public function sendMessage(int $conversationId, Request $request): JsonResponse
+    {
+        $userId = auth()->id();
+        if (!$userId) {
+            return response()->json(['error' => 'Brak autoryzacji'], 401);
+        }
+
+        // Aktualizuj last_seen_at dla zalogowanego użytkownika
+        $user = auth()->user();
+        $user->timestamps = false;
+        $user->last_seen_at = now();
+        $user->save();
+        $user->timestamps = true;
+
+        $validated = $request->validate([
+            'body' => 'required_without:attachments|string|max:5000',
+            'attachments.*' => 'nullable|file|max:2048', // 2MB per file
+        ], [
+            'body.required_without' => 'Napisz wiadomość lub dodaj załącznik',
+            'body.string' => 'Wiadomość musi być tekstem',
+            'body.max' => 'Wiadomość nie może mieć więcej niż 5000 znaków',
+            'attachments.*.file' => 'Każdy załącznik musi być plikiem',
+            'attachments.*.max' => 'Każdy plik nie może przekroczyć 2 MB',
+        ]);
+
+        try {
+            $attachments = $request->file('attachments') ?? [];
+            $message = $this->service->sendMessage(
+                $conversationId,
+                $userId,
+                $validated['body'] ?? '',
+                $attachments
+            );
+            return response()->json(['data' => new MessageResource($message)], 201);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['error' => 'Rozmowa nie znaleziona'], 404);
+        }
+    }
+
+    /**
      * GET /api/v1/unread-count
      * Liczba nieprzeczytanych wiadomości
      */
@@ -115,5 +166,100 @@ class ChatController extends Controller
                 'unread_count' => $this->service->getUnreadCount($userId),
             ],
         ]);
+    }
+
+    /**
+     * POST /api/v1/conversations/{conversationId}/mark-read
+     * Oznacz konwersację jako przeczytaną
+     */
+    public function markAsRead(int $conversationId): JsonResponse
+    {
+        $userId = auth()->id();
+        if (!$userId) {
+            return response()->json(['error' => 'Brak autoryzacji'], 401);
+        }
+
+        try {
+            $this->service->markConversationAsRead($conversationId, $userId);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['error' => 'Rozmowa nie znaleziona'], 404);
+        }
+
+        return response()->json(['status' => 'ok']);
+    }
+
+    /**
+     * DELETE /api/v1/conversations/{conversationId}/messages/{messageId}
+     * Usuń własną wiadomość
+     */
+    public function deleteMessage(int $conversationId, int $messageId): JsonResponse
+    {
+        $userId = auth()->id();
+        if (!$userId) {
+            return response()->json(['error' => 'Brak autoryzacji'], 401);
+        }
+
+        try {
+            $this->service->deleteMessage($conversationId, $messageId, $userId);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['error' => 'Wiadomość nie znaleziona'], 404);
+        } catch (\Exception $e) {
+            if ($e->getMessage() === 'Brak uprawnień') {
+                return response()->json(['error' => 'Możesz usunąć tylko własne wiadomości'], 403);
+            }
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+
+        return response()->json(['status' => 'ok']);
+    }
+
+    /**
+     * POST /api/v1/conversations/{conversationId}/hide
+     * Ukryj konwersację dla zalogowanego użytkownika
+     */
+    public function hideConversation(int $conversationId): JsonResponse
+    {
+        $userId = auth()->id();
+        if (!$userId) {
+            return response()->json(['error' => 'Brak autoryzacji'], 401);
+        }
+
+        try {
+            $this->service->hideConversation($conversationId, $userId);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['error' => 'Rozmowa nie znaleziona'], 404);
+        } catch (\Exception $e) {
+            if ($e->getMessage() === 'Brak uprawnień') {
+                return response()->json(['error' => 'Nie masz dostępu do tej rozmowy'], 403);
+            }
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+
+        return response()->json(['status' => 'ok']);
+    }
+
+    /**
+     * POST /api/v1/conversations/{conversationId}/unhide
+     * Pokaż ukrytą konwersację dla zalogowanego użytkownika
+     */
+    public function unhideConversation(int $conversationId): JsonResponse
+    {
+        $userId = auth()->id();
+        if (!$userId) {
+            return response()->json(['error' => 'Brak autoryzacji'], 401);
+        }
+
+        try {
+            $this->service->unhideConversation($conversationId, $userId);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['error' => 'Rozmowa nie znaleziona'], 404);
+        } catch (\Exception $e) {
+            if ($e->getMessage() === 'Brak uprawnień') {
+                return response()->json(['error' => 'Nie masz dostępu do tej rozmowy'], 403);
+            }
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+
+        return response()->json(['status' => 'ok']);
     }
 }

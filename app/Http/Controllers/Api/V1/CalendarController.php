@@ -29,7 +29,7 @@ class CalendarController extends Controller
     /**
      * Pobierz kalendarz providera z rezerwacjami
      * 
-     * GET /api/v1/provider/calendar
+     * GET /api/v1/provider/calendar?start_date=2025-12-16&end_date=2025-12-22
      */
     public function index(Request $request): JsonResponse
     {
@@ -55,15 +55,19 @@ class CalendarController extends Controller
                 ];
             });
 
-        // Pobierz rezerwacje na najbliższe 2 tygodnie
-        $startDate = now()->startOfWeek();
-        $endDate = now()->addWeeks(2)->endOfWeek();
+        // Pobierz rezerwacje dla wybranego zakresu dat (domyślnie: obecny tydzień + 1 tydzień)
+        $startDate = $request->input('start_date') 
+            ? \Carbon\Carbon::parse($request->input('start_date'))->startOfDay()
+            : now()->startOfWeek();
+        $endDate = $request->input('end_date')
+            ? \Carbon\Carbon::parse($request->input('end_date'))->endOfDay()
+            : now()->addWeek()->endOfWeek();
 
         $bookings = Booking::where('provider_id', $providerId)
             ->where('hidden_by_provider', false)
-            ->whereIn('status', ['pending', 'confirmed'])
+            ->whereIn('status', ['pending', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show', 'rejected'])
             ->whereBetween('booking_date', [$startDate, $endDate])
-            ->with(['customer:id,name,email', 'service:id,name'])
+            ->with(['customer:id,name,email', 'service:id,title'])
             ->orderBy('booking_date')
             ->orderBy('start_time')
             ->get()
@@ -75,7 +79,7 @@ class CalendarController extends Controller
                     'start_time' => substr($booking->start_time ?? '00:00:00', 0, 5),
                     'end_time' => substr($booking->end_time ?? '00:00:00', 0, 5),
                     'customer_name' => $booking->customer->name ?? 'Nieznany',
-                    'service_name' => $booking->service->name ?? 'Nieznana usługa',
+                    'service_name' => $booking->service->title ?? 'Nieznana usługa',
                     'status' => $booking->status,
                     'duration_minutes' => $booking->duration_minutes,
                 ];
@@ -260,11 +264,19 @@ class CalendarController extends Controller
         }
 
         // Sprawdź czy są rezerwacje w tym slocie
+        // Pobierz rezerwacje i sprawdź w PHP (SQLite-compatible)
         $hasBookings = Booking::where('provider_id', $providerId)
             ->whereIn('status', ['pending', 'confirmed'])
-            ->whereRaw('DAYOFWEEK(booking_date) = ?', [$slot->day_of_week + 1]) // MySQL DAYOFWEEK: 1=niedziela
-            ->whereBetween(DB::raw('TIME(start_time)'), [$slot->start_time, $slot->end_time])
-            ->exists();
+            ->where('booking_date', '>=', now()->format('Y-m-d'))
+            ->get()
+            ->filter(function($booking) use ($slot) {
+                $dayOfWeek = date('N', strtotime($booking->booking_date)); // 1-7
+                $startTime = substr($booking->start_time, 0, 5);
+                return $dayOfWeek == $slot->day_of_week 
+                    && $startTime >= substr($slot->start_time, 0, 5)
+                    && $startTime < substr($slot->end_time, 0, 5);
+            })
+            ->isNotEmpty();
 
         if ($hasBookings) {
             return response()->json([

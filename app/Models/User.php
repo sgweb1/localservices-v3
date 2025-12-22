@@ -187,11 +187,11 @@ class User extends Authenticatable
     }
 
     /**
-     * Sprawdza czy użytkownik jest online (ostatnia aktywność w ciągu 5 minut)
+     * Sprawdza czy użytkownik jest online (ostatnia aktywność w ciągu 30 sekund)
      */
     public function isOnline(): bool
     {
-        return $this->last_seen_at && $this->last_seen_at->greaterThan(now()->subMinutes(5));
+        return $this->last_seen_at && $this->last_seen_at->greaterThan(now()->subSeconds(30));
     }
 
     /**

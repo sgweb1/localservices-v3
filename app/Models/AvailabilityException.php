@@ -27,8 +27,6 @@ class AvailabilityException extends Model
 
     protected $casts = [
         'provider_id' => 'integer',
-        'start_date' => 'date',
-        'end_date' => 'date',
         'is_approved' => 'boolean',
         'approved_by' => 'integer',
         'approved_at' => 'datetime',

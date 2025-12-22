@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -31,6 +32,8 @@ class Conversation extends Model
         'provider_active',
         'customer_read_at',
         'provider_read_at',
+        'hidden_by_customer_at',
+        'hidden_by_provider_at',
     ];
 
     protected $casts = [
@@ -42,10 +45,43 @@ class Conversation extends Model
         'provider_active' => 'boolean',
         'customer_read_at' => 'datetime',
         'provider_read_at' => 'datetime',
+        'hidden_by_customer_at' => 'datetime',
+        'hidden_by_provider_at' => 'datetime',
         'last_message_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    protected $appends = ['unread_count', 'is_hidden_for_current_user'];
+
+    public function getUnreadCountAttribute(): int
+    {
+        // Zlicz wiadomości nieprzeczytane przez zalogowanego użytkownika
+        $userId = auth()?->id();
+        if (!$userId) {
+            return 0;
+        }
+
+        $readAt = $this->customer_id === $userId ? $this->customer_read_at : $this->provider_read_at;
+        
+        return Message::where('conversation_id', $this->id)
+            ->where('sender_id', '!=', $userId)
+            ->where(function ($q) use ($readAt) {
+                if ($readAt === null) {
+                    $q->whereNull('read_at');
+                } else {
+                    $q->whereNull('read_at')->orWhere('created_at', '>', $readAt);
+                }
+            })
+            ->whereNull('deleted_at')
+            ->count();
+    }
+
+    public function getIsHiddenForCurrentUserAttribute(): bool
+    {
+        $userId = auth()?->id();
+        return $userId ? $this->isHiddenBy($userId) : false;
+    }
 
     protected static function boot()
     {
@@ -96,6 +132,14 @@ class Conversation extends Model
     public function messages(): HasMany
     {
         return $this->hasMany(Message::class)->orderBy('created_at');
+    }
+
+    /**
+     * Ostatnia wiadomość w rozmowie (do preloadu w listach)
+     */
+    public function lastMessage(): HasOne
+    {
+        return $this->hasOne(Message::class)->latestOfMany();
     }
 
     /**
@@ -164,5 +208,43 @@ class Conversation extends Model
         } else {
             $this->update(['provider_read_at' => now()]);
         }
+    }
+
+    /**
+     * Ukryj konwersację dla danego użytkownika
+     */
+    public function hideFor($userId): void
+    {
+        if ($this->customer_id === $userId) {
+            $this->update(['hidden_by_customer_at' => now()]);
+        } elseif ($this->provider_id === $userId) {
+            $this->update(['hidden_by_provider_at' => now()]);
+        }
+    }
+
+    /**
+     * Pokaż konwersację dla danego użytkownika
+     */
+    public function unhideFor($userId): void
+    {
+        if ($this->customer_id === $userId) {
+            $this->update(['hidden_by_customer_at' => null]);
+        } elseif ($this->provider_id === $userId) {
+            $this->update(['hidden_by_provider_at' => null]);
+        }
+    }
+
+    /**
+     * Czy konwersacja jest ukryta dla danego użytkownika
+     */
+    public function isHiddenBy($userId): bool
+    {
+        if ($this->customer_id === $userId) {
+            return $this->hidden_by_customer_at !== null;
+        }
+        if ($this->provider_id === $userId) {
+            return $this->hidden_by_provider_at !== null;
+        }
+        return false;
     }
 }

@@ -17,10 +17,14 @@ class MessageResource extends JsonResource
             'uuid' => $this->uuid,
             'sender_id' => $this->sender_id,
             'sender' => new UserBasicResource($this->whenLoaded('sender')),
-            'content' => $this->content,
+            'body' => $this->body,
             'read_at' => $this->read_at?->toIso8601String(),
-            'sent_at' => $this->sent_at?->toIso8601String(),
             'created_at' => $this->created_at?->toIso8601String(),
+            'is_edited' => (bool) $this->is_edited,
+            'edited_at' => $this->edited_at?->toIso8601String(),
+            'deleted_at' => $this->deleted_at?->toIso8601String(),
+            'is_deleted' => $this->trashed(),
+            'attachments' => MessageAttachmentResource::collection($this->whenLoaded('attachments')),
         ];
     }
 }

@@ -45,10 +45,15 @@ Route::middleware(['api'])->group(function () {
     Route::get('/providers/{providerId}/rating', [ReviewController::class, 'providerRating']);
 
     // Chat - wymaga autoryzacji
-    Route::middleware(['auth:sanctum'])->group(function () {
+    Route::middleware(['auth:web'])->group(function () {
         Route::get('/conversations', [ChatController::class, 'conversations']);
         Route::get('/conversations/{conversationId}', [ChatController::class, 'show']);
         Route::get('/conversations/{conversationId}/messages', [ChatController::class, 'messages']);
+        Route::post('/conversations/{conversationId}/messages', [ChatController::class, 'sendMessage']);
+        Route::delete('/conversations/{conversationId}/messages/{messageId}', [ChatController::class, 'deleteMessage']);
+        Route::post('/conversations/{conversationId}/mark-read', [ChatController::class, 'markAsRead']);
+        Route::post('/conversations/{conversationId}/hide', [ChatController::class, 'hideConversation']);
+        Route::post('/conversations/{conversationId}/unhide', [ChatController::class, 'unhideConversation']);
         Route::get('/unread-count', [ChatController::class, 'unreadCount']);
     });
 
