@@ -6,7 +6,6 @@ use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 /**
@@ -48,7 +47,7 @@ class ChatControllerTest extends TestCase
             'body' => 'Cześć, jak mogę pomóc?',
         ]);
 
-        Sanctum::actingAs($this->customer);
+        actingAs($this->customer);
 
         $response = $this->getJson('/api/v1/conversations');
 
@@ -89,7 +88,7 @@ class ChatControllerTest extends TestCase
             'body' => 'Nowa wiadomość dla klienta',
         ]);
 
-        Sanctum::actingAs($this->customer);
+        actingAs($this->customer);
 
         $response = $this->postJson("/api/v1/conversations/{$conversation->id}/mark-read");
 
@@ -113,7 +112,7 @@ class ChatControllerTest extends TestCase
             'provider_id' => $this->provider->id,
         ]);
 
-        Sanctum::actingAs($this->customer);
+        actingAs($this->customer);
 
         $response = $this->postJson("/api/v1/conversations/{$conversation->id}/messages", [
             'body' => 'Cześć! Jestem zainteresowany twoją usługą.',
@@ -155,7 +154,7 @@ class ChatControllerTest extends TestCase
             'provider_id' => $this->provider->id,
         ]);
 
-        Sanctum::actingAs($this->customer);
+        actingAs($this->customer);
 
         // Utwórz testowy plik
         $file = \Illuminate\Http\UploadedFile::fake()->image('photo.jpg', 640, 480);
@@ -202,7 +201,7 @@ class ChatControllerTest extends TestCase
             'provider_id' => $this->provider->id,
         ]);
 
-        Sanctum::actingAs($this->customer);
+        actingAs($this->customer);
 
         $response = $this->postJson("/api/v1/conversations/{$conversation->id}/messages", [
             'body' => '',
@@ -231,7 +230,7 @@ class ChatControllerTest extends TestCase
             'body' => 'Wiadomość do usunięcia',
         ]);
 
-        Sanctum::actingAs($this->customer);
+        actingAs($this->customer);
 
         $response = $this->deleteJson("/api/v1/conversations/{$conversation->id}/messages/{$message->id}");
 
@@ -259,7 +258,7 @@ class ChatControllerTest extends TestCase
             'body' => 'Wiadomość od providera',
         ]);
 
-        Sanctum::actingAs($this->customer);
+        actingAs($this->customer);
 
         $response = $this->deleteJson("/api/v1/conversations/{$conversation->id}/messages/{$message->id}");
 
