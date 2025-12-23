@@ -60,8 +60,8 @@ export function ProfileEditForm({ user, onSuccess }: ProfileEditFormProps) {
     defaultValues: {
       name: user.name,
       email: user.email,
-      bio: user.profile?.bio || '',
-      city: user.profile?.city || '',
+      bio: user.bio || user.profile?.bio || '',
+      city: user.city || user.profile?.city || '',
       first_name: user.profile?.first_name || '',
       last_name: user.profile?.last_name || '',
       business_name: user.provider_profile?.business_name || '',

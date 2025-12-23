@@ -11,34 +11,44 @@ export enum UserType {
 
 export interface User {
   id: number;
+  uuid?: string;
   name: string;
   email: string;
+  phone?: string | null;
   user_type: UserType;
-  avatar_url: string;
+  avatar_url?: string | null;
+  bio?: string | null;
+  city?: string | null;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   profile: UserProfile | null;
-  provider_profile?: ProviderProfile;
-  customer_profile?: CustomerProfile;
+  provider_profile?: ProviderProfile | null;
+  customer_profile?: CustomerProfile | null;
 }
 
 export interface UserProfile {
-  first_name: string | null;
-  last_name: string | null;
-  bio: string | null;
-  city: string | null;
-  avatar_url: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+  bio?: string | null;
+  city?: string | null;
+  avatar_url?: string | null;
+  languages?: string[];
   profile_completion_percentage: number;
 }
 
 export interface ProviderProfile {
   business_name: string;
-  service_description: string | null;
+  service_description?: string | null;
   trust_score: number;
   verification_level: number;
-  website_url: string | null;
+  website_url?: string | null;
   social_media?: {
     facebook?: string;
     instagram?: string;
   };
+  logo?: string | null;
+  years_experience?: number | null;
 }
 
 export interface CustomerProfile {

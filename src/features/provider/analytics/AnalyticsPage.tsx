@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { TrendingUp, Eye, Users, Calendar, Star, MessageSquare, Clock, ArrowUp, ArrowDown } from 'lucide-react';
+import { useAnalytics } from './hooks/useAnalytics';
 
 /**
  * Analytics Page - Zaawansowana analityka dla providerów
@@ -25,54 +26,72 @@ type MetricCard = {
 
 export const AnalyticsPage: React.FC = () => {
   const [period, setPeriod] = useState<TimePeriod>('30d');
+  
+  const { data, isLoading, error } = useAnalytics(period);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-slate-200 border-t-cyan-500 mb-4" />
+          <p className="text-slate-600">Ładowanie analityki...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-5xl mb-4">❌</div>
+          <p className="text-red-600 font-semibold">Błąd ładowania danych</p>
+          <p className="text-slate-500 text-sm mt-2">{error.message}</p>
+        </div>
+      </div>
+    );
+  }
 
   const metrics: MetricCard[] = [
     {
       label: 'Wyświetlenia profilu',
-      value: '2,543',
-      change: 12.5,
-      changeLabel: 'vs poprzedni miesiąc',
+      value: data?.metrics.profile_views.value.toLocaleString() || '0',
+      change: data?.metrics.profile_views.change || 0,
+      changeLabel: 'vs poprzedni okres',
       icon: <Eye className="w-6 h-6" />,
       color: 'cyan',
     },
     {
       label: 'Zapytania',
-      value: '147',
-      change: 8.3,
-      changeLabel: 'vs poprzedni miesiąc',
+      value: data?.metrics.inquiries.value.toLocaleString() || '0',
+      change: data?.metrics.inquiries.change || 0,
+      changeLabel: 'vs poprzedni okres',
       icon: <MessageSquare className="w-6 h-6" />,
       color: 'teal',
     },
     {
       label: 'Rezerwacje',
-      value: '89',
-      change: -3.2,
-      changeLabel: 'vs poprzedni miesiąc',
+      value: data?.metrics.bookings.value.toLocaleString() || '0',
+      change: data?.metrics.bookings.change || 0,
+      changeLabel: 'vs poprzedni okres',
       icon: <Calendar className="w-6 h-6" />,
       color: 'emerald',
     },
     {
       label: 'Konwersja',
-      value: '60.5%',
-      change: 5.1,
+      value: `${data?.metrics.conversion.value || 0}%`,
+      change: data?.metrics.conversion.change || 0,
       changeLabel: 'zapytania → rezerwacje',
       icon: <TrendingUp className="w-6 h-6" />,
       color: 'indigo',
     },
   ];
 
-  const topServices = [
-    { name: 'Hydraulik 24h', views: 543, bookings: 34, conversion: 6.3 },
-    { name: 'Elektryk - szybkie naprawy', views: 421, bookings: 28, conversion: 6.7 },
-    { name: 'Sprzątanie mieszkań', views: 312, bookings: 19, conversion: 6.1 },
-  ];
-
-  const trafficSources = [
-    { source: 'Wyszukiwarka', visits: 1243, percentage: 48.9 },
-    { source: 'Google Ads', visits: 654, percentage: 25.7 },
-    { source: 'Social Media', visits: 423, percentage: 16.6 },
-    { source: 'Bezpośredni', visits: 223, percentage: 8.8 },
-  ];
+  const topServices = data?.top_services || [];
+  const trafficSources = data?.traffic_sources || [];
+  const responseTime = data?.response_time || { minutes: 0, industry_average: 30, comparison: 0 };
+  const rating = data?.rating || { average: 0, count: 0 };
+  const insights = data?.insights || [];
 
   return (
     <div className="space-y-6">
@@ -202,13 +221,23 @@ export const AnalyticsPage: React.FC = () => {
             <h3 className="text-lg font-semibold text-slate-900">Średni czas odpowiedzi</h3>
           </div>
           <div className="flex items-baseline gap-2">
-            <p className="text-4xl font-bold text-slate-900">18</p>
+            <p className="text-4xl font-bold text-slate-900">{responseTime.minutes}</p>
             <p className="text-xl text-slate-600">minut</p>
           </div>
           <div className="mt-4 pt-4 border-t border-slate-200">
-            <p className="text-sm text-slate-600">
-              <span className="font-semibold text-emerald-600">Świetnie!</span> Jesteś 40% szybszy od średniej w branży (30 min)
-            </p>
+            {responseTime.comparison > 0 ? (
+              <p className="text-sm text-slate-600">
+                <span className="font-semibold text-emerald-600">Świetnie!</span> Jesteś {responseTime.comparison}% szybszy od średniej w branży ({responseTime.industry_average} min)
+              </p>
+            ) : responseTime.minutes > 0 ? (
+              <p className="text-sm text-slate-600">
+                Średnia w branży to {responseTime.industry_average} minut
+              </p>
+            ) : (
+              <p className="text-sm text-slate-600">
+                Brak danych o czasie odpowiedzi w tym okresie
+              </p>
+            )}
           </div>
         </div>
 
@@ -218,16 +247,16 @@ export const AnalyticsPage: React.FC = () => {
             <h3 className="text-lg font-semibold text-slate-900">Średnia ocena</h3>
           </div>
           <div className="flex items-baseline gap-2">
-            <p className="text-4xl font-bold text-slate-900">4.8</p>
+            <p className="text-4xl font-bold text-slate-900">{rating.average}</p>
             <div className="flex gap-0.5">
               {[1,2,3,4,5].map(i => (
-                <Star key={i} className={`w-5 h-5 ${i <= 4 ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />
+                <Star key={i} className={`w-5 h-5 ${i <= Math.round(rating.average) ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />
               ))}
             </div>
           </div>
           <div className="mt-4 pt-4 border-t border-slate-200">
             <p className="text-sm text-slate-600">
-              Na podstawie <span className="font-semibold">127 opinii</span>
+              Na podstawie <span className="font-semibold">{rating.count} {rating.count === 1 ? 'opinii' : 'opinii'}</span>
             </p>
           </div>
         </div>
@@ -236,12 +265,15 @@ export const AnalyticsPage: React.FC = () => {
       {/* Bottom Insights */}
       <div className="glass-card p-6 rounded-2xl bg-gradient-to-r from-teal-50 to-cyan-50">
         <h3 className="text-sm font-semibold text-slate-900 mb-3">💡 Spostrzeżenia</h3>
-        <ul className="text-sm text-slate-600 space-y-2">
-          <li>• Twój profil ma <strong>12.5% więcej</strong> wyświetleń niż w poprzednim okresie - świetna praca!</li>
-          <li>• Konwersja zapytań → rezerwacje wynosi <strong>60.5%</strong>, czyli jesteś powyżej średniej (55%)</li>
-          <li>• Najlepiej radzi sobie usługa "Elektryk - szybkie naprawy" z konwersją <strong>6.7%</strong></li>
-          <li>• Rozważ zwiększenie budżetu na Google Ads - generuje 25.7% ruchu z wysoką konwersją</li>
-        </ul>
+        {insights.length > 0 ? (
+          <ul className="text-sm text-slate-600 space-y-2">
+            {insights.map((insight, idx) => (
+              <li key={idx}>• {insight}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-slate-500">Brak wystarczających danych do wygenerowania spostrzeżeń</p>
+        )}
       </div>
     </div>
   );

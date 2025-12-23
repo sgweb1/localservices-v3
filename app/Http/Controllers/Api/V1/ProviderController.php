@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CertificationResource;
 use App\Http\Resources\PortfolioItemResource;
+use App\Http\Resources\ServiceAreaResource;
 use App\Services\Api\AvailabilityApiService;
 use App\Services\Api\VerificationApiService;
 use Illuminate\Http\JsonResponse;
@@ -94,6 +95,31 @@ class ProviderController extends Controller
                 'per_page' => $portfolio->perPage(),
                 'total' => $portfolio->total(),
                 'last_page' => $portfolio->lastPage(),
+            ],
+        ]);
+    }
+
+    /**
+     * GET /api/v1/providers/{providerId}/service-areas
+     * Obszary działania providera
+     */
+    public function serviceAreas(int $providerId, Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'page' => 'integer|min:1',
+            'per_page' => 'integer|min:1|max:50',
+        ]);
+
+        $serviceAreas = $this->availabilityService
+            ->getServiceAreas($providerId, $validated['per_page'] ?? 50);
+
+        return response()->json([
+            'data' => ServiceAreaResource::collection($serviceAreas),
+            'meta' => [
+                'current_page' => $serviceAreas->currentPage(),
+                'per_page' => $serviceAreas->perPage(),
+                'total' => $serviceAreas->total(),
+                'last_page' => $serviceAreas->lastPage(),
             ],
         ]);
     }

@@ -10,16 +10,48 @@ export interface Review {
   rating: number;
   comment: string;
   date: string;
+  response?: {
+    id: number;
+    response: string;
+    created_at: string;
+    updated_at: string;
+  } | null;
 }
 
 export interface ReviewsResponse {
   data: Review[];
   averageRating: number;
   totalReviews: number;
+  distribution?: Record<string, number>;
+  meta?: {
+    current_page: number;
+    per_page: number;
+    total: number;
+    last_page: number;
+  };
 }
 
-const fetchReviews = async (): Promise<ReviewsResponse> => {
-  const res = await fetch(`${API_BASE_URL}/api/v1/provider/reviews`, {
+type ReviewsParams = {
+  rating?: number | null;
+  page?: number;
+  unanswered?: boolean;
+};
+
+const fetchReviews = async ({ rating, page = 1, unanswered = false }: ReviewsParams): Promise<ReviewsResponse> => {
+  const search = new URLSearchParams();
+  if (rating) {
+    search.set('rating', String(rating));
+  }
+  if (page > 1) {
+    search.set('page', String(page));
+  }
+  if (unanswered) {
+    search.set('unanswered', '1');
+  }
+
+  const url = `${API_BASE_URL}/api/v1/provider/reviews${search.toString() ? `?${search.toString()}` : ''}`;
+
+  const res = await fetch(url, {
     credentials: 'include',
     headers: { Accept: 'application/json' },
   });
@@ -35,15 +67,15 @@ const fetchReviews = async (): Promise<ReviewsResponse> => {
   return res.json();
 };
 
-export const useReviews = () => {
+export const useReviews = (rating: number | null, page = 1, unanswered = false) => {
   return useQuery<ReviewsResponse, Error>({
-    queryKey: ['provider', 'reviews'],
+    queryKey: ['provider', 'reviews', rating ?? 'all', page, unanswered ? 'unanswered' : 'all'],
     queryFn: async () => {
       // Wymuszenie mock przez ?mock=1
       if (isMockMode()) {
         return MOCK_SUBPAGES.reviews;
       }
-      return fetchReviews();
+      return fetchReviews({ rating, page, unanswered });
     },
     staleTime: 30_000,
     refetchOnWindowFocus: true,

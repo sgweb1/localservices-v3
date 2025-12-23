@@ -10,7 +10,7 @@ import { ServicesPage } from './pages/ServicesPage';
 import { DevLoginPage } from './pages/DevLoginPage';
 import { DashboardPage } from './features/provider/dashboard/components';
 import { ProviderLayout } from './features/provider/dashboard/components/ProviderLayout';
-import { BookingsPage } from './features/provider/pages/BookingsPage';
+import { BookingsPageWithTabs } from './features/provider/pages/BookingsPageWithTabs';
 import { MessagesPage } from './features/provider/pages/MessagesPage';
 import { ServicesPage as ProviderServicesPage } from './features/provider/pages/ServicesPage';
 import { ReviewsPage } from './features/provider/pages/ReviewsPage';
@@ -22,8 +22,10 @@ import { CalendarPage } from './features/provider/calendar/CalendarPage';
 import { MarketingTipsPage } from './features/provider/marketing/MarketingTipsPage';
 import { AnalyticsPage } from './features/provider/analytics/AnalyticsPage';
 import { ProfilePage } from './features/provider/profile/ProfilePage';
+import { ServiceFormPage } from './features/provider/pages/ServiceFormPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Footer } from './components/Footer';
+import { useToastNotifications } from './hooks/useToastNotifications';
 import '../resources/css/app.css';
 
 const rootEl = document.getElementById('root');
@@ -85,6 +87,8 @@ const App = () => {
     const saved = localStorage.getItem('darkMode');
     return saved === 'true' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
   });
+
+  useToastNotifications();
 
   useEffect(() => {
     localStorage.setItem('darkMode', String(darkMode));
@@ -151,10 +155,12 @@ const App = () => {
           <Route path="/provider" element={<ProviderLayout />}>
             <Route index element={<DashboardPage />} />
             <Route path="dashboard" element={<DashboardPage />} />
-            <Route path="bookings" element={<BookingsPage />} />
+            <Route path="bookings" element={<BookingsPageWithTabs />} />
             <Route path="calendar" element={<CalendarPage />} />
             <Route path="messages" element={<MessagesPage />} />
             <Route path="services" element={<ProviderServicesPage />} />
+            <Route path="services/create" element={<ServiceFormPage />} />
+            <Route path="services/edit/:id" element={<ServiceFormPage />} />
             <Route path="reviews" element={<ReviewsPage />} />
             <Route path="marketing" element={<MarketingTipsPage />} />
             <Route path="analytics" element={<AnalyticsPage />} />

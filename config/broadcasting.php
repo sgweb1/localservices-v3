@@ -38,4 +38,21 @@ return [
 
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Push Notifications (Web Push)
+    |--------------------------------------------------------------------------
+    |
+    | VAPID keys configuration for Web Push notifications.
+    | Generate keys: php artisan webpush:vapid
+    |
+    */
+    'notifications' => [
+        'push' => [
+            'public_key' => env('VAPID_PUBLIC_KEY'),
+            'private_key' => env('VAPID_PRIVATE_KEY'),
+            'subject' => env('VAPID_SUBJECT', 'mailto:noreply@example.com'),
+        ],
+    ],
+
 ];

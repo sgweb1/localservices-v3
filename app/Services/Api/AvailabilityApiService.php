@@ -42,11 +42,13 @@ class AvailabilityApiService
     /**
      * Pobierz obszary serwisu providera
      */
-    public function getServiceAreas(int $providerId): LengthAwarePaginator
+    public function getServiceAreas(int $providerId, int $perPage = 50): LengthAwarePaginator
     {
+        $perPage = $perPage > 0 ? min($perPage, 100) : 50;
+
         return ServiceArea::where('provider_id', $providerId)
             ->with('provider')
-            ->paginate(50);
+            ->paginate($perPage);
     }
 
     /**

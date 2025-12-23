@@ -180,4 +180,54 @@ class AnalyticsController extends Controller
             'data' => $summary,
         ]);
     }
+
+    /**
+     * GET /api/v1/provider/analytics
+     * Pobierz pełne dane analityczne dla zalogowanego providera
+     */
+    public function providerDashboard(Request $request)
+    {
+        $userId = $request->user()?->id;
+
+        if (!$userId) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
+        $validated = $request->validate([
+            'period' => 'string|in:7d,30d,90d,year',
+        ]);
+
+        $period = $validated['period'] ?? '30d';
+
+        // Główne metryki
+        $metrics = $this->analyticsService->getProviderDashboardMetrics($userId, $period);
+
+        // Top usługi
+        $topServices = $this->analyticsService->getTopServices($userId, $period, 3);
+
+        // Źródła ruchu
+        $trafficSources = $this->analyticsService->getTrafficSources($userId, $period);
+
+        // Średni czas odpowiedzi
+        $responseTime = $this->analyticsService->getAverageResponseTime($userId, $period);
+
+        // Średnia ocena
+        $rating = $this->analyticsService->getProviderRatingStats($userId);
+
+        // Dane wykresu
+        $chartData = $this->analyticsService->getChartData($userId, $period);
+
+        // Insighty
+        $insights = $this->analyticsService->getInsights($userId, $period);
+
+        return response()->json([
+            'metrics' => $metrics,
+            'top_services' => $topServices,
+            'traffic_sources' => $trafficSources,
+            'response_time' => $responseTime,
+            'rating' => $rating,
+            'chart_data' => $chartData,
+            'insights' => $insights,
+        ]);
+    }
 }

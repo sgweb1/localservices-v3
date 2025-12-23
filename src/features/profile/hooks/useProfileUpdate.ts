@@ -18,20 +18,30 @@ export function useProfileUpdate() {
     // Optimistic update
     onMutate: async (newData) => {
       // Cancel outgoing queries
-      await queryClient.cancelQueries({ queryKey: ['user'] });
+      await queryClient.cancelQueries({ queryKey: ['auth', 'user'] });
 
       // Snapshot previous value
-      const previousUser = queryClient.getQueryData<User>(['user']);
+      const previousUser = queryClient.getQueryData<User>(['auth', 'user']);
 
       // Optimistically update
       if (previousUser) {
-        queryClient.setQueryData<User>(['user'], (old: User | undefined) => ({
+        queryClient.setQueryData<User>(['auth', 'user'], (old: User | undefined) => ({
           ...old!,
           ...newData,
-          profile: {
-            ...old!.profile!,
-            ...newData,
-          },
+          profile: old?.profile
+            ? {
+                ...old.profile,
+                ...newData,
+              }
+            : old?.profile ?? null,
+          provider_profile: old?.provider_profile
+            ? {
+                ...old.provider_profile,
+                business_name: newData.business_name ?? old.provider_profile.business_name,
+                service_description: newData.service_description ?? old.provider_profile.service_description,
+                website_url: newData.website_url ?? old.provider_profile.website_url,
+              }
+            : old?.provider_profile ?? null,
         }));
       }
 
@@ -41,13 +51,13 @@ export function useProfileUpdate() {
     // Rollback on error
     onError: (error: ApiError, variables, context) => {
       if (context?.previousUser) {
-        queryClient.setQueryData(['user'], context.previousUser);
+        queryClient.setQueryData(['auth', 'user'], context.previousUser);
       }
     },
 
     // Invalidate cache on success
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['user'] });
+      queryClient.invalidateQueries({ queryKey: ['auth', 'user'] });
     },
   });
 }

@@ -738,6 +738,228 @@ curl 'http://localhost:8000/api/v1/analytics/search-stats'
 
 ---
 
+## 📦 SYSTEM USŁUG (SERVICES) – ANALIZA REGUŁ BIZNESOWYCH
+
+> **Data analizy:** 2025-12-22  
+> **Zakres:** Model ServiceListing, ServicePhoto, API endpoints, przepływy biznesowe
+
+### Model ServiceListing (tabela: `services`)
+
+**Kluczowe pola:**
+
+| Pole | Typ | Opis |
+|------|-----|------|
+| `id` | BIGINT | Primary key |
+| `uuid` | VARCHAR(36) | Unique identifier (dla URL-friendly access) |
+| `provider_id` (user_id) | BIGINT → User | Kto utworzył usługę |
+| `category_id` | BIGINT → ServiceCategory | Kategoria (hydraulik, elektryk, etc.) |
+| `subcategory_id` | BIGINT → ServiceSubcategory | Podkategoria (opcjonalna) |
+| `title` | VARCHAR(255) | Nazwa usługi |
+| `slug` | VARCHAR(255) | URL-friendly (auto-generated z title) |
+| `description` | TEXT | Opis usługi (minimum 50 znaków) |
+| `what_included` | TEXT | Co jest wliczone w usługę |
+| **Pricing (3 typy)** |
+| `pricing_type` | ENUM | hourly \| fixed \| quote |
+| `base_price` | DECIMAL(10,2) | Podstawowa cena (dla fixed) |
+| `price_range_low` | DECIMAL(10,2) | Min cena (dla hourly) |
+| `price_range_high` | DECIMAL(10,2) | Max cena (dla hourly) |
+| `price_currency` | VARCHAR(3) | Domyślnie PLN |
+| `pricing_unit` | VARCHAR(20) | hour \| service \| day \| visit \| sqm |
+| `travel_fee_per_km` | DECIMAL(10,2) | Opłata za podróż (jeśli willing_to_travel) |
+| **Rezerwacje** |
+| `instant_booking` | BOOLEAN | Czy rezerwacja natychmiastowa |
+| `accepts_quote_requests` | BOOLEAN | Czy akceptuje "zapytaj o cenę" |
+| `min_notice_hours` | INT | Minimalne wyprzedzenie (np. 24h) |
+| `max_advance_days` | INT | Max rezerwacja na ile dni naprzód (np. 30 dni) |
+| `duration_minutes` | INT | Domyślny czas trwania usługi |
+| **Lokalizacja** |
+| `location_id` | BIGINT → Location | Główna lokalizacja |
+| `latitude` | DECIMAL(7,4) | Szerokość geograficzna |
+| `longitude` | DECIMAL(7,4) | Długość geograficzna |
+| `service_locations` | JSON | Dodatkowe lokalizacje (array) |
+| `max_distance_km` | INT | Max odległość do klienta |
+| `willing_to_travel` | BOOLEAN | Czy dojeżdża do klienta |
+| **Szczegóły** |
+| `requirements` | JSON | Wymagania od klienta (array) |
+| `tools_provided` | JSON | Narzędzia dostarczone przez usługodawcę (array) |
+| `cancellation_policy` | TEXT | Polityka anulowania |
+| **Ratingi & Statystyki** |
+| `rating_average` | DECIMAL(2,1) | Średnia ocena (0.0-5.0) |
+| `reviews_count` | INT | Liczba recenzji |
+| `bookings_count` | INT | Liczba rezerwacji |
+| `views_count` | INT | Liczba wyświetleń |
+| `last_booked_at` | TIMESTAMP | Ostatnia rezerwacja |
+| **Status & Moderacja** |
+| `status` | VARCHAR(20) | active \| paused \| rejected \| draft |
+| `paused_reason` | VARCHAR(50) | manual \| subscription_expired \| admin |
+| `paused_at` | TIMESTAMP | Kiedy wstrzymano |
+| `is_publicly_visible` | BOOLEAN | Czy widoczna na stronie |
+| `is_featured` | BOOLEAN | Czy wyróżniona (top listing) |
+| `is_promoted` | BOOLEAN | Czy promowana (płatna) |
+| `promoted_until` | TIMESTAMP | Do kiedy promocja |
+| `rejection_reason` | TEXT | Powód odrzucenia (jeśli status=rejected) |
+| `moderated_by` | BIGINT → User | Kto moderował |
+| `moderated_at` | TIMESTAMP | Kiedy moderowano |
+| **Meta** |
+| `meta_title` | VARCHAR(255) | SEO title |
+| `meta_description` | VARCHAR(255) | SEO description |
+| `published_at` | TIMESTAMP | Kiedy opublikowano |
+| `created_at`, `updated_at` | TIMESTAMP | Timestampy |
+| `deleted_at` | TIMESTAMP | Soft-delete (SoftDeletes trait) |
+
+### Model ServicePhoto (tabela: `service_photos`)
+
+**Galerię zdjęć.** Każda usługa może mieć kilka zdjęć.
+
+| Pole | Typ | Opis |
+|------|-----|------|
+| `id` | BIGINT | Primary key |
+| `uuid` | VARCHAR(36) | Unique identifier |
+| `service_id` | BIGINT → ServiceListing | Foreign key (CASCADE delete) |
+| `image_path` | VARCHAR(255) | Ścieżka do zdjęcia (np. `services/123/abc.jpg`) |
+| `alt_text` | TEXT | Alt tekst (dla SEO) |
+| `is_primary` | BOOLEAN | Czy to główne zdjęcie (używane w listach) |
+| `position` | INT | Kolejność w galerii (0, 1, 2, ...) |
+| `created_at`, `updated_at` | TIMESTAMP | Timestampy |
+| `deleted_at` | TIMESTAMP | Soft-delete |
+
+**Logika:**
+- Jeśli usługa ma N zdjęć, **dokładnie jedno musi być marked as `is_primary=true`**
+- Auto-delete pliku z dysku gdy `ServicePhoto::delete()` (obsluguje observer)
+- Auto-delete wszystkich zdjęć gdy `ServiceListing::forceDelete()`
+
+### Relacje w ModelLaravel
+
+```php
+// ServiceListing Model
+public function provider(): BelongsTo // → User
+public function location(): BelongsTo // → Location
+public function category(): BelongsTo // → ServiceCategory
+public function subcategory(): BelongsTo // → ServiceSubcategory
+public function photos(): HasMany // → ServicePhoto
+public function primaryPhoto(): HasOne // → ServicePhoto (is_primary=true)
+public function bookings(): HasMany // → Booking
+public function reviews(): HasMany // → Review
+```
+
+### Przepływy biznesowe
+
+#### 1️⃣ **TWORZENIE USŁUGI** (Create Listing)
+
+**Kto:** Zalogowany provider (user_type='provider')
+
+**Wymagane pola:**
+- `title` (required, max 255)
+- `description` (required, min 50 znaków)
+- `category_id` (required, must exist)
+- `pricing_type` (required: hourly|fixed|quote)
+- `pricing_unit` (required: hour|service|day|visit|sqm)
+- Przynajmniej jedna z cen: `base_price` LUB `price_range_low`
+
+**Walidacje:**
+- Subcategory (jeśli podana) musi należeć do wybranej category
+- `price_range_high` >= `price_range_low` (jeśli range)
+- `min_notice_hours` >= 1
+- Limit zdjęć: zależy od planu subskrypcji providera (np. 10 zdjęć dla Starter)
+
+**Co się dzieje:**
+1. Sprawdzenie limitu usług na planie providera: `canCreateListing()`
+2. Stworzenie wpisu w `services` z `status='active'`
+3. Upload galerii zdjęć (opcjonalnie)
+4. Ustawienie `is_primary=true` dla pierwszego zdjęcia
+5. Broadcast event `ServiceCreated` (dla admin dashboard)
+
+**Status początkowy:** `active` (usługa jest widoczna od razu)
+
+#### 2️⃣ **EDYCJA USŁUGI** (Edit Listing)
+
+**Kto:** Właściciel usługi lub admin
+
+**Co można edytować:**
+- Wszystkie pola z tworzenia
+- Zdjęcia (dodaj, usuń, zmień kolejność, ustaw primary)
+- Status (jeśli admin)
+- Metadata (SEO)
+
+**Walidacje:** Jak przy tworzeniu
+
+**Galeria:**
+- Upload nowych zdjęć (respektuje limit subskrypcji)
+- Usunięcie zdjęcia: soft-delete w `service_photos`
+- Zmiana kolejności: update `position` field
+- Ustawienie primary: update `is_primary` dla wszystkich, set `true` dla wybranego
+
+#### 3️⃣ **ZMIANA STATUSU** (Toggle Status / Pause)
+
+**Aktualna logika w starym systemie:**
+
+```
+IF status == 'active' → zmień na 'paused'
+  - Set paused_reason = 'manual'
+  - Set paused_at = now()
+  
+IF status == 'paused' → zmień na 'active'
+  - Set paused_reason = null
+  - Set paused_at = null
+  - Sprawdzenie: czy subscription plan pozwala na aktywowanie?
+    - Jeśli limit usług osiągnięty → toast error, nie zmienia
+    - Jeśli OK → zmienia na 'active'
+```
+
+**Status workflow:**
+- `active` – widoczna, można rezerwować
+- `paused` – ukryta z wyszukiwania, nie można rezerwować (provider wstrzymał)
+- `rejected` – admin odrzucił (powód w `rejection_reason`)
+- `draft` – nie opublikowana jeszcze
+
+#### 4️⃣ **USUNIĘCIE USŁUGI** (Delete)
+
+**Kto:** Właściciel lub admin
+
+**Soft-delete:** 
+- `deleted_at` ustawiony
+- Usługa nie pojawia się w query-ach domyślnie
+- Można przywrócić: `restore()`
+
+**Hard-delete (force):**
+- `forceDelete()` → całkowite fizyczne usunięcie
+- Automatycznie usuwane wszystkie `ServicePhoto` i ich pliki z dysku
+- Automatycznie usunięte powiązane `Booking`, `Review`
+
+### API Endpoints (z starego systemu)
+
+**Public (brak auth):**
+```
+GET    /api/v1/services                      # Lista (pagination, filters)
+GET    /api/v1/services/{id}                 # Szczegóły
+GET    /api/v1/services/search?q=...         # Wyszukiwanie
+GET    /api/v1/services/featured             # Wyróżnione
+GET    /api/v1/services/by-category/{cat}   # Po kategorii
+```
+
+**Protected (auth:sanctum):**
+```
+POST   /api/v1/services                      # Utwórz (dla provider)
+PATCH  /api/v1/services/{id}                 # Edytuj (dla owner)
+DELETE /api/v1/services/{id}                 # Usuń (soft-delete, dla owner)
+POST   /api/v1/services/{id}/toggle-status   # Zmień status
+POST   /api/v1/services/{id}/photos          # Upload zdjęcia
+DELETE /api/v1/services/{id}/photos/{photoId} # Usuń zdjęcie
+```
+
+### Klucze biznesowe dla ls2
+
+**ℹ️ Co trzeba zaimplementować w ls2 (Phase 1):**
+
+1. ✅ ServiceListing model – **JUŻ ISTNIEJE**, nazwany `Service`
+2. ❌ ServicePhoto model – **BRAKUJE**
+3. ❌ Provider CRUD endpoints – **BRAKUJE** (`POST /api/v1/services`, `PATCH /api/v1/services/{id}`, etc.)
+4. ❌ Gallery management API – **BRAKUJE** (upload, delete, reorder)
+5. ❌ React components – **TO DO** (ServicesList, ServiceForm, ServiceGallery)
+6. ❌ Subscription limit check – **BRAKUJE** w serwisach
+
+---
+
 **KONIEC ANALIZY**
 
 Ten dokument ma służyć jako **mapa drogowa** dla dalszego rozwoju ls2. Nie musisz odtwarzać całego LocalServices – wybierz tylko te elementy, które są niezbędne dla Twojego celu (PoC React vs Livewire lub MVP marketplace).

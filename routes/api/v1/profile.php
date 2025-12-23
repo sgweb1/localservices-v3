@@ -33,5 +33,8 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Zmiana hasła
     Route::put('/profile/password', [ProfileController::class, 'updatePassword']);
+
+    // Awans customera do providera
+    Route::post('/profile/upgrade-to-provider', [ProfileController::class, 'upgradeToProvider']);
     
 });

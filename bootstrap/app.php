@@ -29,18 +29,31 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware('web')
                 ->prefix('api/v1')
                 ->group(base_path('routes/api/v1/provider.php'));
+
+            Route::middleware('web')
+                ->prefix('api/v1')
+                ->group(base_path('routes/api/v1/provider-services.php'));
+
+            Route::middleware('web')
+                ->prefix('api/v1')
+                ->group(base_path('routes/api/v1/push.php'));
+
+            Route::middleware('web')
+                ->prefix('api/v1')
+                ->group(base_path('routes/api/v1/notifications.php'));
         }
     )
-    ->withMiddleware(function (Middleware $middleware): void {
+            ->withMiddleware(function (Middleware $middleware): void {
         // API bez przekierowania do login – zwracaj 401
-        $middleware->redirectTo(fn () => null);
+                $middleware->redirectTo(fn () => null);
         
         // Update user presence on every API request
-        $middleware->append(\App\Http\Middleware\UpdateUserPresence::class);
+                $middleware->append(\App\Http\Middleware\UpdateUserPresence::class);
     })
-    ->withExceptions(function (Exceptions $exceptions): void {
+            ->withExceptions(function (Exceptions $exceptions): void {
         // API powinno zawsze zwracać JSON (np. 401 zamiast redirect do 'login')
-        $exceptions->shouldRenderJsonWhen(function (Request $request) {
-            return $request->is('api/*') || $request->expectsJson();
+                $exceptions->shouldRenderJsonWhen(function (Request $request) {
+                    return $request->is('api/*') || $request->expectsJson();
         });
-    })->create();
+    })
+    ->create();

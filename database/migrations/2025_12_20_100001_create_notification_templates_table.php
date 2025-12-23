@@ -20,13 +20,15 @@ return new class extends Migration
             // EMAIL
             $table->boolean('email_enabled')->default(false);
             $table->string('email_subject')->nullable();
-            $table->text('email_body')->nullable()->comment('Treść w markdown');
-            $table->string('email_view')->nullable()->comment('Opcjonalny custom blade view');
+            $table->text('email_body')->nullable()->comment('Treść w markdown z {zmiennymi}');
+            $table->string('email_action_url')->nullable()->comment('Link CTA w emailu');
 
             // PUSH
             $table->boolean('push_enabled')->default(false);
             $table->string('push_title')->nullable();
             $table->text('push_body')->nullable();
+            $table->string('push_action_url')->nullable();
+            $table->string('push_icon')->nullable()->default('/images/icon-192.png');
 
             // TOAST
             $table->boolean('toast_enabled')->default(true);

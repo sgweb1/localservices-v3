@@ -14,6 +14,12 @@ interface CategorySelectProps {
   placeholder?: string;
   /** Czy loading */
   loading?: boolean;
+  /** Id kontrolki (dla powiązania etykiety) */
+  id?: string;
+  /** Id etykiety powiązanej z kontrolką */
+  ariaLabelledBy?: string;
+  /** Alternatywny aria-label gdy brak labelki */
+  ariaLabel?: string;
 }
 
 /**
@@ -27,6 +33,9 @@ export const CategorySelect: React.FC<CategorySelectProps> = ({
   onChange,
   placeholder = 'Wybierz kategorię',
   loading = false,
+  id,
+  ariaLabelledBy,
+  ariaLabel,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -54,6 +63,11 @@ export const CategorySelect: React.FC<CategorySelectProps> = ({
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={loading}
+        id={id}
+        aria-labelledby={ariaLabelledBy}
+        aria-label={ariaLabel ?? placeholder}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
         className="w-full h-11 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm px-3 py-2 flex items-center justify-between hover:border-gray-400 dark:hover:border-gray-600 transition-colors"
       >
         <span className="flex items-center gap-2">

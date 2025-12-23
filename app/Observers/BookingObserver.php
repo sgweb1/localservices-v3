@@ -4,7 +4,7 @@ namespace App\Observers;
 
 use App\Models\Booking;
 use App\Models\Availability;
-use App\Services\NotificationService;
+use App\Services\Notifications\NotificationDispatcher;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -19,8 +19,29 @@ use Illuminate\Support\Facades\Log;
 class BookingObserver
 {
     public function __construct(
-        private NotificationService $notificationService
+        private NotificationDispatcher $notifications
     ) {}
+
+    /**
+     * Nowa rezerwacja → powiadom providera.
+     */
+    public function created(Booking $booking): void
+    {
+        if ($booking->provider) {
+            $this->notifications->send(
+                eventKey: 'booking.created',
+                user: $booking->provider,
+                recipientType: 'provider',
+                variables: [
+                    'booking_id' => $booking->id,
+                    'customer_name' => $booking->customer->name ?? '',
+                    'service_name' => $booking->service->name ?? '',
+                    'scheduled_date' => optional($booking->booking_date)->toDateString(),
+                    'start_time' => $booking->start_time,
+                ],
+            );
+        }
+    }
 
     /**
      * Po aktualizacji rezerwacji
@@ -41,16 +62,52 @@ class BookingObserver
             // Jeśli rezerwacja została potwierdzona
             if ($newStatus === 'confirmed' && $oldStatus === 'pending') {
                 $this->reserveSlot($booking);
+                if ($booking->customer) {
+                    $this->notifications->send(
+                        'booking.accepted',
+                        $booking->customer,
+                        'customer',
+                        [
+                            'booking_id' => $booking->id,
+                            'provider_name' => $booking->provider->name ?? '',
+                        ]
+                    );
+                }
             }
 
             // Jeśli rezerwacja została anulowana lub odrzucona
             if (in_array($newStatus, ['cancelled', 'rejected']) && $oldStatus !== $newStatus) {
                 $this->releaseSlot($booking);
+                foreach ([$booking->customer, $booking->provider] as $user) {
+                    if ($user) {
+                        $this->notifications->send(
+                            'booking.cancelled',
+                            $user,
+                            $user->isProvider() ? 'provider' : 'customer',
+                            [
+                                'booking_id' => $booking->id,
+                                'status' => $newStatus,
+                            ]
+                        );
+                    }
+                }
             }
 
             // Jeśli rezerwacja została ukończona
             if ($newStatus === 'completed' && $oldStatus === 'confirmed') {
                 $this->releaseSlot($booking);
+                foreach ([$booking->customer, $booking->provider] as $user) {
+                    if ($user) {
+                        $this->notifications->send(
+                            'booking.completed',
+                            $user,
+                            $user->isProvider() ? 'provider' : 'customer',
+                            [
+                                'booking_id' => $booking->id,
+                            ]
+                        );
+                    }
+                }
             }
         }
     }

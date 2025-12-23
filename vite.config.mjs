@@ -19,21 +19,21 @@ export default defineConfig({
         },
     },
     server: {
-        host: 'ls.test',
+        host: 'localhost',
         port: 5173,
         https: false,
         hmr: {
-            host: 'ls.test',
+            host: 'localhost',
         },
         cors: true,
         proxy: {
             '/api': {
-                target: 'http://ls.test',
+                target: 'http://localhost:8000',
                 changeOrigin: true,
                 secure: false,
             },
             '/sanctum': {
-                target: 'http://ls.test',
+                target: 'http://localhost:8000',
                 changeOrigin: true,
                 secure: false,
             },

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -197,6 +198,22 @@ class Service extends Model
     public function bookingRequests(): HasMany
     {
         return $this->hasMany(BookingRequest::class);
+    }
+
+    /**
+     * Relacja do galerii zdjęć (wiele zdjęć na usługę).
+     */
+    public function photos(): HasMany
+    {
+        return $this->hasMany(ServicePhoto::class);
+    }
+
+    /**
+     * Relacja do głównego zdjęcia (tylko jedno, marked as is_primary=true).
+     */
+    public function primaryPhoto(): HasOne
+    {
+        return $this->hasOne(ServicePhoto::class)->where('is_primary', true);
     }
 
     /**

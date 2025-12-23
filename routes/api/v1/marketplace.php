@@ -37,6 +37,11 @@ Route::middleware(['api'])->group(function () {
     Route::get('/bookings/{id}', [BookingController::class, 'show']);
     Route::get('/providers/{providerId}/bookings', [BookingController::class, 'providerBookings']);
     Route::get('/customers/{customerId}/bookings', [BookingController::class, 'customerBookings']);
+    
+    // Tworzenie rezerwacji - wymaga autentykacji
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::post('/bookings', [BookingController::class, 'store']);
+    });
 
     // Recenzje - publiczne
     Route::get('/reviews', [ReviewController::class, 'index']);
@@ -62,6 +67,7 @@ Route::middleware(['api'])->group(function () {
     Route::get('/providers/{providerId}/trust-score', [ProviderController::class, 'trustScore']);
     Route::get('/providers/{providerId}/certifications', [ProviderController::class, 'certifications']);
     Route::get('/providers/{providerId}/portfolio', [ProviderController::class, 'portfolio']);
+    Route::get('/providers/{providerId}/service-areas', [ProviderController::class, 'serviceAreas']);
     Route::get('/providers/{providerId}/schedule', [ProviderController::class, 'schedule']);
     Route::get('/providers/{providerId}/available-slots', [ProviderController::class, 'availableSlots']);
 

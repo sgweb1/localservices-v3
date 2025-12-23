@@ -4,8 +4,12 @@ use App\Http\Controllers\Api\V1\CalendarController;
 use App\Http\Controllers\Api\V1\Dev\CalendarDevController;
 use App\Http\Controllers\Api\V1\Dev\DevEventController;
 use App\Http\Controllers\Api\V1\Provider\AvailabilityExceptionController;
+use App\Http\Controllers\Api\V1\Provider\SettingsController;
 use App\Http\Controllers\Api\V1\ProviderBookingController;
 use App\Http\Controllers\Api\V1\ProviderDashboardController;
+use App\Http\Controllers\Api\V1\ReviewController;
+use App\Http\Controllers\Api\V1\ReviewResponseController;
+use App\Http\Controllers\Api\V1\AnalyticsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,6 +24,11 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth:sanctum'])->prefix('provider')->group(function () {
     // Dashboard widgets
     Route::get('/dashboard/widgets', [ProviderDashboardController::class, 'widgets'])->name('api.provider.dashboard.widgets');
+
+    // Provider reviews (current authenticated provider)
+    Route::get('/reviews', [ReviewController::class, 'selfReviews'])->name('api.provider.reviews.self');
+    Route::post('/reviews/{review}/response', [ReviewResponseController::class, 'store'])->name('api.provider.reviews.response.store');
+    Route::delete('/reviews/{review}/response', [ReviewResponseController::class, 'destroy'])->name('api.provider.reviews.response.destroy');
     
     // Bookings management
     Route::get('/bookings', [ProviderBookingController::class, 'index'])->name('api.provider.bookings.index');
@@ -42,6 +51,18 @@ Route::middleware(['auth:sanctum'])->prefix('provider')->group(function () {
     Route::post('/calendar/exceptions', [AvailabilityExceptionController::class, 'store'])->name('api.provider.calendar.exceptions.store');
     Route::put('/calendar/exceptions/{id}', [AvailabilityExceptionController::class, 'update'])->name('api.provider.calendar.exceptions.update');
     Route::delete('/calendar/exceptions/{id}', [AvailabilityExceptionController::class, 'destroy'])->name('api.provider.calendar.exceptions.destroy');
+    
+    // Analytics
+    Route::get('/analytics', [AnalyticsController::class, 'providerDashboard'])->name('api.provider.analytics');
+    
+    // Settings
+    Route::prefix('settings')->group(function () {
+        Route::get('/', [SettingsController::class, 'index'])->name('api.provider.settings.index');
+        Route::put('/business', [SettingsController::class, 'updateBusiness'])->name('api.provider.settings.business');
+        Route::post('/logo', [SettingsController::class, 'uploadLogo'])->name('api.provider.settings.logo');
+        Route::put('/notifications', [SettingsController::class, 'updateNotifications'])->name('api.provider.settings.notifications');
+        Route::put('/password', [SettingsController::class, 'updatePassword'])->name('api.provider.settings.password');
+    });
 });
 
 // DEV ONLY: Symulacja eventów (tylko w local/dev)

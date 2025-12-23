@@ -22,11 +22,7 @@ class ReviewApiService
 
         // Filtry
         if (!empty($filters['provider_id'])) {
-            $query->where('reviewed_user_id', $filters['provider_id']);
-        }
-
-        if (!empty($filters['service_id'])) {
-            $query->where('service_id', $filters['service_id']);
+            $query->where('reviewed_id', $filters['provider_id']);
         }
 
         if (!empty($filters['rating_min'])) {
@@ -35,6 +31,11 @@ class ReviewApiService
 
         if (!empty($filters['rating_max'])) {
             $query->where('rating', '<=', $filters['rating_max']);
+        }
+
+        // Filtr "bez odpowiedzi"
+        if (!empty($filters['unanswered'])) {
+            $query->doesntHave('responses');
         }
 
         // Sortowanie
@@ -62,7 +63,7 @@ class ReviewApiService
      */
     public function getProviderRating(int $providerId): array
     {
-        $reviews = Review::where('reviewed_user_id', $providerId)
+        $reviews = Review::where('reviewed_id', $providerId)
             ->where('is_visible', true)
             ->get();
 

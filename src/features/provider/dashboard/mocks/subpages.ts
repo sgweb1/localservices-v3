@@ -180,6 +180,10 @@ export const MOCK_SUBPAGES = {
     })),
     averageRating: reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length,
     totalReviews: reviews.length,
+    distribution: reviews.reduce<Record<string, number>>((acc, r) => {
+      acc[String(r.rating)] = (acc[String(r.rating)] || 0) + 1;
+      return acc;
+    }, {}),
   },
   notifications: {
     data: notifications.map(n => ({

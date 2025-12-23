@@ -1,5 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useNotifications } from '../dashboard/hooks/useNotifications';
+import React, { useState } from 'react';
+import { 
+  useNotifications, 
+  useUnreadCount, 
+  useMarkAsRead, 
+  useMarkAllAsRead,
+  type Notification 
+} from '../dashboard/hooks/useNotifications';
 import { 
   Calendar, 
   MessageSquare, 
@@ -19,27 +25,32 @@ import {
   X
 } from 'lucide-react';
 
-const getIcon = (type: string) => {
-  switch (type) {
-    case 'booking': return Calendar;
-    case 'message': return MessageSquare;
-    case 'review': return Star;
-    case 'payment': return DollarSign;
-    case 'marketing': return TrendingUp;
-    default: return Bell;
-  }
+const getIcon = (eventKey: string) => {
+  if (eventKey.startsWith('booking.')) return Calendar;
+  if (eventKey.startsWith('message.')) return MessageSquare;
+  if (eventKey.startsWith('review.')) return Star;
+  if (eventKey.startsWith('payment.')) return DollarSign;
+  return Bell;
 };
 
-const getTypeColor = (type: string) => {
-  const colors = {
-    booking: 'from-cyan-500 to-teal-500',
-    message: 'from-purple-500 to-pink-500',
-    review: 'from-yellow-500 to-orange-500',
-    payment: 'from-green-500 to-emerald-500',
-    marketing: 'from-blue-500 to-indigo-500',
-    system: 'from-gray-500 to-gray-600',
-  };
-  return colors[type as keyof typeof colors] || colors.system;
+const getTypeColor = (eventKey: string) => {
+  if (eventKey.startsWith('booking.')) return 'from-cyan-500 to-teal-500';
+  if (eventKey.startsWith('message.')) return 'from-purple-500 to-pink-500';
+  if (eventKey.startsWith('review.')) return 'from-yellow-500 to-orange-500';
+  if (eventKey.startsWith('payment.')) return 'from-green-500 to-emerald-500';
+  return 'from-gray-500 to-gray-600';
+};
+
+const getNotificationTitle = (notification: Notification): string => {
+  return notification.template?.title || notification.event?.name || notification.event_key;
+};
+
+const getNotificationMessage = (notification: Notification): string => {
+  // Prosty format danych z interpolacji
+  const data = notification.data || {};
+  const keys = Object.keys(data);
+  if (keys.length === 0) return '';
+  return keys.slice(0, 3).map(k => `${k}: ${data[k]}`).join(', ');
 };
 
 /**
@@ -48,52 +59,54 @@ const getTypeColor = (type: string) => {
  * Timeline powiadomień z typami, akcjami, mark as read.
  */
 export const NotificationsPage: React.FC = () => {
-  const { data, isLoading, error } = useNotifications();
+  const [page] = useState(1);
+  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
+  const { data, isLoading, error } = useNotifications(page, showUnreadOnly);
+  const { data: unreadData } = useUnreadCount();
+  const markAsReadMutation = useMarkAsRead();
+  const markAllAsReadMutation = useMarkAllAsRead();
+
   const [filter, setFilter] = useState<'all' | 'unread' | 'booking' | 'message' | 'review'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [showActions, setShowActions] = useState<string | null>(null);
-  const [notifications, setNotifications] = useState(data?.data ?? []);
-  
-  useEffect(() => {
-    if (data?.data) {
-      setNotifications(data.data);
-    }
-  }, [data]);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [showActions, setShowActions] = useState<number | null>(null);
 
-  const items = notifications;
-  const unreadCount = items.filter(n => !n.isRead).length;
+  const items = data?.data ?? [];
+  const unreadCount = unreadData?.unread_count ?? 0;
 
   const filteredItems = items.filter(n => {
-    if (filter === 'unread' && n.isRead) return false;
-    if (filter !== 'all' && filter !== 'unread' && n.type !== filter) return false;
+    if (filter === 'unread' && n.read) return false;
+    if (filter !== 'all' && filter !== 'unread') {
+      if (!n.event_key.startsWith(`${filter}.`)) return false;
+    }
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      return n.title?.toLowerCase().includes(query) || n.message?.toLowerCase().includes(query);
+      const title = getNotificationTitle(n).toLowerCase();
+      const msg = getNotificationMessage(n).toLowerCase();
+      return title.includes(query) || msg.includes(query);
     }
     return true;
   });
 
-  const handleMarkAsRead = (id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+  const handleMarkAsRead = (id: number) => {
+    markAsReadMutation.mutate(id);
   };
 
-  const handleMarkAsUnread = (id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: false } : n));
+  const handleMarkAsUnread = (id: number) => {
+    // Backend nie ma endpoint na unread, ale można pominąć
   };
 
-  const handleDelete = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-    setSelectedIds(prev => prev.filter(sid => sid !== id));
+  const handleDelete = (id: number) => {
+    // Backend nie ma endpoint delete notification_logs, pomiń
   };
 
   const handleBulkMarkAsRead = () => {
-    setNotifications(prev => prev.map(n => selectedIds.includes(n.id) ? { ...n, isRead: true } : n));
+    selectedIds.forEach(id => markAsReadMutation.mutate(id));
     setSelectedIds([]);
   };
 
   const handleBulkDelete = () => {
-    setNotifications(prev => prev.filter(n => !selectedIds.includes(n.id)));
+    // Pomiń bulk delete
     setSelectedIds([]);
   };
 
@@ -125,9 +138,9 @@ export const NotificationsPage: React.FC = () => {
   const filterOptions = [
     { value: 'all', label: 'Wszystkie', count: items.length },
     { value: 'unread', label: 'Nieprzeczytane', count: unreadCount },
-    { value: 'booking', label: 'Rezerwacje', count: items.filter(n => n.type === 'booking').length },
-    { value: 'message', label: 'Wiadomości', count: items.filter(n => n.type === 'message').length },
-    { value: 'review', label: 'Opinie', count: items.filter(n => n.type === 'review').length },
+    { value: 'booking', label: 'Rezerwacje', count: items.filter(n => n.event_key.startsWith('booking.')).length },
+    { value: 'message', label: 'Wiadomości', count: items.filter(n => n.event_key.startsWith('message.')).length },
+    { value: 'review', label: 'Opinie', count: items.filter(n => n.event_key.startsWith('review.')).length },
   ];
 
   return (
@@ -149,12 +162,11 @@ export const NotificationsPage: React.FC = () => {
         <div className="flex items-center gap-3">
           {unreadCount > 0 && (
             <button 
-              onClick={() => {
-                setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-              }}
-              className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 to-teal-500 rounded-xl hover:shadow-lg transition-shadow"
+              onClick={() => markAllAsReadMutation.mutate()}
+              disabled={markAllAsReadMutation.isPending}
+              className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 to-teal-500 rounded-xl hover:shadow-lg transition-shadow disabled:opacity-50"
             >
-              Oznacz wszystkie jako przeczytane
+              {markAllAsReadMutation.isPending ? 'Oznaczam...' : 'Oznacz wszystkie jako przeczytane'}
             </button>
           )}
         </div>
@@ -266,15 +278,17 @@ export const NotificationsPage: React.FC = () => {
           </div>
         )}
         {!isLoading && filteredItems.map(n => {
-          const Icon = getIcon(n.type);
+          const Icon = getIcon(n.event_key);
           const isSelected = selectedIds.includes(n.id);
+          const title = getNotificationTitle(n);
+          const message = getNotificationMessage(n);
           
           return (
             <div
               key={n.id}
               className={`
                 glass-card rounded-2xl p-6 transition-all hover:shadow-lg
-                ${!n.isRead ? 'border-l-4 border-cyan-500' : ''}
+                ${!n.read ? 'border-l-4 border-cyan-500' : ''}
                 ${isSelected ? 'ring-2 ring-cyan-500' : ''}
               `}
             >
@@ -294,7 +308,7 @@ export const NotificationsPage: React.FC = () => {
                 />
 
                 {/* Icon */}
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getTypeColor(n.type)} flex items-center justify-center flex-shrink-0`}>
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getTypeColor(n.event_key)} flex items-center justify-center flex-shrink-0`}>
                   <Icon className="w-6 h-6 text-white" />
                 </div>
 
@@ -302,14 +316,14 @@ export const NotificationsPage: React.FC = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div className="flex-1">
-                      <h3 className={`font-bold ${!n.isRead ? 'text-gray-900' : 'text-gray-700'}`}>
-                        {n.title}
+                      <h3 className={`font-bold ${!n.read ? 'text-gray-900' : 'text-gray-700'}`}>
+                        {title}
                       </h3>
-                      <p className="text-sm text-gray-600 mt-1">{n.message}</p>
+                      <p className="text-sm text-gray-600 mt-1">{message}</p>
                     </div>
-                    <button
+                    <div
                       onClick={() => setShowActions(showActions === n.id ? null : n.id)}
-                      className="text-gray-400 hover:text-gray-600 transition-colors relative"
+                      className="text-gray-400 hover:text-gray-600 transition-colors relative cursor-pointer"
                     >
                       <MoreVertical className="w-5 h-5" />
 
@@ -318,17 +332,15 @@ export const NotificationsPage: React.FC = () => {
                         <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-10">
                           <button
                             onClick={() => {
-                              if (n.isRead) {
-                                handleMarkAsUnread(n.id);
-                              } else {
+                              if (!n.read) {
                                 handleMarkAsRead(n.id);
                               }
                               setShowActions(null);
                             }}
                             className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
                           >
-                            {n.isRead ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                            {n.isRead ? 'Oznacz jako nieprzeczytane' : 'Oznacz jako przeczytane'}
+                            <Eye className="w-4 h-4" />
+                            Oznacz jako przeczytane
                           </button>
                           <button
                             onClick={() => {
@@ -342,14 +354,14 @@ export const NotificationsPage: React.FC = () => {
                           </button>
                         </div>
                       )}
-                    </button>
+                    </div>
                   </div>
 
                   {/* Metadata */}
                   <div className="flex items-center gap-4 text-xs text-gray-500">
                     <div className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      {formatTimestamp(n.createdAt)}
+                      {formatTimestamp(n.created_at)}
                     </div>
                   </div>
                 </div>

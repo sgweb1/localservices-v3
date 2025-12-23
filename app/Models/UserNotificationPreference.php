@@ -8,17 +8,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * UserNotificationPreference - Preferencje użytkownika dla powiadomień
  * 
- * Pozwala użytkownikowi kontrolować które powiadomienia chce otrzymywać
+ * Przechowuje nadpisane ustawienia użytkownika dla konkretnego szablonu powiadomienia.
+ * Jeśli użytkownik nie ma preferencji, używane są domyślne z NotificationTemplate.
  * 
  * @property int $id
  * @property int $user_id
- * @property int $event_id
+ * @property int $event_id - ID eventu powiadomienia
  * @property bool $email_enabled
  * @property bool $push_enabled
  * @property bool $toast_enabled
  * @property bool $database_enabled
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
+ * @property-read \App\Models\User $user
+ * @property-read \App\Models\NotificationTemplate $template
  */
 class UserNotificationPreference extends Model
 {
@@ -29,6 +32,12 @@ class UserNotificationPreference extends Model
         'push_enabled',
         'toast_enabled',
         'database_enabled',
+        'quiet_hours_start',
+        'quiet_hours_end',
+        'quiet_hours_enabled',
+        'frequency',
+        'batch_enabled',
+        'notes',
     ];
 
     protected function casts(): array
@@ -38,6 +47,8 @@ class UserNotificationPreference extends Model
             'push_enabled' => 'boolean',
             'toast_enabled' => 'boolean',
             'database_enabled' => 'boolean',
+            'quiet_hours_enabled' => 'boolean',
+            'batch_enabled' => 'boolean',
         ];
     }
 
@@ -55,22 +66,5 @@ class UserNotificationPreference extends Model
     public function event(): BelongsTo
     {
         return $this->belongsTo(NotificationEvent::class, 'event_id');
-    }
-
-    /**
-     * Sprawdza czy użytkownik ma włączony dany kanał dla eventu
-     */
-    public static function isChannelEnabledForUser(int $userId, int $eventId, string $channel): bool
-    {
-        $preference = static::where('user_id', $userId)
-            ->where('event_id', $eventId)
-            ->first();
-
-        if (!$preference) {
-            return true; // Domyślnie wszystkie kanały są włączone
-        }
-
-        $property = $channel . '_enabled';
-        return $preference->$property ?? true;
     }
 }

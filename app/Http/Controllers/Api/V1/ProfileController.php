@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\UserType;
 use App\Exceptions\Profile\AvatarUploadException;
 use App\Exceptions\Profile\InvalidPasswordException;
 use App\Exceptions\Profile\ProfileUpdateException;
@@ -12,6 +13,8 @@ use App\Services\Profile\UploadAvatarService;
 use App\Services\Profile\UploadProviderLogoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 
 /**
  * Kontroler API v1 dla zarządzania profilem użytkownika
@@ -180,6 +183,54 @@ class ProfileController extends Controller
                 'message' => $e->getMessage(),
             ], 422);
         }
+    }
+
+    /**
+     * Awansuje customera do roli providera (tworzy profil i przypisuje rolę)
+     */
+    public function upgradeToProvider(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->isProvider()) {
+            return response()->json([
+                'message' => 'Jesteś już providerem',
+            ], 400);
+        }
+
+        $validated = $request->validate([
+            'business_name' => 'required|string|max:255',
+            'service_description' => 'required|string|min:50|max:2000',
+        ]);
+
+        DB::transaction(function () use ($user, $validated) {
+            $user->providerProfile()->create([
+                'business_name' => $validated['business_name'],
+                'service_description' => $validated['service_description'],
+                'trust_score' => 10,
+                'verification_level' => 1,
+            ]);
+
+            // Zapewnij istnienie ról i przypisz je użytkownikowi
+            Role::findOrCreate('provider');
+            Role::findOrCreate('customer');
+
+            $user->assignRole('provider');
+
+            if (!$user->hasRole('customer')) {
+                $user->assignRole('customer');
+            }
+
+            // Ustaw typ użytkownika na provider (enum cast)
+            $user->update([
+                'user_type' => UserType::Provider,
+            ]);
+        });
+
+        return response()->json([
+            'message' => 'Gratulacje! Jesteś teraz providerem. Możesz dodać pierwsze usługi.',
+            'user' => $this->formatUserResponse($user->fresh(['profile', 'providerProfile'])),
+        ]);
     }
 
     /**

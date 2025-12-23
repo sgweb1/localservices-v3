@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { X, Star, MapPin, Clock, Shield, Zap, Phone, Mail, Calendar } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../../../components/ui/dialog';
 import { Button } from '../../../components/ui/button';
 import { Badge } from '../../../components/ui/badge';
 import { Service } from '../../../types/service';
+import { useAuth } from '../../auth/hooks/useAuth';
+import { createBooking } from '../../../api/v1/bookingApi';
+import { toast } from 'sonner';
 
 interface ServiceDetailsDialogProps {
   service: Service | null;
@@ -16,7 +19,67 @@ export const ServiceDetailsDialog: React.FC<ServiceDetailsDialogProps> = ({
   open,
   onClose,
 }) => {
+  const { user } = useAuth();
+  const [isBooking, setIsBooking] = useState(false);
+
   if (!service) return null;
+
+  const handleBooking = async () => {
+    if (!user) {
+      toast.error('Musisz być zalogowany aby dokonać rezerwacji');
+      return;
+    }
+
+    if (!service.provider?.id) {
+      toast.error('Brak danych providera');
+      return;
+    }
+
+    // Blokada self-booking (provider nie może rezerwować swoich usług)
+    if (service.provider.id === user.id) {
+      toast.error('Nie możesz rezerwować własnych usług');
+      return;
+    }
+
+    setIsBooking(true);
+
+    try {
+      // Toast dla providera rezerwującego jako klient
+      if (user.user_type === 'provider') {
+        toast.info('Rezerwujesz jako klient', {
+          description: 'Twoja rezerwacja zostanie dodana do zakładki "Moje rezerwacje"',
+          duration: 4000,
+        });
+      }
+
+      // Testowa rezerwacja - w przyszłości to będzie formularz z wyborem daty
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const bookingDate = tomorrow.toISOString().split('T')[0];
+
+      await createBooking({
+        provider_id: service.provider.id,
+        service_id: service.id,
+        booking_date: bookingDate,
+        start_time: '10:00',
+        duration_minutes: 60,
+        service_address: service.city || 'Adres do ustalenia',
+        customer_notes: 'Rezerwacja utworzona przez system',
+      });
+
+      toast.success('Rezerwacja utworzona!', {
+        description: 'Provider został powiadomiony o Twojej rezerwacji',
+      });
+      onClose();
+    } catch (error: any) {
+      console.error('Booking error:', error);
+      toast.error('Błąd rezerwacji', {
+        description: error.response?.data?.message || 'Nie udało się utworzyć rezerwacji',
+      });
+    } finally {
+      setIsBooking(false);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -84,10 +147,26 @@ export const ServiceDetailsDialog: React.FC<ServiceDetailsDialogProps> = ({
                 {service.base_price} zł
               </div>
             </div>
-            <Button size="lg" className="gap-2">
-              <Calendar className="w-5 h-5" />
-              Umów wizytę
-            </Button>
+            <div className="flex flex-col items-end gap-2">
+              {/* Badge dla providera rezerwującego jako klient */}
+              {user?.user_type === 'provider' && (
+                <div className="flex items-center gap-2 px-3 py-1 bg-cyan-100 dark:bg-cyan-900/30 rounded-full">
+                  <span className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse" />
+                  <span className="text-xs font-medium text-cyan-700 dark:text-cyan-300">
+                    Tryb klienta
+                  </span>
+                </div>
+              )}
+              <Button 
+                size="lg" 
+                className="gap-2"
+                onClick={handleBooking}
+                disabled={isBooking || !user}
+              >
+                <Calendar className="w-5 h-5" />
+                {isBooking ? 'Rezerwuję...' : 'Umów wizytę'}
+              </Button>
+            </div>
           </div>
 
           {/* Additional Info */}

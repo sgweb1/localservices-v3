@@ -18,7 +18,7 @@ export function useAvatarUpload() {
     mutationFn: (file: File) => uploadAvatar(file),
 
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['user'] });
+      queryClient.invalidateQueries({ queryKey: ['auth', 'user'] });
       setUploadProgress(0);
     },
 

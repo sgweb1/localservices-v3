@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Helpers\StorageHelper;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -12,6 +13,30 @@ class ServiceResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $photos = $this->whenLoaded('photos', function () {
+            return $this->photos
+                ->sortBy('position')
+                ->values()
+                ->map(function ($p) {
+                    return [
+                        'id' => $p->id,
+                        'uuid' => $p->uuid,
+                        'url' => StorageHelper::getPublicUrl($p->image_path),
+                        'alt_text' => $p->alt_text,
+                        'is_primary' => (bool) $p->is_primary,
+                        'position' => (int) $p->position,
+                    ];
+                });
+        });
+
+        $primaryPhotoUrl = null;
+        if ($this->relationLoaded('photos')) {
+            $primary = $this->photos->firstWhere('is_primary', true) ?? $this->photos->sortBy('position')->first();
+            if ($primary) {
+                $primaryPhotoUrl = StorageHelper::getPublicUrl($primary->image_path);
+            }
+        }
+
         return [
             'id' => $this->id,
             'uuid' => $this->uuid,
@@ -22,6 +47,8 @@ class ServiceResource extends JsonResource
             'location_id' => $this->location_id,
             'instant_booking' => $this->instant_booking,
             'status' => $this->status,
+            'primary_photo_url' => $primaryPhotoUrl,
+            'photos' => $photos,
             'provider' => [
                 'id' => $this->provider_id,
                 'uuid' => $this->provider?->uuid,

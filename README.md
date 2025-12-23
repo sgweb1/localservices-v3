@@ -417,6 +417,78 @@ PROVIDER_LOGO_MAX_SIZE=5120
 
 ---
 
+## 🔔 Notification System
+
+### Architektura Powiadomień
+
+```
+Event (booking.created) 
+  ↓
+Observer (BookingObserver)
+  ↓
+NotificationDispatcher
+  ├── Rate Limit Check (per event + global)
+  ├── Deduplication Check (5 min window)
+  ├── Quiet Hours Check (22:00-08:00)
+  ↓
+ChannelDispatcher
+  ├── Email (GenericNotificationMail)
+  ├── Toast (Echo/Reverb event)
+  ├── Push (Web Push via minishlink/web-push)
+  └── Database (NotificationLog)
+  ↓
+NotificationLog (complete audit trail + read status)
+```
+
+### Channels
+
+| Channel  | Always Sent | Quiet Hours | Rate Limited |
+|----------|------------|------------|-------------|
+| Email    | ✅         | ✅         | ✅          |
+| Toast    | ✅         | ❌         | ✅          |
+| Push     | ✅         | ❌         | ✅          |
+| Database | ✅         | ✅         | ✅          |
+
+### Events
+
+- `booking.created` - nowa rezerwacja
+- `booking.accepted` - rezerwacja potwierdzona
+- `booking.cancelled` - rezerwacja anulowana
+- `booking.completed` - rezerwacja ukończona
+- `review.received` - nowa opinia
+- `message.received` - nowa wiadomość
+
+### API Endpoints
+
+```http
+GET  /api/v1/notifications                  # List with pagination
+GET  /api/v1/notifications/unread-count     # Unread counter
+GET  /api/v1/notifications/{id}             # Show & auto-mark read
+PUT  /api/v1/notifications/{id}/read        # Mark single as read
+PUT  /api/v1/notifications/read-all         # Mark all as read
+```
+
+### Maintenance Commands
+
+```bash
+# Clean inactive push subscriptions (older than 30 days)
+php artisan notifications:clean-subscriptions --days=30
+
+# Retry failed notifications (for monitoring)
+php artisan notifications:retry-failed --hours=24 --limit=100
+
+# Prune old logs (keep 90 days by default)
+php artisan notifications:prune-logs --days=90
+```
+
+### Scheduled Tasks
+
+All maintenance scheduled in `routes/console.php`:
+- **Weekly**: Clean push subscriptions & prune logs
+- **Daily (3:00 AM)**: Retry failed notifications
+
+---
+
 ## License
 
 Proprietary - LocalServices © 2024

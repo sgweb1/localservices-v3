@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Calendar, MessagesSquare, Briefcase, Star, Bell, CreditCard, Settings, LifeBuoy, CalendarDays, Lightbulb, TrendingUp, User } from 'lucide-react';
 import { useConversations } from '@/features/provider/messages/hooks/useConversations';
+import { useUnreadCount } from '@/features/provider/dashboard/hooks/useNotifications';
 
 const navItems = [
   { to: '/provider/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -21,11 +22,14 @@ const navItems = [
 
 export const Sidebar: React.FC = () => {
   const { data: conversationsData } = useConversations(false);
+  const { data: unreadNotifications } = useUnreadCount();
   
   // Policz wszystkie nieprzeczytane wiadomości
   const totalUnread = (conversationsData?.data || []).reduce((sum, conv) => {
     return sum + (conv.unread_count || 0);
   }, 0);
+
+  const notificationCount = unreadNotifications?.unread_count || 0;
   return (
     <aside className="w-64 shrink-0 hidden md:flex md:flex-col pr-4">
       {/* Main nav */}
@@ -51,6 +55,11 @@ export const Sidebar: React.FC = () => {
               {dynamic === 'messages' && totalUnread > 0 && (
                 <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold bg-gradient-to-r from-cyan-500 to-teal-500 text-white">
                   {totalUnread > 99 ? '99+' : totalUnread}
+                </span>
+              )}
+              {label === 'Powiadomienia' && notificationCount > 0 && (
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold bg-gradient-to-r from-red-500 to-pink-500 text-white">
+                  {notificationCount > 99 ? '99+' : notificationCount}
                 </span>
               )}
             </NavLink>

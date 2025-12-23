@@ -46,6 +46,7 @@ const ServiceFilter: React.FC<{
   const { getCurrentPosition, loading: geoLoading } = useGeolocation();
   const { locations, loading: locationsLoading } = useLocations();
   const { categories, loading: categoriesLoading } = useCategories();
+  const categoryLabelId = 'category-select-label';
 
   useEffect(() => {
     // Find category by slug if provided
@@ -225,13 +226,15 @@ const ServiceFilter: React.FC<{
 
             {/* Category Select */}
             <div>
-              <Label className="mb-2 block">Kategoria</Label>
+              <Label className="mb-2 block" id={categoryLabelId}>Kategoria</Label>
               <CategorySelect
                 categories={categories}
                 selected={selectedCategory}
                 onChange={setSelectedCategory}
                 placeholder="Wszystkie"
                 loading={categoriesLoading}
+                ariaLabelledBy={categoryLabelId}
+                id="category-select"
               />
             </div>
 

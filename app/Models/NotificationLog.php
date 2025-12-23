@@ -37,6 +37,8 @@ class NotificationLog extends Model
         'channels_sent',
         'channels_result',
         'success',
+        'read',
+        'read_at',
         'error_message',
         'sent_at',
     ];
@@ -48,6 +50,8 @@ class NotificationLog extends Model
             'channels_sent' => 'array',
             'channels_result' => 'array',
             'success' => 'boolean',
+            'read' => 'boolean',
+            'read_at' => 'datetime',
             'sent_at' => 'datetime',
         ];
     }
@@ -99,5 +103,34 @@ class NotificationLog extends Model
             'channels_result' => $channelsResult,
             'sent_at' => now(),
         ]);
+    }
+
+    /**
+     * Oznacz jako przeczytane
+     */
+    public function markAsRead(): void
+    {
+        if (!$this->read) {
+            $this->update([
+                'read' => true,
+                'read_at' => now(),
+            ]);
+        }
+    }
+
+    /**
+     * Scope - nieprzeczytane powiadomienia
+     */
+    public function scopeUnread($query)
+    {
+        return $query->where('read', false);
+    }
+
+    /**
+     * Scope - powiadomienia dla użytkownika
+     */
+    public function scopeForUser($query, int $userId)
+    {
+        return $query->where('user_id', $userId);
     }
 }

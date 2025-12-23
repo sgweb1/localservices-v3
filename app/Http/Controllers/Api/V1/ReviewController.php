@@ -99,4 +99,73 @@ class ReviewController extends Controller
 
         return response()->json(['data' => $rating]);
     }
+
+    /**
+     * GET /api/v1/provider/reviews (dla zalogowanego providera)
+     * Zwraca recenzje + agregaty do dashboardu.
+     */
+    public function selfReviews(Request $request): JsonResponse
+    {
+        $userId = $request->user()?->id;
+
+        if (!$userId) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
+        $validated = $request->validate([
+            'page' => 'integer|min:1',
+            'per_page' => 'integer|min:1|max:50',
+            'rating' => 'integer|min:1|max:5',
+            'unanswered' => 'boolean',
+        ]);
+
+        $filters = $validated;
+
+        if (!empty($validated['rating'])) {
+            $filters['rating_min'] = $validated['rating'];
+            $filters['rating_max'] = $validated['rating'];
+        }
+        
+        if (!empty($validated['unanswered'])) {
+            $filters['unanswered'] = true;
+        }
+
+        $reviews = $this->service->getProviderReviews($userId, $filters);
+        $ratingStats = $this->service->getProviderRating($userId);
+
+        $mapped = $reviews->getCollection()->map(function ($review) {
+            $response = null;
+            if ($review->responses && $review->responses->isNotEmpty()) {
+                $firstResponse = $review->responses->first();
+                $response = [
+                    'id' => $firstResponse->id,
+                    'response' => $firstResponse->response,
+                    'created_at' => optional($firstResponse->created_at)->toIso8601String(),
+                    'updated_at' => optional($firstResponse->updated_at)->toIso8601String(),
+                ];
+            }
+
+            return [
+                'id' => $review->id,
+                'customerName' => $review->reviewer?->name ?? 'Klient',
+                'rating' => $review->rating,
+                'comment' => $review->comment,
+                'date' => optional($review->created_at)->format('Y-m-d'),
+                'response' => $response,
+            ];
+        });
+
+        return response()->json([
+            'data' => $mapped,
+            'averageRating' => $ratingStats['average'],
+            'totalReviews' => $ratingStats['count'],
+            'distribution' => $ratingStats['distribution'],
+            'meta' => [
+                'current_page' => $reviews->currentPage(),
+                'per_page' => $reviews->perPage(),
+                'total' => $reviews->total(),
+                'last_page' => $reviews->lastPage(),
+            ],
+        ]);
+    }
 }

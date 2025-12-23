@@ -21,7 +21,10 @@ class ServiceApiService
         $query = Service::query()
             ->with([
                 'provider:id,uuid,name,avatar,rating_average,rating_count',
-                'provider.providerProfile:user_id,trust_score'
+                'provider.providerProfile:user_id,trust_score',
+                'photos' => function ($q) {
+                    $q->orderByDesc('is_primary')->orderBy('position')->limit(1);
+                },
             ])
             ->where('status', 'active');
 
@@ -115,7 +118,12 @@ class ServiceApiService
         $query = Service::query()
             ->where('provider_id', $providerId)
             ->where('status', 'active')
-            ->with(['provider:id,uuid,name,avatar,rating_average,rating_count']);
+            ->with([
+                'provider:id,uuid,name,avatar,rating_average,rating_count',
+                'photos' => function ($q) {
+                    $q->orderByDesc('is_primary')->orderBy('position')->limit(1);
+                },
+            ]);
 
         // Sortowanie
         $sortBy = $filters['sort_by'] ?? 'created_at';
@@ -138,7 +146,12 @@ class ServiceApiService
     public function getById(int $id): ?Service
     {
         return Service::query()
-            ->with(['provider:id,uuid,name,avatar,rating_average,rating_count'])
+            ->with([
+                'provider:id,uuid,name,avatar,rating_average,rating_count',
+                'photos' => function ($q) {
+                    $q->orderBy('position');
+                },
+            ])
             ->where('status', 'active')
             ->find($id);
     }
@@ -155,7 +168,12 @@ class ServiceApiService
         $query = Service::query()
             ->where('category', $category)
             ->where('status', 'active')
-            ->with(['provider:id,uuid,name,avatar,rating_average,rating_count']);
+            ->with([
+                'provider:id,uuid,name,avatar,rating_average,rating_count',
+                'photos' => function ($q) {
+                    $q->orderByDesc('is_primary')->orderBy('position')->limit(1);
+                },
+            ]);
 
         // Sortowanie
         $sortBy = $filters['sort_by'] ?? 'created_at';
@@ -181,7 +199,12 @@ class ServiceApiService
         $query = Service::query()
             ->where('city', $city)
             ->where('status', 'active')
-            ->with(['provider:id,uuid,name,avatar,rating_average,rating_count']);
+            ->with([
+                'provider:id,uuid,name,avatar,rating_average,rating_count',
+                'photos' => function ($q) {
+                    $q->orderByDesc('is_primary')->orderBy('position')->limit(1);
+                },
+            ]);
 
         // Sortowanie
         $sortBy = $filters['sort_by'] ?? 'created_at';

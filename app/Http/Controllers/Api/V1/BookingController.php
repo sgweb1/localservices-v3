@@ -8,6 +8,7 @@ use App\Services\Api\BookingApiService;
 use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 /**
  * API Controller dla rezerwacji
@@ -117,6 +118,66 @@ class BookingController extends Controller
                 'last_page' => $bookings->lastPage(),
             ],
         ]);
+    }
+
+    /**
+     * POST /api/v1/bookings
+     * Utwórz nową rezerwację (Instant Booking)
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'provider_id' => [
+                'required',
+                'integer',
+                'exists:users,id',
+                Rule::notIn([auth()->id()]), // Blokada self-booking
+            ],
+            'service_id' => 'required|integer|exists:services,id',
+            'booking_date' => 'required|date|after:today',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'nullable|date_format:H:i|after:start_time',
+            'duration_minutes' => 'nullable|integer|min:15',
+            'service_address' => 'required|string|max:500',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
+            'customer_notes' => 'nullable|string|max:1000',
+            'special_requirements' => 'nullable|array',
+        ], [
+            'provider_id.not_in' => 'Nie możesz rezerwować własnych usług',
+        ]);
+
+        // Pobierz service dla ceny
+        $service = \App\Models\Service::findOrFail($validated['service_id']);
+
+        // Utwórz rezerwację
+        $booking = \App\Models\Booking::create([
+            'customer_id' => auth()->id(),
+            'provider_id' => $validated['provider_id'],
+            'service_id' => $validated['service_id'],
+            'booking_date' => $validated['booking_date'],
+            'start_time' => $validated['start_time'],
+            'end_time' => $validated['end_time'] ?? null,
+            'duration_minutes' => $validated['duration_minutes'] ?? 60,
+            'service_address' => $validated['service_address'],
+            'latitude' => $validated['latitude'] ?? null,
+            'longitude' => $validated['longitude'] ?? null,
+            'service_price' => $service->base_price ?? 0,
+            'travel_fee' => 0,
+            'platform_fee' => 0,
+            'total_price' => $service->base_price ?? 0,
+            'currency' => 'PLN',
+            'payment_status' => 'pending',
+            'status' => 'confirmed', // Instant booking
+            'customer_notes' => $validated['customer_notes'] ?? null,
+            'special_requirements' => $validated['special_requirements'] ?? null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Rezerwacja utworzona',
+            'data' => new BookingResource($booking->fresh(['service', 'customer', 'provider'])),
+        ], 201);
     }
 
     /**
