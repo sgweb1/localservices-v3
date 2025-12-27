@@ -55,12 +55,18 @@ class BookingController extends Controller
      * GET /api/v1/bookings/{id}
      * Szczegóły rezerwacji
      */
-    public function show(int $id): JsonResponse
+    public function show(int $id, Request $request): JsonResponse
     {
+        $user = $request->user();
         $booking = $this->service->getById($id);
 
         if (!$booking) {
             return response()->json(['error' => 'Rezerwacja nie znaleziona'], 404);
+        }
+
+        // Authorization check - customer or provider only
+        if ($booking->customer_id !== $user->id && $booking->provider_id !== $user->id) {
+            return response()->json(['error' => 'Brak uprawnień do wyświetlenia tej rezerwacji'], 403);
         }
 
         return response()->json(['data' => new BookingResource($booking)]);
