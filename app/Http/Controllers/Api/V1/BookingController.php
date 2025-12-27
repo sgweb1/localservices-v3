@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\BookingStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BookingResource;
 use App\Services\Api\BookingApiService;
@@ -441,7 +442,7 @@ class BookingController extends Controller
         
         // Odmów rezerwacji
         $booking->update([
-            'status' => 'declined',
+            'status' => BookingStatus::CANCELLED->value,
             'cancelled_by' => $request->user()->id,
             'cancelled_at' => now(),
             'cancellation_reason' => $validated['reason'] ?? 'Odrzucone',
