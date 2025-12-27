@@ -31,7 +31,7 @@ export function AuthDemo() {
           size="md"
         >
           Register demo
-        </button>
+        </Button>
       </div>
     </div>
   );

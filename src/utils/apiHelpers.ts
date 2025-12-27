@@ -21,10 +21,22 @@ export const apiFetch = async (
 ): Promise<Response> => {
   const csrfToken = getCsrfToken();
   
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     Accept: 'application/json',
-    ...options.headers,
   };
+
+  // Merge istniejące headers jeśli istnieją
+  if (options.headers instanceof Headers) {
+    options.headers.forEach((value, key) => {
+      headers[key] = value;
+    });
+  } else if (Array.isArray(options.headers)) {
+    options.headers.forEach(([key, value]) => {
+      headers[key] = value;
+    });
+  } else if (options.headers) {
+    Object.assign(headers, options.headers);
+  }
 
   // Dodaj CSRF token dla mutating methods (POST, PUT, PATCH, DELETE)
   if (options.method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method.toUpperCase())) {

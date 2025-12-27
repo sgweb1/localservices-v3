@@ -4,7 +4,7 @@ import Pusher from 'pusher-js';
 // Initialize Laravel Echo
 declare global {
   interface Window {
-    Echo: Echo;
+    Echo: any;
     Pusher: typeof Pusher;
   }
 }
@@ -12,7 +12,7 @@ declare global {
 // Configure Pusher
 window.Pusher = Pusher;
 
-window.Echo = new Echo({
+window.Echo = new (Echo as any)({
   broadcaster: 'reverb',
   key: 'local', // Laravel Reverb uses 'local' for development
   wsHost: window.location.hostname,

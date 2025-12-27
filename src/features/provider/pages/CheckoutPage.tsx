@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSubscription } from '../dashboard/hooks/useSubscription';
-import { useCheckout } from '../hooks/useCheckout';
-import { PLAN_LIMITS, PlanType } from '../constants/planLimits';
-import { OrderSummary } from '../components/OrderSummary';
+import { useCheckout } from '../subscription/hooks/useCheckout';
+import { PLAN_LIMITS, PlanType } from '../subscription/constants/planLimits';
+import { OrderSummary } from '../subscription/components/OrderSummary';
 import { PageTitle, Text, SectionTitle, Caption } from '@/components/ui/typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

@@ -97,27 +97,31 @@ export interface TasksCard {
 // ==================== PERFORMANCE SNAPSHOT ====================
 
 export interface PerformanceSnapshot {
-  response_minutes: number | null;   // 45 (min) lub null
-  completion_rate: number | null;    // 92.5 (%) lub null
-  repeat_customers: number | null;   // 8 lub null
-  cancellation_rate: number | null;  // 2.1 (%) lub null
-  trust_score: number;               // 85
+  views: number;               // 256
+  favorited: number;           // 18
+  avg_response_time: string;   // "45 min"
+  rating: number | null;       // 4.5 lub null
+  period_label: string;        // "Ostatnie 30 dni"
 }
 
 // ==================== CALENDAR GLANCE ====================
 
 export interface CalendarSlot {
+  period: string;           // "morning", "afternoon"
+  time_range: string;       // "09:00 - 12:00"
+  available: boolean;       // true
+}
+
+export interface CalendarDay {
   date: string;             // "2025-12-20"
-  title: string;            // "Rezerwacja" (blur jeśli !can_view_details)
-  status: string;           // "pending", "confirmed", "completed"
-  time: string | null;      // "10:00" lub null (blur)
-  is_blurred: boolean;      // true jeśli brak uprawnień
+  date_formatted: string;   // "Sobota, 20 grudnia"
+  slots: CalendarSlot[];
 }
 
 export interface CalendarGlance {
-  slots: Record<string, CalendarSlot[]>; // max 3 dni, 2 sloty/dzień
-  can_view_details: boolean;  // true jeśli hasFeature('instant_booking' + 'messaging')
-  calendar_url: string;       // "/provider/availability"
+  days: CalendarDay[];
+  is_blurred: boolean;      // true jeśli brak uprawnień do instant_booking
+  calendar_url: string;     // "/provider/calendar"
 }
 
 // ==================== MESSAGE CENTER ====================
@@ -131,23 +135,26 @@ export interface MessageRequest {
 }
 
 export interface MessageCenter {
-  requests: MessageRequest[]; // max 4
-  unread_notifications: number; // 3
-  messages_url: string;       // "/provider/messages"
+  items: MessageRequest[];  // max 4
+  unread_count: number;     // 3
+  messages_url: string;     // "/provider/messages"
 }
 
 // ==================== NOTIFICATIONS CARD ====================
 
-export interface Notification {
+export interface NotificationItem {
   id: string;               // "uuid"
   type: string;             // "App\Notifications\BookingCreated"
-  data: Record<string, any>; // { message: "Nowa rezerwacja" }
+  title: string;            // "Nowa rezerwacja"
+  message: string;          // "Jan Kowalski zarezerwował usługę"
+  action_url: string | null; // "/provider/bookings/123"
   read_at: string | null;   // "2 godziny temu" lub null
   created_at: string;       // "2 godziny temu"
 }
 
 export interface NotificationsCard {
-  notifications: Notification[]; // max 5
+  items: NotificationItem[]; // max 5
+  unread_count: number;     // 0
 }
 
 // ==================== SERVICES CARD ====================
@@ -167,16 +174,16 @@ export interface ServicesCard {
 // ==================== DASHBOARD WIDGETS (ALL) ====================
 
 export interface DashboardWidgets {
-  plan: PlanCard;
-  addons: AddonCard[];
-  pipeline: PipelineBoard;
-  insights: InsightsCard;
-  tasks: TasksCard;
-  performance: PerformanceSnapshot;
-  calendar: CalendarGlance;
-  messages: MessageCenter;
-  notifications: NotificationsCard;
-  services: ServicesCard;
+  plan_card: PlanCard;
+  addons_carousel: AddonCard[];
+  pipeline_board: PipelineBoard;
+  insights_card: InsightsCard;
+  tasks_card: TasksCard;
+  performance_snapshot: PerformanceSnapshot;
+  calendar_glance: CalendarGlance;
+  message_center: MessageCenter;
+  notifications_card: NotificationsCard;
+  services_card: ServicesCard;
 }
 
 // ==================== API RESPONSE ====================

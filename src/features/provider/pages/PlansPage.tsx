@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSubscription } from '../dashboard/hooks/useSubscription';
-import { PlanType } from '../constants/planLimits';
-import { PlansGrid } from '../components/PlansGrid';
+import { PlanType } from '../subscription/constants/planLimits';
+import { PlansGrid } from '../subscription/components/PlansGrid';
 import { PageTitle, Text } from '@/components/ui/typography';
 
 /**

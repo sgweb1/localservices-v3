@@ -26,7 +26,7 @@ describe('useSubscription Hook', () => {
     });
   });
 
-  const wrapper = ({ children }: { children: React.ReactNode }) => (
+  const wrapper = ({ children }: { children: React.ReactNode }): React.ReactElement => (
     <QueryClientProvider client={queryClient}>
       {children}
     </QueryClientProvider>
