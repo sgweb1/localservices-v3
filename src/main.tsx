@@ -4,7 +4,6 @@ import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-do
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Moon, Sun, LayoutDashboard, Users } from 'lucide-react';
 import { Toaster } from 'sonner';
-import { AuthDemo } from './features/auth/components/AuthDemo';
 import { HomePage } from './pages/HomePage';
 import { ServicesPage } from './pages/ServicesPage';
 import { DevLoginPage } from './pages/DevLoginPage';

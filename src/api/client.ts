@@ -23,7 +23,10 @@ class ApiClient {
     // Request interceptor - dodaj token
     this.client.interceptors.request.use(
       (config) => {
-        const token = localStorage.getItem('auth_token');
+        // Spróbuj pobrać token z localStorage (dev lub production)
+        const token = localStorage.getItem('dev_mock_token') || 
+                      localStorage.getItem('sanctum_token') ||
+                      localStorage.getItem('auth_token');
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -38,10 +41,13 @@ class ApiClient {
       (error: AxiosError) => {
         if (error.response?.status === 401) {
           const isAuthDemo = window.location.pathname.startsWith('/auth-demo');
+          const isDevLogin = window.location.pathname.startsWith('/dev/login');
           // Uniknij pętli odświeżania na stronie logowania/demo
-          if (!isAuthDemo) {
+          if (!isAuthDemo && !isDevLogin) {
             localStorage.removeItem('auth_token');
-            window.location.href = '/auth-demo';
+            localStorage.removeItem('dev_mock_token');
+            localStorage.removeItem('sanctum_token');
+            window.location.href = '/dev/login';
           }
         }
         return Promise.reject(error);
