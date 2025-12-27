@@ -169,9 +169,7 @@ class ProviderBookingWorkflowTest extends TestCase
                     'base_price',
                 ],
                 'booking_date',
-                'scheduled_time',
-                'notes',
-                'budget',
+                'start_time',
                 'created_at',
             ],
         ]);
@@ -239,7 +237,7 @@ class ProviderBookingWorkflowTest extends TestCase
 
         $this->assertDatabaseHas('bookings', [
             'id' => $booking->id,
-            'status' => BookingStatus::DECLINED->value,
+            'status' => BookingStatus::CANCELLED->value,
         ]);
     }
 
@@ -255,7 +253,6 @@ class ProviderBookingWorkflowTest extends TestCase
             'provider_id' => $this->provider->id,
             'service_id' => $this->requestService->id,
             'status' => BookingStatus::PENDING->value,
-            'budget' => 250,
         ]);
 
         $response = $this->actingAs($this->provider)

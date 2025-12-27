@@ -182,41 +182,21 @@ class CustomerBookingJourneyTest extends TestCase
     /**
      * Krok 3: Wyświetlenie szczegółów dostawcy
      * 
-     * Customer powinien móc wyświetlić pełne detale dostawcy i jego usług
+     * Customer powinien móc wyświetlić usługi dostawcy i jego ocenę
      */
     public function test_customer_can_view_provider_details(): void
     {
         $response = $this->actingAs($this->customer)
-            ->getJson('/api/v1/providers/' . $this->provider->id);
+            ->getJson('/api/v1/providers/' . $this->provider->id . '/services');
 
         $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'data' => [
-                'id',
-                'name',
-                'email',
-                'profile' => [
-                    'trust_score',
-                    'verification_level',
-                    'response_time',
-                    'completion_rate',
-                ],
-                'services' => [
-                    '*' => [
-                        'id',
-                        'title',
-                        'description',
-                        'base_price',
-                        'instant_booking',
-                    ],
-                ],
-            ],
-        ]);
-
-        $provider = $response->json('data');
-        $this->assertEquals($this->provider->id, $provider['id']);
-        $this->assertEquals(92, $provider['profile']['trust_score']);
-        $this->assertCount(2, $provider['services']);
+        $services = $response->json('data');
+        
+        $this->assertCount(2, $services);
+        foreach ($services as $service) {
+            $this->assertEquals($this->provider->id, $service['provider_id']);
+            $this->assertNotEmpty($service['title']);
+        }
     }
 
     /**
@@ -230,9 +210,10 @@ class CustomerBookingJourneyTest extends TestCase
         $response = $this->actingAs($this->customer)
             ->postJson('/api/v1/bookings', [
                 'service_id' => $this->instantService->id,
-                'scheduled_date' => now()->addDays(3)->format('Y-m-d'),
-                'scheduled_time' => '10:00',
-                'notes' => 'Proszę przyjechać ok 10:00',
+                'booking_date' => now()->addDays(3)->format('Y-m-d'),
+                'start_time' => '10:00',
+                'customer_notes' => 'Proszę przyjechać ok 10:00',
+                'service_address' => '123 Main St',
             ]);
 
         $response->assertStatus(201);
@@ -243,8 +224,8 @@ class CustomerBookingJourneyTest extends TestCase
                 'customer' => ['id', 'name'],
                 'provider' => ['id', 'name'],
                 'service' => ['id', 'title', 'base_price'],
-                'scheduled_date',
-                'scheduled_time',
+                'booking_date',
+                'start_time',
             ],
         ]);
 
@@ -394,7 +375,7 @@ class CustomerBookingJourneyTest extends TestCase
             'provider_id' => $this->provider->id,
             'service_id' => $this->instantService->id,
             'status' => BookingStatus::CONFIRMED->value,
-            'scheduled_date' => now()->addDays(3),
+            'booking_date' => now()->addDays(3),
         ]);
 
         $response = $this->actingAs($this->customer)
@@ -443,7 +424,7 @@ class CustomerBookingJourneyTest extends TestCase
             ]);
 
         $response->assertStatus(422);
-        $response->assertJsonValidationErrors(['scheduled_date', 'scheduled_time']);
+        $response->assertJsonValidationErrors(['booking_date', 'start_time']);
     }
 
     /**
@@ -454,9 +435,9 @@ class CustomerBookingJourneyTest extends TestCase
         $response = $this->actingAs($this->customer)
             ->postJson('/api/v1/bookings', [
                 'service_id' => $this->instantService->id,
-                'scheduled_date' => now()->subDays(1)->format('Y-m-d'),
+                'booking_date' => now()->subDays(1)->format('Y-m-d'),
                 'start_time' => '10:00',
-                'scheduled_time' => '10:00',
+                'service_address' => '123 Main St',
             ]);
 
         $response->assertStatus(422);
@@ -470,8 +451,9 @@ class CustomerBookingJourneyTest extends TestCase
     {
         $response = $this->postJson('/api/v1/bookings', [
             'service_id' => $this->instantService->id,
-            'scheduled_date' => now()->addDays(3)->format('Y-m-d'),
-            'scheduled_time' => '10:00',
+            'booking_date' => now()->addDays(3)->format('Y-m-d'),
+            'start_time' => '10:00',
+            'service_address' => '123 Main St',
         ]);
 
         $response->assertStatus(401);

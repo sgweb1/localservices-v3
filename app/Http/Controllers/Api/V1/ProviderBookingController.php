@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\BookingStatus;
 use App\Enums\UserType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BookingResource;
@@ -42,15 +43,23 @@ class ProviderBookingController extends Controller
 
         $perPage = $request->input('per_page', 15);
         $page = $request->input('page', 1);
+        $status = $request->input('status');
 
         // DEBUG: pokaż wszystkie booking IDs w bazie
         $allBookingIds = Booking::pluck('id')->toArray();
         $annaBookingIds = Booking::where('provider_id', $user->id)->pluck('id')->toArray();
 
         // Pobierz bookings providera z paginacją (bez ukrytych)
-        $bookingsPaginated = Booking::with(['customer:id,name', 'service:id,title'])
+        $query = Booking::with(['customer:id,name', 'service:id,title'])
             ->where('provider_id', $user->id)
-            ->where('hidden_by_provider', 0)
+            ->where('hidden_by_provider', 0);
+
+        // Filtrowanie po statusie jeśli podany
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        $bookingsPaginated = $query
             ->orderBy('booking_date', 'desc')
             ->orderBy('start_time', 'desc')
             ->paginate($perPage);
@@ -278,14 +287,31 @@ class ProviderBookingController extends Controller
             return response()->json(['error' => 'Rezerwacja nie została znaleziona'], 404);
         }
 
-        if ($booking->status !== 'confirmed') {
+        // Validate status - booking must be in progress to complete
+        if ($booking->status !== BookingStatus::IN_PROGRESS->value) {
             return response()->json([
-                'error' => 'Można rozpocząć tylko potwierdzone rezerwacje',
+                'error' => 'Można zakończyć tylko rezerwacje w trakcie realizacji',
                 'current_status' => $booking->status
             ], 422);
         }
 
-        $booking->update(['status' => 'completed']);
+        // Validate request data
+        $validated = $request->validate([
+            'notes' => 'nullable|string|max:1000',
+            'final_price' => 'nullable|numeric|min:0',
+        ]);
+
+        $updateData = ['status' => BookingStatus::COMPLETED->value];
+        
+        if (!empty($validated['final_price'])) {
+            $updateData['total_price'] = $validated['final_price'];
+        }
+        
+        if (!empty($validated['notes'])) {
+            $updateData['provider_notes'] = $validated['notes'];
+        }
+
+        $booking->update($updateData);
 
         // Wyślij powiadomienie do customera (prośba o opinię)
         if ($booking->customer) {
