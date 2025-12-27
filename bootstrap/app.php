@@ -18,23 +18,24 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->prefix('api/v1')
                 ->group(base_path('routes/api/v1/auth.php'));
             
-            Route::middleware('api')
+            Route::middleware(['api', 'auth:sanctum'])
                 ->prefix('api/v1')
                 ->group(base_path('routes/api/v1/profile.php'));
 
-            Route::middleware('api')
+            // Marketplace - public routes, no auth required
+            Route::middleware([])
                 ->prefix('api/v1')
                 ->group(base_path('routes/api/v1/marketplace.php'));
 
-            Route::middleware('api')
+            Route::middleware(['api', 'auth:sanctum'])
                 ->prefix('api/v1')
                 ->group(base_path('routes/api/v1/provider.php'));
 
-            Route::middleware('api')
+            Route::middleware(['api', 'auth:sanctum'])
                 ->prefix('api/v1')
                 ->group(base_path('routes/api/v1/provider-services.php'));
 
-            Route::middleware('api')
+            Route::middleware([])
                 ->prefix('api/v1')
                 ->group(base_path('routes/api/v1/push.php'));
 

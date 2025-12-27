@@ -11,6 +11,7 @@ use App\Models\ProviderProfile;
 use App\Enums\UserType;
 use App\Enums\BookingStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 /**
@@ -116,8 +117,8 @@ class CustomerBookingJourneyTest extends TestCase
      */
     public function test_customer_can_browse_services_by_location(): void
     {
-        $response = $this->actingAs($this->customer)
-            ->getJson('/api/v1/services?location=' . $this->warsaw->slug);
+        Sanctum::actingAs($this->customer);
+        $response = $this->getJson('/api/v1/services?location=' . $this->warsaw->slug);
 
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -162,8 +163,8 @@ class CustomerBookingJourneyTest extends TestCase
             'status' => 'active',
         ]);
 
-        $response = $this->actingAs($this->customer)
-            ->getJson('/api/v1/services?location=' . $this->warsaw->slug . '&category=' . $this->plumbing->slug);
+        Sanctum::actingAs($this->customer);
+        $response = $this->getJson('/api/v1/services?location=' . $this->warsaw->slug . '&category=' . $this->plumbing->slug);
 
         $response->assertStatus(200);
         $services = $response->json('data');
@@ -177,12 +178,13 @@ class CustomerBookingJourneyTest extends TestCase
     /**
      * Krok 3: Wyświetlenie szczegółów dostawcy
      * 
-     * Customer powinien móc wyświetlić usługi dostawcy i jego ocenę
+     * Customer powinien móc wyświetlić usługi dostawcy
      */
     public function test_customer_can_view_provider_details(): void
     {
-        $response = $this->actingAs($this->customer)
-            ->getJson('/api/v1/providers/' . $this->provider->id . '/services');
+        // Endpoint jest publiczny, nie wymaga autentykacji
+        $url = '/api/v1/providers/' . $this->provider->id . '/services';
+        $response = $this->getJson($url);
 
         $response->assertStatus(200);
         $services = $response->json('data');
@@ -203,15 +205,15 @@ class CustomerBookingJourneyTest extends TestCase
      */
     public function test_customer_can_book_instant_service(): void
     {
-        $response = $this->actingAs($this->customer)
-            ->postJson('/api/v1/bookings', [
-                'service_id' => $this->instantService->id,
-                'provider_id' => $this->provider->id,
-                'booking_date' => now()->addDays(3)->format('Y-m-d'),
-                'start_time' => '10:00',
-                'customer_notes' => 'Proszę przyjechać ok 10:00',
-                'service_address' => '123 Main St',
-            ]);
+        Sanctum::actingAs($this->customer);
+        $response = $this->postJson('/api/v1/bookings', [
+            'service_id' => $this->instantService->id,
+            'provider_id' => $this->provider->id,
+            'booking_date' => now()->addDays(3)->format('Y-m-d'),
+            'start_time' => '10:00',
+            'customer_notes' => 'Proszę przyjechać ok 10:00',
+            'service_address' => '123 Main St',
+        ]);
 
         $response->assertStatus(201);
         $response->assertJsonStructure([
@@ -249,15 +251,15 @@ class CustomerBookingJourneyTest extends TestCase
      */
     public function test_customer_can_request_quote(): void
     {
-        $response = $this->actingAs($this->customer)
-            ->postJson('/api/v1/bookings', [
-                'service_id' => $this->requestService->id,
-                'booking_date' => now()->addDays(5)->format('Y-m-d'),
-                'start_time' => '14:00',
-                'service_address' => '123 Main St, Warszawa',
-                'provider_id' => $this->provider->id,
-                'customer_notes' => 'Pralka przestała wirować, możliwe problemy z silnikiem',
-            ]);
+        Sanctum::actingAs($this->customer);
+        $response = $this->postJson('/api/v1/bookings', [
+            'service_id' => $this->requestService->id,
+            'booking_date' => now()->addDays(5)->format('Y-m-d'),
+            'start_time' => '14:00',
+            'service_address' => '123 Main St, Warszawa',
+            'provider_id' => $this->provider->id,
+            'customer_notes' => 'Pralka przestała wirować, możliwe problemy z silnikiem',
+        ]);
 
         $response->assertStatus(201);
         $booking = $response->json('data');
@@ -300,8 +302,8 @@ class CustomerBookingJourneyTest extends TestCase
         ]);
 
         // Pobranie rezerwacji klienta
-        $response = $this->actingAs($this->customer)
-            ->getJson('/api/v1/bookings');
+        Sanctum::actingAs($this->customer);
+        $response = $this->getJson('/api/v1/bookings');
 
         $response->assertStatus(200);
         $bookings = $response->json('data');
@@ -336,8 +338,8 @@ class CustomerBookingJourneyTest extends TestCase
             'customer_notes' => 'Szybka wymiana',
         ]);
 
-        $response = $this->actingAs($this->customer)
-            ->getJson('/api/v1/bookings/' . $booking->id);
+        Sanctum::actingAs($this->customer);
+        $response = $this->getJson('/api/v1/bookings/' . $booking->id);
 
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -376,10 +378,10 @@ class CustomerBookingJourneyTest extends TestCase
             'booking_date' => now()->addDays(3),
         ]);
 
-        $response = $this->actingAs($this->customer)
-            ->postJson('/api/v1/bookings/' . $booking->id . '/cancel', [
-                'reason' => 'Zmieniłem plany',
-            ]);
+        Sanctum::actingAs($this->customer);
+        $response = $this->postJson('/api/v1/bookings/' . $booking->id . '/cancel', [
+            'reason' => 'Zmieniłem plany',
+        ]);
 
         $response->assertStatus(200);
         $data = $response->json('data');
@@ -404,8 +406,8 @@ class CustomerBookingJourneyTest extends TestCase
             'service_id' => $this->instantService->id,
         ]);
 
-        $response = $this->actingAs($this->customer)
-            ->getJson('/api/v1/bookings/' . $booking->id);
+        Sanctum::actingAs($this->customer);
+        $response = $this->getJson('/api/v1/bookings/' . $booking->id);
 
         $response->assertStatus(403);
     }
@@ -415,11 +417,11 @@ class CustomerBookingJourneyTest extends TestCase
      */
     public function test_customer_cannot_book_without_required_fields(): void
     {
-        $response = $this->actingAs($this->customer)
-            ->postJson('/api/v1/bookings', [
-                'service_id' => $this->instantService->id,
-                // brak scheduled_date i scheduled_time
-            ]);
+        Sanctum::actingAs($this->customer);
+        $response = $this->postJson('/api/v1/bookings', [
+            'service_id' => $this->instantService->id,
+            // brak scheduled_date i scheduled_time
+        ]);
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['booking_date', 'start_time']);
@@ -430,13 +432,13 @@ class CustomerBookingJourneyTest extends TestCase
      */
     public function test_customer_cannot_book_in_the_past(): void
     {
-        $response = $this->actingAs($this->customer)
-            ->postJson('/api/v1/bookings', [
-                'service_id' => $this->instantService->id,
-                'booking_date' => now()->subDays(1)->format('Y-m-d'),
-                'start_time' => '10:00',
-                'service_address' => '123 Main St',
-            ]);
+        Sanctum::actingAs($this->customer);
+        $response = $this->postJson('/api/v1/bookings', [
+            'service_id' => $this->instantService->id,
+            'booking_date' => now()->subDays(1)->format('Y-m-d'),
+            'start_time' => '10:00',
+            'service_address' => '123 Main St',
+        ]);
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['booking_date']);
