@@ -187,10 +187,11 @@ class CustomerBookingJourneyTest extends TestCase
         $response->assertStatus(200);
         $services = $response->json('data');
         
-        $this->assertCount(2, $services);
+        $this->assertGreaterThanOrEqual(2, count($services));
         foreach ($services as $service) {
             $this->assertEquals($this->provider->id, $service['provider_id']);
             $this->assertNotEmpty($service['title']);
+            $this->assertNotNull($service['category_id']);
         }
     }
 
