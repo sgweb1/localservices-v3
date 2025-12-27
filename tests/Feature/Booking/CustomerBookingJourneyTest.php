@@ -205,6 +205,7 @@ class CustomerBookingJourneyTest extends TestCase
         $response = $this->actingAs($this->customer)
             ->postJson('/api/v1/bookings', [
                 'service_id' => $this->instantService->id,
+                'provider_id' => $this->provider->id,
                 'booking_date' => now()->addDays(3)->format('Y-m-d'),
                 'start_time' => '10:00',
                 'customer_notes' => 'Proszę przyjechać ok 10:00',
