@@ -32,6 +32,7 @@ Route::middleware(['auth:sanctum'])->prefix('provider')->group(function () {
     
     // Bookings management
     Route::get('/bookings', [ProviderBookingController::class, 'index'])->name('api.provider.bookings.index');
+    Route::get('/bookings/{id}', [ProviderBookingController::class, 'show'])->name('api.provider.bookings.show');
     Route::get('/statistics', [ProviderBookingController::class, 'statistics'])->name('api.provider.statistics');
     Route::post('/bookings/complete-overdue', [ProviderBookingController::class, 'completeOverdue'])->name('api.provider.bookings.complete-overdue');
     Route::post('/bookings/{id}/accept', [ProviderBookingController::class, 'accept'])->name('api.provider.bookings.accept');

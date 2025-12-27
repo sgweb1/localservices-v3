@@ -125,6 +125,34 @@ class ProviderBookingController extends Controller
     }
 
     /**
+     * Pokaż rezerwację providera
+     * 
+     * @param Request $request
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function show(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user || $user->user_type !== UserType::Provider) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $booking = Booking::where('provider_id', $user->id)
+            ->where('id', $id)
+            ->first();
+
+        if (!$booking) {
+            return response()->json(['error' => 'Rezerwacja nie została znaleziona'], 403);
+        }
+
+        return response()->json([
+            'data' => new BookingResource($booking->fresh(['service', 'customer', 'provider'])),
+        ], 200);
+    }
+
+    /**
      * Zaakceptuj booking (pending -> confirmed)
      * 
      * @param Request $request
