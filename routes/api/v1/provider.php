@@ -24,6 +24,10 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth:sanctum'])->prefix('provider')->group(function () {
     // Dashboard widgets
     Route::get('/dashboard/widgets', [ProviderDashboardController::class, 'widgets'])->name('api.provider.dashboard.widgets');
+    Route::get('/dashboard/bookings', [ProviderDashboardController::class, 'bookings'])->name('api.provider.dashboard.bookings');
+    Route::get('/dashboard/conversations', [ProviderDashboardController::class, 'conversations'])->name('api.provider.dashboard.conversations');
+    Route::get('/dashboard/reviews', [ProviderDashboardController::class, 'reviews'])->name('api.provider.dashboard.reviews');
+    Route::get('/dashboard/performance', [ProviderDashboardController::class, 'performance'])->name('api.provider.dashboard.performance');
 
     // Provider reviews (current authenticated provider)
     Route::get('/reviews', [ReviewController::class, 'selfReviews'])->name('api.provider.reviews.self');

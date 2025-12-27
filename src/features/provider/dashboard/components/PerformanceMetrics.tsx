@@ -17,7 +17,7 @@ export const PerformanceMetrics: React.FC = () => {
     );
   }
 
-  // Mock data dla dev
+  // Dane ze zhaká
   const metrics = data?.data || {
     response_time: 8.5,
     completion_rate: 94,

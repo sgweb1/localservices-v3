@@ -18,30 +18,8 @@ export const RecentReviews: React.FC = () => {
     );
   }
 
-  // Mock data
-  const reviews = data?.data || [
-    {
-      id: 1,
-      customer_name: 'Jan Kowalski',
-      rating: 5,
-      comment: 'Doskonała robota! Szybko i profesjonalnie. Polecam!',
-      date: '2025-12-26',
-    },
-    {
-      id: 2,
-      customer_name: 'Maria Nowak',
-      rating: 4,
-      comment: 'Bardzo dobry serwis, przyjazne podejście.',
-      date: '2025-12-25',
-    },
-    {
-      id: 3,
-      customer_name: 'Anna Wójcik',
-      rating: 5,
-      comment: 'Rekomendowałam już trzem znajomym. Zawsze niezawodny!',
-      date: '2025-12-24',
-    },
-  ];
+  // Dane ze zhaká
+  const reviews = data?.data || [];
 
   return (
     <div className="bg-white dark:bg-gray-950 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">

@@ -18,36 +18,8 @@ export const RecentBookings: React.FC = () => {
     );
   }
 
-  // Mock data dla dev
-  const bookings = data?.data || [
-    {
-      id: 1,
-      customer_name: 'Jan Kowalski',
-      service: 'Naprawa kranu',
-      date: '2025-12-27',
-      time: '14:30',
-      status: 'confirmed',
-      location: 'ul. Główna 5, Warszawa',
-    },
-    {
-      id: 2,
-      customer_name: 'Maria Nowak',
-      service: 'Montaż oświetlenia',
-      date: '2025-12-28',
-      time: '10:00',
-      status: 'pending',
-      location: 'ul. Brzozowa 12, Warszawa',
-    },
-    {
-      id: 3,
-      customer_name: 'Piotr Wiśniewski',
-      service: 'Przegląd instalacji',
-      date: '2025-12-29',
-      time: '15:00',
-      status: 'completed',
-      location: 'ul. Leśna 8, Piaseczno',
-    },
-  ];
+  // Dane ze zhaká
+  const bookings = data?.data || [];
 
   const getStatusColor = (status: string) => {
     switch (status) {

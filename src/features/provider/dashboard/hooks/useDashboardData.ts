@@ -22,7 +22,7 @@ export const useRecentBookings = (limit = 5) => {
   return useQuery({
     queryKey: ['dashboard', 'bookings', limit],
     queryFn: async () => {
-      const response = await apiGet(`/bookings?limit=${limit}&sort=-created_at`);
+      const response = await apiGet(`/provider/dashboard/bookings?limit=${limit}&sort=-created_at`);
       return response.json();
     },
     staleTime: 2 * 60 * 1000,
@@ -36,7 +36,7 @@ export const useRecentMessages = (limit = 5) => {
   return useQuery({
     queryKey: ['dashboard', 'messages', limit],
     queryFn: async () => {
-      const response = await apiGet(`/conversations?limit=${limit}&sort=-updated_at`);
+      const response = await apiGet(`/provider/dashboard/conversations?limit=${limit}&sort=-updated_at`);
       return response.json();
     },
     staleTime: 1 * 60 * 1000,
@@ -50,7 +50,7 @@ export const useProviderPerformance = () => {
   return useQuery({
     queryKey: ['dashboard', 'performance'],
     queryFn: async () => {
-      const response = await apiGet('/provider/performance');
+      const response = await apiGet('/provider/dashboard/performance');
       return response.json();
     },
     staleTime: 10 * 60 * 1000,
@@ -64,7 +64,7 @@ export const useRecentReviews = (limit = 5) => {
   return useQuery({
     queryKey: ['dashboard', 'reviews', limit],
     queryFn: async () => {
-      const response = await apiGet(`/reviews?limit=${limit}&sort=-created_at`);
+      const response = await apiGet(`/provider/dashboard/reviews?limit=${limit}&sort=-created_at`);
       return response.json();
     },
     staleTime: 15 * 60 * 1000,

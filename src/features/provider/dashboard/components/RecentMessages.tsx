@@ -18,30 +18,8 @@ export const RecentMessages: React.FC = () => {
     );
   }
 
-  // Mock data
-  const conversations = data?.data || [
-    {
-      id: 1,
-      customer_name: 'Jan Kowalski',
-      last_message: 'Czy jeszcze są dostępne terminy w ten weekend?',
-      time: '5 min temu',
-      unread: 1,
-    },
-    {
-      id: 2,
-      customer_name: 'Maria Nowak',
-      last_message: 'Dziękuję za szybką Service! Polecę Cię znajomym.',
-      time: '2 godziny temu',
-      unread: 0,
-    },
-    {
-      id: 3,
-      customer_name: 'Anna Wójcik',
-      last_message: 'O której będziesz jutro?',
-      time: '1 dzień temu',
-      unread: 0,
-    },
-  ];
+  // Dane ze zhaká
+  const conversations = data?.data || [];
 
   return (
     <div className="bg-white dark:bg-gray-950 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
