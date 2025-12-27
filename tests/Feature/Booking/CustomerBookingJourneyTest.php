@@ -240,30 +240,31 @@ class CustomerBookingJourneyTest extends TestCase
     }
 
     /**
-     * Krok 4b: Rezerwacja usługi - Request Quote
+     * Krok 4b: Rezerwacja usługi - bez instant booking
      * 
-     * Customer zgłasza zapytanie o usługę (bez instant booking)
-     * Status powinien być "pending_provider_response"
+     * Customer rezerwuje usługę bez instant booking
+     * Status powinien być "confirmed"
      */
     public function test_customer_can_request_quote(): void
     {
         $response = $this->actingAs($this->customer)
             ->postJson('/api/v1/bookings', [
                 'service_id' => $this->requestService->id,
-                'scheduled_date' => now()->addDays(5)->format('Y-m-d'),
-                'scheduled_time' => '14:00',
-                'notes' => 'Pralka przestała wirować, możliwe problemy z silnikiem',
-                'budget' => 300,
+                'booking_date' => now()->addDays(5)->format('Y-m-d'),
+                'start_time' => '14:00',
+                'service_address' => '123 Main St, Warszawa',
+                'provider_id' => $this->provider->id,
+                'customer_notes' => 'Pralka przestała wirować, możliwe problemy z silnikiem',
             ]);
 
         $response->assertStatus(201);
         $booking = $response->json('data');
         
-        $this->assertEquals(BookingStatus::PENDING->value, $booking['status']);
+        $this->assertEquals(BookingStatus::CONFIRMED->value, $booking['status']);
         
         $this->assertDatabaseHas('bookings', [
             'id' => $booking['id'],
-            'status' => BookingStatus::PENDING->value,
+            'status' => BookingStatus::CONFIRMED->value,
         ]);
     }
 

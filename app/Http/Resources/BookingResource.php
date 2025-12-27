@@ -26,6 +26,8 @@ class BookingResource extends JsonResource
             'total_price' => (float) $this->total_price,
             'currency' => $this->currency,
             'payment_status' => $this->payment_status,
+            'customer_notes' => $this->customer_notes,
+            'provider_notes' => $this->provider_notes,
             'service' => new ServiceResource($this->whenLoaded('service')),
             'customer' => new UserBasicResource($this->whenLoaded('customer')),
             'provider' => new UserBasicResource($this->whenLoaded('provider')),
