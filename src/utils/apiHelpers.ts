@@ -13,13 +13,26 @@ export const getCsrfToken = (): string => {
 };
 
 /**
- * Wrapper dla fetch z automatycznym dodaniem CSRF tokenu
+ * Pobiera token Sanctum z localStorage (DEV lub session)
+ */
+export const getAuthToken = (): string => {
+  // DEV: mock token w localStorage
+  if (import.meta.env.DEV) {
+    return localStorage.getItem('dev_mock_token') || '';
+  }
+  // PROD: Sanctum token w localStorage lub cookie
+  return localStorage.getItem('sanctum_token') || '';
+};
+
+/**
+ * Wrapper dla fetch z automatycznym dodaniem CSRF i Auth tokenów
  */
 export const apiFetch = async (
   url: string,
   options: RequestInit = {}
 ): Promise<Response> => {
   const csrfToken = getCsrfToken();
+  const authToken = getAuthToken();
   
   const headers: Record<string, string> = {
     Accept: 'application/json',
@@ -36,6 +49,11 @@ export const apiFetch = async (
     });
   } else if (options.headers) {
     Object.assign(headers, options.headers);
+  }
+
+  // Dodaj Authorization header jeśli mamy token
+  if (authToken) {
+    headers['Authorization'] = `Bearer ${authToken}`;
   }
 
   // Dodaj CSRF token dla mutating methods (POST, PUT, PATCH, DELETE)

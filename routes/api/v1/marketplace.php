@@ -60,7 +60,7 @@ Route::middleware(['api'])->group(function () {
     Route::get('/providers/{providerId}/rating', [ReviewController::class, 'providerRating']);
 
     // Chat - wymaga autoryzacji
-    Route::middleware(['auth:web'])->group(function () {
+    Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/conversations', [ChatController::class, 'conversations']);
         Route::post('/conversations', [ChatController::class, 'store']);
         Route::get('/conversations/{conversationId}', [ChatController::class, 'show']);

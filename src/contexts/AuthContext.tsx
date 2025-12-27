@@ -11,6 +11,7 @@ export interface User {
 export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
+  token: string | null;
   login: (user: User) => void;
   logout: () => void;
 }
@@ -27,6 +28,16 @@ export const useAuth = () => {
 
 interface AuthProviderProps {
   children: ReactNode;
+}
+
+/**
+ * Generuje mock Sanctum token dla dev środowiska
+ * DEV ONLY - w produkcji token pochodzi z API /login endpoint
+ */
+function generateMockToken(userId: number): string {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 15);
+  return `dev_mock_${userId}_${timestamp}_${random}`;
 }
 
 /**
@@ -57,7 +68,7 @@ export const MOCK_USERS: User[] = [
  * Auth Provider
  * 
  * Zarządza stanem autentykacji użytkownika.
- * TODO: Integracja z Sanctum API (login/logout/me endpoints)
+ * W DEV wysyła mock tokeny - w produkcji integracja z Sanctum API
  */
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Mock user - w produkcji to będzie z API
@@ -78,17 +89,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return null;
   });
 
+  const [token, setToken] = useState<string | null>(() => {
+    if (import.meta.env.DEV) {
+      return localStorage.getItem('dev_mock_token') || generateMockToken(6);
+    }
+    return localStorage.getItem('sanctum_token') || null;
+  });
+
   const login = (userData: User) => {
     setUser(userData);
+    const newToken = import.meta.env.DEV 
+      ? generateMockToken(userData.id)
+      : `sanctum_token_${userData.id}`;
+    setToken(newToken);
     if (import.meta.env.DEV) {
       localStorage.setItem('dev_mock_user', JSON.stringify(userData));
+      localStorage.setItem('dev_mock_token', newToken);
+    } else {
+      localStorage.setItem('sanctum_token', newToken);
     }
   };
 
   const logout = () => {
     setUser(null);
+    setToken(null);
     if (import.meta.env.DEV) {
       localStorage.removeItem('dev_mock_user');
+      localStorage.removeItem('dev_mock_token');
+    } else {
+      localStorage.removeItem('sanctum_token');
     }
   };
 
@@ -97,6 +126,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       value={{
         user,
         isAuthenticated: !!user,
+        token,
         login,
         logout,
       }}

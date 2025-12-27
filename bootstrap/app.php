@@ -46,6 +46,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // API bez przekierowania do login – zwracaj 401
                 $middleware->redirectTo(fn () => null);
         
+        // Mock auth dla dev środowiska (zanim auth:sanctum middleware)
+                $middleware->append(\App\Http\Middleware\MockAuthMiddleware::class);
+        
         // Update user presence on every API request
                 $middleware->append(\App\Http\Middleware\UpdateUserPresence::class);
     })
