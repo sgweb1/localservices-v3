@@ -60,8 +60,10 @@ Route::middleware(['auth:sanctum'])->prefix('provider')->group(function () {
         Route::get('/', [SettingsController::class, 'index'])->name('api.provider.settings.index');
         Route::put('/business', [SettingsController::class, 'updateBusiness'])->name('api.provider.settings.business');
         Route::post('/logo', [SettingsController::class, 'uploadLogo'])->name('api.provider.settings.logo');
+        Route::delete('/logo', [SettingsController::class, 'deleteLogo'])->name('api.provider.settings.logo.delete');
         Route::put('/notifications', [SettingsController::class, 'updateNotifications'])->name('api.provider.settings.notifications');
         Route::put('/password', [SettingsController::class, 'updatePassword'])->name('api.provider.settings.password');
+        Route::put('/subdomain', [SettingsController::class, 'updateSubdomain'])->name('api.provider.settings.subdomain');
     });
 });
 

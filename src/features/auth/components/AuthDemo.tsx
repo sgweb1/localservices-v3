@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export function AuthDemo() {
   const { user, login, logout, register } = useAuth();
@@ -12,11 +14,11 @@ export function AuthDemo() {
       <pre>User: {JSON.stringify(user, null, 2)}</pre>
 
       <div style={{ display: 'flex', gap: 8 }}>
-        <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email" />
-        <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="password" type="password" />
-        <button onClick={() => login({ email, password })}>Login</button>
-        <button onClick={() => logout()}>Logout</button>
-        <button
+        <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email" />
+        <Input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="password" type="password" />
+        <Button onClick={() => login({ email, password })} size="md">Login</Button>
+        <Button onClick={() => logout()} size="md">Logout</Button>
+        <Button
           onClick={() =>
             register({
               name: 'Jan',
@@ -26,6 +28,7 @@ export function AuthDemo() {
               user_type: 'customer',
             })
           }
+          size="md"
         >
           Register demo
         </button>

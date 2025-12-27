@@ -16,6 +16,8 @@ import { ServicesPage as ProviderServicesPage } from './features/provider/pages/
 import { ReviewsPage } from './features/provider/pages/ReviewsPage';
 import { NotificationsPage } from './features/provider/pages/NotificationsPage';
 import { SubscriptionPage } from './features/provider/pages/SubscriptionPage';
+import { PlansPage } from './features/provider/pages/PlansPage';
+import { CheckoutPage } from './features/provider/pages/CheckoutPage';
 import { SettingsPage } from './features/provider/pages/SettingsPage';
 import { SupportPage } from './features/provider/pages/SupportPage';
 import { CalendarPage } from './features/provider/calendar/CalendarPage';
@@ -167,6 +169,8 @@ const App = () => {
             <Route path="profile" element={<ProfilePage />} />
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="subscription" element={<SubscriptionPage />} />
+            <Route path="subscription/plans" element={<PlansPage />} />
+            <Route path="subscription/checkout/:planId" element={<CheckoutPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="support" element={<SupportPage />} />
           </Route>

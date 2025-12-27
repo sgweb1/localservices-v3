@@ -815,7 +815,7 @@ export const ProfilePage: React.FC = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-400">Średnia ocena</span>
-                  <span className="text-base font-bold text-gradient">{(todayMetrics?.avg_rating ?? 0).toFixed(1)} ⭐</span>
+                  <span className="text-base font-bold text-gradient">{Number(todayMetrics?.avg_rating ?? 0).toFixed(1)} ⭐</span>
                 </div>
               </div>
             </div>

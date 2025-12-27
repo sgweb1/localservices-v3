@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { SectionTitle, Text } from '@/components/ui/typography';
 import { toast } from 'sonner';
 import { Bell, Mail, Smartphone, MessageSquare, Clock, Zap, Package, Info } from 'lucide-react';
@@ -198,7 +201,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ data }) => {
   });
 
   const [localPreferences, setLocalPreferences] = useState<Record<number, any>>({});
-  const [debounceTimers, setDebounceTimers] = useState<Record<number, NodeJS.Timeout>>({});
+  const [debounceTimers, setDebounceTimers] = useState<Record<number, ReturnType<typeof setTimeout>>>({});
 
   useEffect(() => {
     if (preferences) {
@@ -340,6 +343,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ data }) => {
             onClick={subscribe}
             disabled={pushStatus === 'pending'}
             variant="primary"
+            size="md"
           >
             {pushStatus === 'pending' ? 'Włączanie…' : 'Włącz powiadomienia push'}
           </Button>
@@ -386,10 +390,10 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ data }) => {
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="text-lg font-bold text-gray-900">{pref.event_name}</h3>
                     {!pref.is_active && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-200 text-gray-700 text-xs font-semibold rounded-full">
-                        <span className="w-2 h-2 bg-gray-500 rounded-full"></span>
+                      <Badge variant="neutral">
+                        <span className="w-2 h-2 bg-gray-500 rounded-full mr-1"></span>
                         Nieaktywne
-                      </span>
+                      </Badge>
                     )}
                   </div>
                   <p className="text-sm text-gray-600">Wybierz kanały, które będą używane dla tego powiadomienia</p>
@@ -456,16 +460,18 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ data }) => {
                       
                       {/* Dev mode test button */}
                       {import.meta.env.DEV && isEnabled && pref.is_active && (
-                        <button
+                        <Button
                           onClick={(e) => {
                             e.stopPropagation();
                             testMutation.mutate({ eventId: pref.event_id, channel });
                           }}
                           disabled={testMutation.isPending}
-                          className="text-xs px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded hover:bg-amber-200 transition-colors disabled:opacity-50"
+                          size="sm"
+                          variant="outline"
+                          className="text-xs h-auto py-0.5"
                         >
                           {testMutation.isPending ? '...' : 'Test'}
-                        </button>
+                        </Button>
                       )}
                     </div>
                   );
@@ -475,7 +481,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ data }) => {
               {/* Advanced options - disabled for inactive events */}
               <div className={`pt-4 border-t border-gray-200 space-y-4 ${!pref.is_active ? 'opacity-50 pointer-events-none' : ''}`}>
                 <div>
-                  <label className="flex items-center gap-2 mb-2">
+                  <label className="flex items-center gap-2 mb-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={current.quiet_hours_enabled}
@@ -487,20 +493,20 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ data }) => {
                   </label>
                   {current.quiet_hours_enabled && (
                     <div className="flex gap-2 ml-6">
-                      <input
+                      <Input
                         type="time"
                         value={current.quiet_hours_start}
                         onChange={(e) => handleQuietHoursChange(pref.event_id, { quiet_hours_start: e.target.value })}
                         disabled={!pref.is_active}
-                        className="text-sm px-2 py-1 border border-gray-300 rounded-lg disabled:opacity-50"
+                        className="text-sm flex-1"
                       />
-                      <span className="text-sm text-gray-600">–</span>
-                      <input
+                      <span className="text-sm text-gray-600 self-center">–</span>
+                      <Input
                         type="time"
                         value={current.quiet_hours_end}
                         onChange={(e) => handleQuietHoursChange(pref.event_id, { quiet_hours_end: e.target.value })}
                         disabled={!pref.is_active}
-                        className="text-sm px-2 py-1 border border-gray-300 rounded-lg disabled:opacity-50"
+                        className="text-sm flex-1"
                       />
                     </div>
                   )}
@@ -508,18 +514,17 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ data }) => {
 
                 <div>
                   <label className="text-sm font-semibold text-gray-700 block mb-2">Częstotliwość</label>
-                  <select
+                  <Select
                     value={current.frequency}
                     onChange={(e) => handleQuietHoursChange(pref.event_id, { frequency: e.target.value })}
                     disabled={!pref.is_active}
-                    className="text-sm px-2 py-1 border border-gray-300 rounded-lg disabled:opacity-50"
                   >
                     <option value="instant">Natychmiastowe</option>
                     <option value="hourly">Co godzinę</option>
                     <option value="daily">Codziennie (8:00)</option>
                     <option value="weekly">Co tydzień (poniedziałek 9:00)</option>
                     <option value="off">Wyłączone</option>
-                  </select>
+                  </Select>
                 </div>
 
                 <label className="flex items-center gap-2">

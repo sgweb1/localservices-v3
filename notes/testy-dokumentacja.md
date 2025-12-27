@@ -32,6 +32,9 @@ php artisan test --group api
 ```
 tests/
 ├── Feature/
+│   ├── Booking/
+│   │   ├── CustomerBookingJourneyTest.php  (SC-201, 12 testów)
+│   │   └── ProviderBookingWorkflowTest.php (SC-002, 15 testów)
 │   └── Api/
 │       └── V1/
 │           ├── LocationControllerTest.php  (9 testów)
@@ -40,6 +43,36 @@ tests/
 ```
 
 ### Pokrycie testów backend
+
+**CustomerBookingJourneyTest.php** - SC-201 - 12 testów:
+- ✅ `test_customer_can_browse_services_by_location` - GET /api/v1/services?location={slug}
+- ✅ `test_customer_can_filter_services_by_category` - Filter po kategorii
+- ✅ `test_customer_can_view_provider_details` - GET /api/v1/providers/{id}
+- ✅ `test_customer_can_book_instant_service` - POST /api/v1/bookings (instant)
+- ✅ `test_customer_can_request_quote` - POST /api/v1/bookings (request)
+- ✅ `test_customer_can_track_booking_status` - GET /api/v1/bookings (lista)
+- ✅ `test_customer_can_view_booking_details` - GET /api/v1/bookings/{id}
+- ✅ `test_customer_can_cancel_booking` - POST /api/v1/bookings/{id}/cancel
+- ✅ `test_customer_cannot_view_other_customers_bookings` - 403 Forbidden
+- ✅ `test_customer_cannot_book_without_required_fields` - 422 Validation
+- ✅ `test_customer_cannot_book_in_the_past` - 422 Validation
+- ✅ `test_unauthenticated_user_cannot_book` - 401 Unauthorized
+
+**ProviderBookingWorkflowTest.php** - SC-002 - 15 testów:
+- ✅ `test_provider_receives_notification_on_new_booking` - GET /api/v1/provider/bookings
+- ✅ `test_provider_can_view_booking_details` - GET /api/v1/provider/bookings/{id}
+- ✅ `test_provider_can_accept_booking_request` - POST /api/v1/provider/bookings/{id}/accept
+- ✅ `test_provider_can_decline_booking` - POST /api/v1/provider/bookings/{id}/decline
+- ✅ `test_provider_can_send_quote` - POST /api/v1/provider/bookings/{id}/send-quote
+- ✅ `test_provider_can_chat_with_customer` - POST /api/v1/conversations + /messages
+- ✅ `test_provider_can_read_customer_messages` - GET /api/v1/conversations/{id}/messages
+- ✅ `test_provider_can_mark_booking_in_progress` - POST /api/v1/provider/bookings/{id}/start
+- ✅ `test_provider_can_mark_booking_completed` - POST /api/v1/provider/bookings/{id}/complete
+- ✅ `test_provider_can_filter_bookings_by_status` - GET /api/v1/provider/bookings?status={status}
+- ✅ `test_provider_can_view_statistics` - GET /api/v1/provider/statistics
+- ✅ `test_provider_cannot_view_other_providers_bookings` - 403 Forbidden
+- ✅ `test_provider_cannot_complete_pending_booking` - 422 Validation
+- ✅ `test_unauthenticated_user_cannot_access_provider_bookings` - 401 Unauthorized
 
 **LocationControllerTest.php** - 9 testów:
 - ✅ `test_index_returns_all_locations` - GET /api/v1/locations
@@ -261,7 +294,7 @@ npx playwright show-trace trace.zip
 
 | Typ testu | Obecne | Cel |
 |-----------|--------|-----|
-| Backend (PHPUnit) | 25 testów | 90%+ |
+| Backend (PHPUnit) | 52 testów (SC-201 + SC-002 + API) | 90%+ |
 | Frontend (Vitest) | 15 testów | 80%+ |
 | E2E (Playwright) | 20 testów | Krytyczne przepływy |
 
@@ -297,11 +330,15 @@ npx playwright show-trace trace.zip
 
 ## 🚀 Następne kroki
 
-- [ ] Dodać testy dla ServiceCard komponentu
+- [ ] Uruchomić testy: `php artisan test --group booking`
+- [ ] Zaimplementować API endpoints dla SC-201 (Customer Booking)
+- [ ] Zaimplementować API endpoints dla SC-002 (Provider Workflow)
+- [ ] Dodać testy dla ServiceCard komponentu (React)
 - [ ] Dodać testy dla ServiceDetailsDialog
 - [ ] Dodać testy dla ServiceMap
 - [ ] Dodać testy dla useGeolocation hook
 - [ ] Dodać testy dla LocationClient
+- [ ] Playwright E2E dla booking journey
 - [ ] Zwiększyć coverage backend do 90%
 - [ ] Dodać visual regression tests (Percy/Chromatic)
 - [ ] Dodać performance tests (Lighthouse CI)

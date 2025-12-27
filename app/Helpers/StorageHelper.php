@@ -16,8 +16,8 @@ class StorageHelper
     /**
      * Generuje ścieżkę z shardingiem na podstawie user_id
      * 
-     * Algorytm: userId % 100 daje shard 0-99
-     * Format: {type}/{shard}/{userId}/
+    * Algorytm: floor(userId / 100) → shard 0,1,2... po 100 userów na shard
+    * Format: {type}/{shard}/{userId}/ (shard zero-padowany do 3 cyfr)
      * 
      * @param int $userId ID użytkownika
      * @param string $type Typ pliku (avatars, provider-logos, portfolio, etc.)
@@ -25,7 +25,8 @@ class StorageHelper
      */
     public static function generateShardedPath(int $userId, string $type): string
     {
-        $shard = $userId % 100;
+        // Dynamiczne shardy co 100 użytkowników (0-99 -> 000, 100-199 -> 001 itd.)
+        $shard = str_pad((string) intdiv($userId, 100), 3, '0', STR_PAD_LEFT);
         return "{$type}/{$shard}/{$userId}";
     }
 

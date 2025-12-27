@@ -10,7 +10,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 /**
@@ -57,7 +56,7 @@ class SettingsController extends Controller
                     'name' => $provider->business_name ?? '',
                     'short_description' => $provider->service_description ?? null,
                     'bio' => $user->bio ?? null,
-                    'logo' => $user->avatar ? Storage::url($user->avatar) : null,
+                    'logo' => $user->avatar_url ?? null,
                     'video_url' => $provider->video_introduction_url ?? null,
                     'website' => $provider->website_url ?? null,
                     'social_media' => $provider->social_media ?? [
@@ -66,6 +65,9 @@ class SettingsController extends Controller
                         'linkedin' => null,
                         'tiktok' => null,
                     ],
+                    'subdomain' => $provider->subdomain ?? null,
+                    'subdomain_active' => ! empty($provider->subdomain),
+                    'can_use_subdomain' => $user->hasFeature('has_subdomain'),
                 ],
                 
                 // Notification Preferences
@@ -169,6 +171,36 @@ class SettingsController extends Controller
     }
 
     /**
+     * Usuń logo providera (avatar użytkownika)
+     * 
+     * DELETE /api/v1/provider/settings/logo
+     */
+    public function deleteLogo(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        // Usuń pliki z dysku (obsługa legacy ścieżek w MediaService)
+        $this->mediaService->deleteUserMedia($user->id);
+
+        // Wyczyść rekordy Media dla avatara (soft delete)
+        $user->media()->where('collection', 'avatar')->delete();
+
+        // Ustaw pole avatar na null, żeby UI nie pokazywał starego URL
+        $user->update(['avatar' => null]);
+
+        // Wyślij event dla invalidacji cache itp.
+        \App\Events\AvatarUpdated::dispatch($user);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Logo zostało usunięte',
+            'data' => [
+                'logo_url' => null,
+            ],
+        ]);
+    }
+
+    /**
      * Aktualizuj preferencje powiadomień
      * 
      * PUT /api/v1/provider/settings/notifications
@@ -233,6 +265,83 @@ class SettingsController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Hasło zostało zmienione',
+        ]);
+    }
+
+    /**
+     * Zaktualizuj subdomenę providera (włączenie/wyłączenie + walidacja).
+     * 
+     * PUT /api/v1/provider/settings/subdomain
+     */
+    public function updateSubdomain(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $provider = $user->providerProfile;
+
+        if (! $provider) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Profil providera nie istnieje',
+            ], 404);
+        }
+
+        if (! $user->hasFeature('has_subdomain')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Subdomena jest dostępna w planach Pro i Premium',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'enabled' => ['required', 'boolean'],
+            'subdomain' => [
+                'nullable',
+                'string',
+                'min:3',
+                'max:50',
+                'regex:/^(?!-)[a-z0-9-]{3,50}(?<!-)$/',
+                Rule::notIn(['www', 'admin', 'provider', 'api']),
+                Rule::unique('provider_profiles', 'subdomain')->ignore($provider->id, 'id'),
+            ],
+        ], [
+            'subdomain.regex' => 'Subdomena może zawierać małe litery, cyfry i myślniki, bez myślnika na początku/końcu',
+            'subdomain.unique' => 'Ta subdomena jest już zajęta',
+            'subdomain.not_in' => 'Ta subdomena jest zarezerwowana',
+        ]);
+
+        if (! $validated['enabled']) {
+            $provider->update(['subdomain' => null]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Subdomena została wyłączona',
+                'data' => [
+                    'subdomain' => null,
+                    'subdomain_active' => false,
+                ],
+            ]);
+        }
+
+        $subdomain = strtolower(trim((string) ($validated['subdomain'] ?? '')));
+
+        if ($subdomain === '') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Podaj nazwę subdomeny',
+            ], 422);
+        }
+
+        $provider->update([
+            'subdomain' => $subdomain,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Subdomena została zapisana',
+            'data' => [
+                'subdomain' => $provider->subdomain,
+                'subdomain_active' => ! empty($provider->subdomain),
+            ],
         ]);
     }
 }

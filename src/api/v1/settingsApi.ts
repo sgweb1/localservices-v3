@@ -19,6 +19,9 @@ export interface SettingsData {
       linkedin?: string | null;
       tiktok?: string | null;
     };
+    subdomain?: string | null;
+    subdomain_active?: boolean;
+    can_use_subdomain?: boolean;
   };
   notifications: {
     email: {
@@ -48,6 +51,7 @@ export interface SettingsResponse {
 export interface MessageResponse {
   success: boolean;
   message: string;
+  data?: Record<string, unknown>;
 }
 
 export interface LogoUploadResponse {
@@ -56,6 +60,11 @@ export interface LogoUploadResponse {
   data: {
     logo_url: string;
   };
+}
+
+export interface UpdateSubdomainPayload {
+  enabled: boolean;
+  subdomain?: string | null;
 }
 
 /**
@@ -93,6 +102,14 @@ export async function uploadLogo(file: File): Promise<LogoUploadResponse> {
 }
 
 /**
+ * Usuń logo providera
+ */
+export async function deleteLogo(): Promise<LogoUploadResponse> {
+  const response = await apiClient.delete<LogoUploadResponse>('/provider/settings/logo');
+  return response.data;
+}
+
+/**
  * Aktualizuj preferencje powiadomień
  */
 export async function updateNotifications(
@@ -114,5 +131,13 @@ export async function updatePassword(data: {
   new_password_confirmation: string;
 }): Promise<MessageResponse> {
   const response = await apiClient.put<MessageResponse>('/provider/settings/password', data);
+  return response.data;
+}
+
+/**
+ * Aktualizuj subdomenę providera
+ */
+export async function updateSubdomainSettings(payload: UpdateSubdomainPayload): Promise<MessageResponse> {
+  const response = await apiClient.put<MessageResponse>('/provider/settings/subdomain', payload);
   return response.data;
 }

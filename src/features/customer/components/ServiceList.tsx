@@ -153,7 +153,7 @@ const ServiceFilter: React.FC<{
                 emitFilters(false);
               }
             }}
-            className="pl-11 h-12 text-base shadow-sm"
+            className="pl-11 h-9 text-sm shadow-sm"
           />
         </div>
         <Button
@@ -246,7 +246,7 @@ const ServiceFilter: React.FC<{
                 value={minPrice}
                 onChange={(e) => setMinPrice(e.target.value)}
                 placeholder="0"
-                className="h-12 text-base"
+                className="h-9 text-sm"
               />
             </div>
 
@@ -258,7 +258,7 @@ const ServiceFilter: React.FC<{
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
                 placeholder="500"
-                className="h-12 text-base"
+                className="h-9 text-sm"
               />
             </div>
 

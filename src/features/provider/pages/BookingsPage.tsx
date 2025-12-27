@@ -3,6 +3,7 @@ import { useBookings } from '../dashboard/hooks/useBookings';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/api/client';
 import { toast } from 'sonner';
+import { useConfirm } from '@/hooks/useConfirm';
 import { Button } from '@/components/ui/button';
 import { PageTitle, SectionTitle, Text, Caption, Badge, StatValue, EmptyText } from '@/components/ui/typography';
 import { Card, StatCard } from '@/components/ui/card';
@@ -46,7 +47,7 @@ export const BookingsPage: React.FC = () => {
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+  const { confirm, ConfirmDialog } = useConfirm();
   
   const items = data?.data ?? [];
   const stats = data?.counts ?? { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0 };
@@ -115,12 +116,23 @@ export const BookingsPage: React.FC = () => {
       toast.success(response.data.message || 'Rezerwacja została ukryta w Twoim panelu');
       queryClient.invalidateQueries({ queryKey: ['provider', 'bookings'] });
       queryClient.invalidateQueries({ queryKey: ['provider', 'dashboard', 'widgets'] });
-      setDeleteConfirmId(null);
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.error || 'Wystąpił błąd podczas ukrywania rezerwacji');
     },
   });
+
+  const handleDeleteBooking = async (bookingId: number) => {
+    const ok = await confirm({
+      title: 'Potwierdź ukrycie',
+      message: 'Czy na pewno chcesz ukryć tę rezerwację? Rezerwacja zniknie z Twojego panelu, ale klient nadal będzie ją widzieć.',
+      confirmText: 'Ukryj',
+      variant: 'danger',
+    });
+    if (ok) {
+      deleteMutation.mutate(bookingId);
+    }
+  };
 
   // Filtrowanie
   let filteredItems = items;
@@ -514,7 +526,7 @@ export const BookingsPage: React.FC = () => {
                                 Odrzuć
                               </Button>
                               <Button 
-                                onClick={() => setDeleteConfirmId(booking.id)}
+                                onClick={() => handleDeleteBooking(booking.id)}
                                 variant="neutral"
                                 size="lg"
                               >
@@ -536,7 +548,7 @@ export const BookingsPage: React.FC = () => {
                                 Oznacz jako zrealizowane
                               </Button>
                               <Button 
-                                onClick={() => setDeleteConfirmId(booking.id)}
+                                onClick={() => handleDeleteBooking(booking.id)}
                                 variant="neutral"
                                 size="lg"
                               >
@@ -549,7 +561,7 @@ export const BookingsPage: React.FC = () => {
                           {(booking.status === 'completed' || booking.status === 'cancelled' || booking.status === 'rejected') && (
                             <div className="mt-6">
                               <Button 
-                                onClick={() => setDeleteConfirmId(booking.id)}
+                                onClick={() => handleDeleteBooking(booking.id)}
                                 variant="neutral"
                                 size="lg"
                               >
@@ -696,50 +708,7 @@ export const BookingsPage: React.FC = () => {
       )}
 
       {/* Modal potwierdzenia usunięcia */}
-      {deleteConfirmId !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setDeleteConfirmId(null)}>
-          <div className="glass-card rounded-2xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                <EyeOff className="w-5 h-5 text-red-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">Potwierdź ukrycie</h3>
-                <p className="text-sm text-slate-600 mb-4">
-                  Czy na pewno chcesz ukryć tę rezerwację? Rezerwacja zniknie z Twojego panelu, ale klient nadal będzie ją widzieć.
-                </p>
-                <div className="flex gap-3 justify-end mt-6">
-                  <Button
-                    onClick={() => setDeleteConfirmId(null)}
-                    variant="secondary"
-                    size="lg"
-                  >
-                    Anuluj
-                  </Button>
-                  <Button
-                    onClick={() => deleteMutation.mutate(deleteConfirmId)}
-                    disabled={deleteMutation.isPending}
-                    variant="neutral"
-                    size="lg"
-                  >
-                    {deleteMutation.isPending ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                        Ukrywanie...
-                      </>
-                    ) : (
-                      <>
-                        <EyeOff className="w-5 h-5" />
-                        Ukryj
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {ConfirmDialog}
     </div>
   );
 };

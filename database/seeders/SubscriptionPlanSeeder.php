@@ -41,7 +41,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'featured_listing' => false,
                 'priority_support' => false,
                 'analytics_dashboard' => false,
-                'features' => ['Profil providera', 'Do 3 usług', 'Podstawowa chat'],
+                    'features' => ['Profil providera', 'Do 3 usług', 'Podstawowa chat'],
                 'display_order' => 1,
             ],
             [
@@ -55,7 +55,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'featured_listing' => true,
                 'priority_support' => true,
                 'analytics_dashboard' => true,
-                'features' => ['Profil providera', 'Do 10 usług', 'Featured na głównej', 'Priorytetowe wsparcie', 'Podstawowa analityka', 'Certyfikaty i portfolio'],
+                    'features' => ['Profil providera', 'Do 10 usług', 'Featured na głównej', 'Priorytetowe wsparcie', 'Podstawowa analityka', 'Certyfikaty i portfolio', 'has_subdomain'],
                 'display_order' => 2,
             ],
             [
@@ -69,7 +69,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'featured_listing' => true,
                 'priority_support' => true,
                 'analytics_dashboard' => true,
-                'features' => ['Profil providera', 'Unlimited usług', 'Premium featured placement', '24/7 wsparcie', 'Zaawansowana analityka', 'API dostęp', 'Booking automatio', 'Custom branding'],
+                    'features' => ['Profil providera', 'Unlimited usług', 'Premium featured placement', '24/7 wsparcie', 'Zaawansowana analityka', 'API dostęp', 'Booking automatio', 'Custom branding', 'has_subdomain'],
                 'display_order' => 3,
             ],
         ];

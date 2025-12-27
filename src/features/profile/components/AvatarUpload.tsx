@@ -1,5 +1,9 @@
 import React, { useState, useRef } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAvatarUpload, useAvatarPreview } from '../hooks/useAvatarUpload';
+import { useConfirm } from '@/hooks/useConfirm';
+import { Button } from '@/components/ui/button';
+import { deleteAvatar } from '../../../api/v1/profileApi';
 import { User, UserType } from '../../../types/profile';
 
 interface AvatarUploadProps {
@@ -21,6 +25,16 @@ export function AvatarUpload({ user, onSuccess }: AvatarUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { mutate, isPending, error, uploadProgress } = useAvatarUpload();
+  const queryClient = useQueryClient();
+  const { confirm, ConfirmDialog } = useConfirm();
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteAvatar(),
+    onSuccess: () => {
+      // Odśwież użytkownika w cache
+      queryClient.invalidateQueries({ queryKey: ['auth', 'user'] });
+      onSuccess?.();
+    },
+  });
   const preview = useAvatarPreview(selectedFile);
 
   const isProvider = user.user_type === UserType.Provider;
@@ -136,13 +150,14 @@ export function AvatarUpload({ user, onSuccess }: AvatarUploadProps) {
           )}
 
           <div className="mt-4">
-            <button
+            <Button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="text-blue-600 hover:text-blue-500"
+              variant="ghost"
+              size="md"
             >
               Choose file
-            </button>
+            </Button>
             <p className="text-xs text-gray-500 mt-2">
               or drag and drop
             </p>
@@ -151,18 +166,41 @@ export function AvatarUpload({ user, onSuccess }: AvatarUploadProps) {
       </div>
 
       {/* Upload button */}
-      {selectedFile && (
-        <div className="flex justify-end">
-          <button
+      <div className="flex items-center justify-end gap-2">
+        {/* Usuń avatar */}
+        {user.avatar_url && (
+          <Button
+            type="button"
+            onClick={async () => {
+              const ok = await confirm({
+                title: 'Potwierdzenie usunięcia',
+                message: `Czy na pewno chcesz usunąć ${label.toLowerCase()}?`,
+                confirmText: 'Usuń',
+                variant: 'danger',
+              });
+              if (ok) {
+                deleteMutation.mutate();
+              }
+            }}
+            variant="secondary"
+            size="md"
+          >
+            Usuń {label}
+          </Button>
+        )}
+
+        {/* Upload */}
+        {selectedFile && (
+          <Button
             type="button"
             onClick={handleUpload}
             disabled={isPending}
-            className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 disabled:opacity-50"
+            size="md"
           >
             {isPending ? 'Uploading...' : `Upload ${label}`}
-          </button>
-        </div>
-      )}
+          </Button>
+        )}
+      </div>
 
       {/* Progress bar */}
       {isPending && uploadProgress > 0 && (
@@ -184,6 +222,9 @@ export function AvatarUpload({ user, onSuccess }: AvatarUploadProps) {
           </p>
         </div>
       )}
+
+      {/* Dialog potwierdzenia */}
+      {ConfirmDialog}
     </div>
   );
 }

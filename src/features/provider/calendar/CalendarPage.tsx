@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Calendar, Clock, Plus, Trash2, AlertCircle, Power, PowerOff, Sparkles, Copy, Filter, LayoutGrid, List, TrendingUp, CheckSquare, Repeat, ChevronLeft, ChevronRight, Ban, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/api/client';
+import { useConfirm } from '@/hooks/useConfirm';
 import { Button } from '@/components/ui/button';
 import { CalendarDevTools } from './CalendarDevTools';
 import { BlockModal } from './BlockModal';
@@ -83,21 +84,16 @@ export const CalendarPage: React.FC = () => {
   const deleteExceptionMutation = useDeleteException();
 
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
-  const [showBulkToggleModal, setShowBulkToggleModal] = useState(false);
-  const [showCopyTemplateModal, setShowCopyTemplateModal] = useState(false);
   const [showBlockModal, setShowBlockModal] = useState(false);
-  const [slotToDelete, setSlotToDelete] = useState<number | null>(null);
-  const [showRejectBookingModal, setShowRejectBookingModal] = useState(false);
-  const [bookingToReject, setBookingToReject] = useState<{ id: number; isConfirmed: boolean } | null>(null);
-  const [bulkToggleAction, setBulkToggleAction] = useState<'enable' | 'disable'>('enable');
-  const [templateTargetDays, setTemplateTargetDays] = useState<number[]>([]);
+  const [showCopyTemplateModal, setShowCopyTemplateModal] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filterMode, setFilterMode] = useState<'all' | 'active' | 'full'>('all');
   const [showBookings, setShowBookings] = useState(true);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedSlots, setSelectedSlots] = useState<Set<number>>(new Set());
+  const [templateTargetDays, setTemplateTargetDays] = useState<number[]>([]);
+  
+  const { confirm, ConfirmDialog } = useConfirm();
   const [isRecurring, setIsRecurring] = useState(false);
   const [selectedDays, setSelectedDays] = useState<number[]>([1]);
   const [newSlot, setNewSlot] = useState<CreateSlotData>({
@@ -333,44 +329,40 @@ export const CalendarPage: React.FC = () => {
       toast.error(error.response?.data?.error || 'Wystąpił błąd');
     }
   };
-
   const handleDeleteSlot = async (id: number) => {
-    setSlotToDelete(id);
-    setShowDeleteModal(true);
-  };
-
-  const handleRejectBooking = (bookingId: number, isConfirmed: boolean) => {
-    setBookingToReject({ id: bookingId, isConfirmed });
-    setShowRejectBookingModal(true);
-  };
-
-  const confirmRejectBooking = async () => {
-    if (!bookingToReject) return;
-    
-    try {
-      await apiClient.patch(`/provider/bookings/${bookingToReject.id}/reject-booking`);
-      toast.success('Rezerwacja odrzucona');
-      refetch();
-      setShowRejectBookingModal(false);
-      setBookingToReject(null);
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Błąd podczas odrzucania');
+    const ok = await confirm({
+      title: 'Potwierdzenie usunięcia',
+      message: 'Czy na pewno chcesz usunąć ten slot? Operacji nie można cofnąć.',
+      confirmText: 'Usuń',
+      variant: 'danger',
+    });
+    if (ok) {
+      try {
+        await deleteSlotMutation.mutateAsync(id);
+        toast.success('Slot został usunięty');
+        selectedSlots.delete(id);
+        setSelectedSlots(new Set(selectedSlots));
+      } catch (error: any) {
+        toast.error(error.response?.data?.error || 'Nie można usunąć slotu z aktywnymi rezerwacjami');
+      }
     }
   };
 
-  const confirmDeleteSlot = async () => {
-    if (!slotToDelete) return;
-    
-    try {
-      await deleteSlotMutation.mutateAsync(slotToDelete);
-      toast.success('Slot został usunięty');
-      selectedSlots.delete(slotToDelete);
-      setSelectedSlots(new Set(selectedSlots));
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Nie można usunąć slotu z aktywnymi rezerwacjami');
-    } finally {
-      setShowDeleteModal(false);
-      setSlotToDelete(null);
+  const handleRejectBooking = async (bookingId: number, isConfirmed: boolean) => {
+    const ok = await confirm({
+      title: 'Potwierdź odrzucenie',
+      message: 'Czy na pewno chcesz odrzucić tę rezerwację?',
+      confirmText: 'Odrzuć',
+      variant: 'danger',
+    });
+    if (ok) {
+      try {
+        await apiClient.patch(`/provider/bookings/${bookingId}/reject-booking`);
+        toast.success('Rezerwacja odrzucona');
+        refetch();
+      } catch (error: any) {
+        toast.error(error.response?.data?.error || 'Błąd podczas odrzucania');
+      }
     }
   };
 
@@ -386,50 +378,57 @@ export const CalendarPage: React.FC = () => {
   };
 
   const handleBulkDelete = async () => {
-    setShowBulkDeleteModal(true);
-  };
-
-  const confirmBulkDelete = async () => {
-    try {
-      for (const id of Array.from(selectedSlots)) {
-        await deleteSlotMutation.mutateAsync(id);
+    if (selectedSlots.size === 0) return;
+    const ok = await confirm({
+      title: 'Potwierdzenie usunięcia',
+      message: `Czy na pewno chcesz usunąć ${selectedSlots.size} slotów? Operacji nie można cofnąć.`,
+      confirmText: 'Usuń wszystkie',
+      variant: 'danger',
+    });
+    if (ok) {
+      try {
+        for (const id of Array.from(selectedSlots)) {
+          await deleteSlotMutation.mutateAsync(id);
+        }
+        toast.success(`Usunięto ${selectedSlots.size} slotów`);
+        setSelectedSlots(new Set());
+        setSelectionMode(false);
+      } catch (error: any) {
+        toast.error('Błąd podczas usuwania slotów');
       }
-      toast.success(`Usunięto ${selectedSlots.size} slotów`);
-      setSelectedSlots(new Set());
-      setSelectionMode(false);
-    } catch (error: any) {
-      toast.error('Błąd podczas usuwania slotów');
-    } finally {
-      setShowBulkDeleteModal(false);
     }
   };
 
   const handleBulkToggle = async (enabled: boolean) => {
-    setBulkToggleAction(enabled ? 'enable' : 'disable');
-    setShowBulkToggleModal(true);
-  };
-
-  const confirmBulkToggle = async () => {
-    const enabled = bulkToggleAction === 'enable';
-    try {
-      for (const id of Array.from(selectedSlots)) {
-        await updateSlotMutation.mutateAsync({ id, data: { is_available: enabled } });
+    const action = enabled ? 'enable' : 'disable';
+    const ok = await confirm({
+      title: `${enabled ? 'Włącz' : 'Wyłącz'} dostępność`,
+      message: `Czy na pewno chcesz ${enabled ? 'włączyć' : 'wyłączyć'} dostępność dla ${selectedSlots.size} slotów?`,
+      confirmText: enabled ? 'Włącz' : 'Wyłącz',
+      variant: 'info',
+    });
+    if (ok) {
+      try {
+        for (const id of Array.from(selectedSlots)) {
+          await updateSlotMutation.mutateAsync({ id, data: { is_available: enabled } });
+        }
+        toast.success(`${enabled ? 'Włączono' : 'Wyłączono'} ${selectedSlots.size} slotów`);
+        setSelectedSlots(new Set());
+        setSelectionMode(false);
+      } catch (error: any) {
+        toast.error('Błąd podczas aktualizacji slotów');
       }
-      toast.success(`${enabled ? 'Włączono' : 'Wyłączono'} ${selectedSlots.size} slotów`);
-      setSelectedSlots(new Set());
-      setSelectionMode(false);
-    } catch (error: any) {
-      toast.error('Błąd podczas aktualizacji slotów');
-    } finally {
-      setShowBulkToggleModal(false);
     }
   };
 
-  const handleCopyTemplate = () => {
+  const handleCopyTemplate = async () => {
     if (selectedSlots.size === 0) {
       toast.error('Wybierz sloty do skopiowania');
       return;
     }
+
+    // For template copy, we need a custom dialog with day selection
+    // This is handled separately - showing a custom dialog state
     setTemplateTargetDays([]);
     setShowCopyTemplateModal(true);
   };
@@ -1336,148 +1335,7 @@ export const CalendarPage: React.FC = () => {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-600">
-              <AlertCircle className="w-5 h-5" />
-              Potwierdzenie usunięcia
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4 pt-4">
-            <p className="text-sm text-slate-600">
-              Czy na pewno chcesz usunąć ten slot dostępności?
-            </p>
-            
-            <p className="text-xs text-slate-500 bg-amber-50 border border-amber-200 rounded-lg p-3">
-              ⚠️ Tej operacji nie można cofnąć. Jeśli slot ma aktywne rezerwacje, usunięcie nie będzie możliwe.
-            </p>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="flex-1 px-4 py-2 text-sm font-normal text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
-              >
-                Anuluj
-              </button>
-              <button
-                onClick={confirmDeleteSlot}
-                disabled={deleteSlotMutation.isPending}
-                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {deleteSlotMutation.isPending ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Usuwanie...
-                  </span>
-                ) : (
-                  'Usuń slot'
-                )}
-              </button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal masowego usuwania */}
-      <Dialog open={showBulkDeleteModal} onOpenChange={setShowBulkDeleteModal}>
-        <DialogContent className="sm:max-w-[460px]">
-          <div className="space-y-4">
-            <div className="flex items-start gap-3">
-              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center flex-shrink-0">
-                <Trash2 className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-base font-medium text-slate-900 mb-1">
-                  Potwierdź masowe usuwanie
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  Czy na pewno chcesz usunąć <span className="font-semibold text-red-600">{selectedSlots.size} {selectedSlots.size === 1 ? 'slot' : selectedSlots.size < 5 ? 'sloty' : 'slotów'}</span>? 
-                  Ta operacja jest nieodwracalna.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 pt-2">
-              <button
-                onClick={() => setShowBulkDeleteModal(false)}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 bg-white border-2 border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-all"
-              >
-                Anuluj
-              </button>
-              <button
-                onClick={confirmBulkDelete}
-                disabled={deleteSlotMutation.isPending}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-red-500 to-rose-600 rounded-lg hover:from-red-600 hover:to-rose-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-              >
-                {deleteSlotMutation.isPending ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Usuwanie...
-                  </span>
-                ) : (
-                  `Usuń ${selectedSlots.size} ${selectedSlots.size === 1 ? 'slot' : selectedSlots.size < 5 ? 'sloty' : 'slotów'}`
-                )}
-              </button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal masowego przełączania dostępności */}
-      <Dialog open={showBulkToggleModal} onOpenChange={setShowBulkToggleModal}>
-        <DialogContent className="sm:max-w-[460px]">
-          <div className="space-y-4">
-            <div className="flex items-start gap-3">
-              <div className={`w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 ${
-                bulkToggleAction === 'enable' 
-                  ? 'bg-gradient-to-br from-emerald-500 to-teal-600' 
-                  : 'bg-gradient-to-br from-slate-500 to-slate-600'
-              }`}>
-                {bulkToggleAction === 'enable' ? <Power className="w-5 h-5 text-white" /> : <PowerOff className="w-5 h-5 text-white" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-base font-medium text-slate-900 mb-1">
-                  {bulkToggleAction === 'enable' ? 'Włącz dostępność' : 'Wyłącz dostępność'}
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  Czy na pewno chcesz {bulkToggleAction === 'enable' ? 'włączyć' : 'wyłączyć'} dostępność dla{' '}
-                  <span className="font-semibold text-slate-900">{selectedSlots.size} {selectedSlots.size === 1 ? 'slotu' : selectedSlots.size < 5 ? 'slotów' : 'slotów'}</span>?
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 pt-2">
-              <button
-                onClick={() => setShowBulkToggleModal(false)}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 bg-white border-2 border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-all"
-              >
-                Anuluj
-              </button>
-              <button
-                onClick={confirmBulkToggle}
-                disabled={updateSlotMutation.isPending}
-                className={`flex-1 px-4 py-2.5 text-sm font-medium text-white rounded-lg focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all ${
-                  bulkToggleAction === 'enable'
-                    ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 focus:ring-emerald-500'
-                    : 'bg-gradient-to-r from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700 focus:ring-slate-500'
-                }`}
-              >
-                {updateSlotMutation.isPending ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Aktualizacja...
-                  </span>
-                ) : (
-                  bulkToggleAction === 'enable' ? 'Włącz' : 'Wyłącz'
-                )}
-              </button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {ConfirmDialog}
 
       {/* Modal kopiowania szablonu */}
       <Dialog open={showCopyTemplateModal} onOpenChange={setShowCopyTemplateModal}>
@@ -1525,50 +1383,6 @@ export const CalendarPage: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Modal odrzucenia rezerwacji */}
-      <Dialog open={showRejectBookingModal} onOpenChange={setShowRejectBookingModal}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-600">
-              <AlertCircle className="w-5 h-5" />
-              {bookingToReject?.isConfirmed ? 'Odrzucenie potwierdzonej rezerwacji' : 'Potwierdzenie odrzucenia'}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4 pt-4">
-            <p className="text-sm text-slate-600">
-              {bookingToReject?.isConfirmed
-                ? 'Czy na pewno chcesz odrzucić potwierdzoną rezerwację?'
-                : 'Czy na pewno chcesz odrzucić tę rezerwację?'}
-            </p>
-            
-            {bookingToReject?.isConfirmed && (
-              <p className="text-xs text-slate-500 bg-amber-50 border border-amber-200 rounded-lg p-3">
-                ⚠️ Rezerwacja została już potwierdzona. Klient otrzymał potwierdzenie i może liczyć na realizację usługi. Poinformujemy go o odrzuceniu rezerwacji.
-              </p>
-            )}
-
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => {
-                  setShowRejectBookingModal(false);
-                  setBookingToReject(null);
-                }}
-                className="flex-1 px-4 py-2 text-sm font-normal text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
-              >
-                Anuluj
-              </button>
-              <button
-                onClick={confirmRejectBooking}
-                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Odrzuć rezerwację
-              </button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
       {/* Modal bloków/urlopów */}
       <BlockModal
         open={showBlockModal}
@@ -1593,12 +1407,20 @@ export const CalendarPage: React.FC = () => {
           }
         }}
         onDeleteBlock={async (id) => {
-          try {
-            await deleteExceptionMutation.mutateAsync(id);
-            toast.success('Blok został usunięty');
-            await refetchExceptions(); // Manualny refetch
-          } catch (error: any) {
-            toast.error(error.response?.data?.error || 'Błąd podczas usuwania bloku');
+          const ok = await confirm({
+            title: 'Potwierdź usunięcie',
+            message: 'Czy na pewno chcesz usunąć ten blok? Operacji nie można cofnąć.',
+            confirmText: 'Usuń',
+            variant: 'danger',
+          });
+          if (ok) {
+            try {
+              await deleteExceptionMutation.mutateAsync(id);
+              toast.success('Blok został usunięty');
+              await refetchExceptions();
+            } catch (error: any) {
+              toast.error(error.response?.data?.error || 'Błąd podczas usuwania bloku');
+            }
           }
         }}
         isCreating={createExceptionMutation.isPending}

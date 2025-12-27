@@ -3,6 +3,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useProfileUpdate } from '../hooks/useProfileUpdate';
 import { User, UserType, ProfileUpdateRequest } from '../../../types/profile';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 /**
  * Schemat walidacji Zod - mirror server validation
@@ -86,10 +89,9 @@ export function ProfileEditForm({ user, onSuccess }: ProfileEditFormProps) {
       {/* Basic fields */}
       <div>
         <label className="block text-sm font-medium text-gray-700">Name</label>
-        <input
+        <Input
           type="text"
           {...register('name')}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
         />
         {errors.name && (
           <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
@@ -98,10 +100,9 @@ export function ProfileEditForm({ user, onSuccess }: ProfileEditFormProps) {
 
       <div>
         <label className="block text-sm font-medium text-gray-700">Email</label>
-        <input
+        <Input
           type="email"
           {...register('email')}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
         />
         {errors.email && (
           <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
@@ -110,10 +111,9 @@ export function ProfileEditForm({ user, onSuccess }: ProfileEditFormProps) {
 
       <div>
         <label className="block text-sm font-medium text-gray-700">Bio</label>
-        <textarea
+        <Textarea
           {...register('bio')}
           rows={4}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
           placeholder={isProvider ? 'Minimum 50 characters for providers' : ''}
         />
         {errors.bio && (
@@ -123,10 +123,9 @@ export function ProfileEditForm({ user, onSuccess }: ProfileEditFormProps) {
 
       <div>
         <label className="block text-sm font-medium text-gray-700">City</label>
-        <input
+        <Input
           type="text"
           {...register('city')}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
         />
         {errors.city && (
           <p className="mt-1 text-sm text-red-600">{errors.city.message}</p>
@@ -140,10 +139,9 @@ export function ProfileEditForm({ user, onSuccess }: ProfileEditFormProps) {
             <label className="block text-sm font-medium text-gray-700">
               Business Name
             </label>
-            <input
+            <Input
               type="text"
               {...register('business_name')}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
             />
             {errors.business_name && (
               <p className="mt-1 text-sm text-red-600">
@@ -156,10 +154,9 @@ export function ProfileEditForm({ user, onSuccess }: ProfileEditFormProps) {
             <label className="block text-sm font-medium text-gray-700">
               Service Description
             </label>
-            <textarea
+            <Textarea
               {...register('service_description')}
               rows={4}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
             />
           </div>
 
@@ -167,10 +164,9 @@ export function ProfileEditForm({ user, onSuccess }: ProfileEditFormProps) {
             <label className="block text-sm font-medium text-gray-700">
               Website URL
             </label>
-            <input
+            <Input
               type="url"
               {...register('website_url')}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
             />
           </div>
         </>
@@ -194,13 +190,13 @@ export function ProfileEditForm({ user, onSuccess }: ProfileEditFormProps) {
 
       {/* Submit button */}
       <div className="flex justify-end">
-        <button
+        <Button
           type="submit"
+          size="md"
           disabled={isPending || !isDirty}
-          className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
         >
           {isPending ? 'Saving...' : 'Save Changes'}
-        </button>
+        </Button>
       </div>
     </form>
   );

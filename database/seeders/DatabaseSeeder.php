@@ -12,9 +12,10 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            RoleAndPermissionSeeder::class,
-            ServiceCategorySeeder::class,
-            LocationSeeder::class,
+            // Zbiorczy seeder danych słownikowych
+            DictionarySeeder::class,
+
+            // Pozostałe seedy zależne od słowników
             NotificationSeeder::class,
             UserSeeder::class,
             ServiceSeeder::class,
@@ -26,7 +27,6 @@ class DatabaseSeeder extends Seeder
             CertificationSeeder::class,
             PortfolioSeeder::class,
             PortfolioCommentSeeder::class,
-            SubscriptionPlanSeeder::class,
             SubscriptionSeeder::class,
             PaymentSeeder::class,
             InvoiceSeeder::class,

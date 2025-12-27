@@ -3,6 +3,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { usePasswordUpdate } from '../hooks/usePasswordUpdate';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 /**
  * Schemat walidacji hasła
@@ -85,10 +87,9 @@ export function PasswordChangeForm({ onSuccess }: PasswordChangeFormProps) {
         <label className="block text-sm font-medium text-gray-700">
           Current Password
         </label>
-        <input
+        <Input
           type={showPasswords ? 'text' : 'password'}
           {...register('current_password')}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
         />
         {errors.current_password && (
           <p className="mt-1 text-sm text-red-600">
@@ -101,10 +102,9 @@ export function PasswordChangeForm({ onSuccess }: PasswordChangeFormProps) {
         <label className="block text-sm font-medium text-gray-700">
           New Password
         </label>
-        <input
+        <Input
           type={showPasswords ? 'text' : 'password'}
           {...register('new_password')}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
         />
         {errors.new_password && (
           <p className="mt-1 text-sm text-red-600">
@@ -133,10 +133,9 @@ export function PasswordChangeForm({ onSuccess }: PasswordChangeFormProps) {
         <label className="block text-sm font-medium text-gray-700">
           Confirm New Password
         </label>
-        <input
+        <Input
           type={showPasswords ? 'text' : 'password'}
           {...register('new_password_confirmation')}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
         />
         {errors.new_password_confirmation && (
           <p className="mt-1 text-sm text-red-600">
@@ -152,9 +151,9 @@ export function PasswordChangeForm({ onSuccess }: PasswordChangeFormProps) {
           id="show-passwords"
           checked={showPasswords}
           onChange={(e) => setShowPasswords(e.target.checked)}
-          className="h-4 w-4 text-blue-600 rounded"
+          className="h-4 w-4 text-primary-600 rounded cursor-pointer"
         />
-        <label htmlFor="show-passwords" className="ml-2 text-sm text-gray-700">
+        <label htmlFor="show-passwords" className="ml-2 text-sm text-gray-700 cursor-pointer">
           Show passwords
         </label>
       </div>
@@ -172,13 +171,13 @@ export function PasswordChangeForm({ onSuccess }: PasswordChangeFormProps) {
 
       {/* Submit button */}
       <div className="flex justify-end">
-        <button
+        <Button
           type="submit"
+          size="md"
           disabled={isPending}
-          className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 disabled:opacity-50"
         >
           {isPending ? 'Updating...' : 'Change Password'}
-        </button>
+        </Button>
       </div>
     </form>
   );

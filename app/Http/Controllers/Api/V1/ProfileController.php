@@ -11,6 +11,8 @@ use App\Services\Profile\UpdatePasswordService;
 use App\Services\Profile\UpdateUserProfileService;
 use App\Services\Profile\UploadAvatarService;
 use App\Services\Profile\UploadProviderLogoService;
+use App\Services\Media\MediaServiceInterface;
+use App\Events\AvatarUpdated;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -31,7 +33,8 @@ class ProfileController extends Controller
         private UpdateUserProfileService $updateProfileService,
         private UploadAvatarService $uploadAvatarService,
         private UploadProviderLogoService $uploadLogoService,
-        private UpdatePasswordService $updatePasswordService
+        private UpdatePasswordService $updatePasswordService,
+        private MediaServiceInterface $mediaService
     ) {}
 
     /**
@@ -118,6 +121,31 @@ class ProfileController extends Controller
                 'message' => $e->getMessage(),
             ], 422);
         }
+    }
+
+    /**
+     * Usuń avatar użytkownika
+     */
+    public function deleteAvatar(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        // Usuń pliki avatara (obsługuje legacy ścieżki)
+        $this->mediaService->deleteUserMedia($user->id);
+
+        // Usuń rekordy media dla kolekcji 'avatar'
+        $user->media()->where('collection', 'avatar')->delete();
+
+        // Wyzeruj pole avatar na użytkowniku
+        $user->update(['avatar' => null]);
+
+        // Powiadom listenery (cache invalidation, itp.)
+        AvatarUpdated::dispatch($user);
+
+        return response()->json([
+            'message' => 'Avatar deleted successfully',
+            'user' => $this->formatUserResponse($user->fresh(['profile', 'providerProfile'])),
+        ]);
     }
 
     /**

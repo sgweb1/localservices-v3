@@ -30,12 +30,11 @@ class LocalMediaService implements MediaServiceInterface
         // Upload do shardowanego katalogu
         $path = MediaHelper::getShardedPath('avatars', $user->id);
         $filename = 'avatar.' . $file->extension();
-        
-        $storedPath = Storage::disk($this->disk)->putFileAs(
-            $path,
-            $file,
-            $filename
-        );
+
+        [$processedPath, $width, $height] = $this->processAvatar($file);
+
+        $storedPath = $path . '/' . $filename;
+        Storage::disk($this->disk)->put($storedPath, file_get_contents($processedPath));
 
         // Stwórz rekord Media
         $media = $user->media()->create([
@@ -47,8 +46,8 @@ class LocalMediaService implements MediaServiceInterface
             'mime_type' => $file->getMimeType(),
             'size' => $file->getSize(),
             'metadata' => [
-                'width' => null,  // TODO: Intervention Image
-                'height' => null,
+                'width' => $width,
+                'height' => $height,
             ],
         ]);
 
@@ -153,14 +152,72 @@ class LocalMediaService implements MediaServiceInterface
 
     public function deleteUserMedia(int $userId): bool
     {
-        $path = MediaHelper::getShardedPath('avatars', $userId);
-        
-        // Usuń pliki
-        if (Storage::disk($this->disk)->exists($path)) {
-            Storage::disk($this->disk)->deleteDirectory($path);
+        $paths = [
+            // Aktualny schemat (floor(userId/100))
+            MediaHelper::getShardedPath('avatars', $userId),
+            // Legacy modulo 100 (dawne shardowanie)
+            sprintf('avatars/%03d/%d', $userId % 100, $userId),
+            // Legacy modulo 1000 (starszy MediaHelper)
+            sprintf('avatars/%03d/%d', $userId % 1000, $userId),
+        ];
+
+        foreach ($paths as $path) {
+            if (Storage::disk($this->disk)->exists($path)) {
+                Storage::disk($this->disk)->deleteDirectory($path);
+            }
         }
 
         return true;
+    }
+
+    /**
+     * Przetwarza avatar do kwadratu 150x150 bez zniekształceń (crop + resize)
+     */
+    private function processAvatar(UploadedFile $file): array
+    {
+        $tmpPath = tempnam(sys_get_temp_dir(), 'avatar_');
+        $image = $this->createImageFromFile($file);
+
+        $width = imagesx($image);
+        $height = imagesy($image);
+        $square = min($width, $height);
+        $srcX = (int) floor(($width - $square) / 2);
+        $srcY = (int) floor(($height - $square) / 2);
+
+        $canvas = imagecreatetruecolor(150, 150);
+        imagealphablending($canvas, false);
+        imagesavealpha($canvas, true);
+
+        imagecopyresampled($canvas, $image, 0, 0, $srcX, $srcY, 150, 150, $square, $square);
+
+        $mime = $file->getMimeType();
+        switch ($mime) {
+            case 'image/png':
+                imagepng($canvas, $tmpPath, 6);
+                break;
+            case 'image/webp':
+                imagewebp($canvas, $tmpPath, 90);
+                break;
+            default:
+                imagejpeg($canvas, $tmpPath, 90);
+        }
+
+        imagedestroy($image);
+        imagedestroy($canvas);
+
+        return [$tmpPath, 150, 150];
+    }
+
+    private function createImageFromFile(UploadedFile $file)
+    {
+        $mime = $file->getMimeType();
+        $path = $file->getRealPath();
+
+        return match ($mime) {
+            'image/png' => imagecreatefrompng($path),
+            'image/webp' => imagecreatefromwebp($path),
+            default => imagecreatefromjpeg($path),
+        };
     }
 
     public function deleteProviderMedia(int $providerId): bool

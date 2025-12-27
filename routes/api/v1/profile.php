@@ -26,6 +26,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Upload avatara (customer/provider) - rate limited
     Route::post('/profile/avatar', [ProfileController::class, 'uploadAvatar'])
         ->middleware('throttle:10,1');
+    // Usuń avatar
+    Route::delete('/profile/avatar', [ProfileController::class, 'deleteAvatar'])
+        ->middleware('throttle:10,1');
     
     // Upload logo providera - rate limited, tylko providery
     Route::post('/provider/logo', [ProfileController::class, 'uploadLogo'])

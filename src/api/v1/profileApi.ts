@@ -52,6 +52,18 @@ export async function uploadAvatar(file: File): Promise<ApiResponse<User>> {
 }
 
 /**
+ * Usuń avatar użytkownika
+ */
+export async function deleteAvatar(): Promise<ApiResponse<User>> {
+  try {
+    const response = await apiClient.delete<ApiResponse<User>>('/profile/avatar');
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+}
+
+/**
  * Upload logo providera
  */
 export async function uploadLogo(file: File): Promise<ApiResponse<User>> {

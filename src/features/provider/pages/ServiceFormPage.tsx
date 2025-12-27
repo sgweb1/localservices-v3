@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { useService, type ServiceDetail } from '../dashboard/hooks/useService';
 import { useCategories } from '@/hooks/useCategories';
 import { useLocations } from '@/hooks/useLocations';
+import { useConfirm } from '@/hooks/useConfirm';
 import { useAuth } from '@/contexts/AuthContext';
 import { CategorySelect } from '@/components/CategorySelect';
 import { LocationSelect } from '@/components/LocationSelect';
@@ -144,6 +145,8 @@ const ServiceFormPage: React.FC = () => {
   const [isDropActive, setIsDropActive] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
+
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const quillRef = useRef<Quill | null>(null);
   const quillContainerRef = useRef<HTMLDivElement | null>(null);
@@ -466,6 +469,14 @@ const ServiceFormPage: React.FC = () => {
   };
 
   const deletePhoto = async (photoId: number) => {
+    const ok = await confirm({
+      title: 'Potwierdzenie usunięcia',
+      message: 'Czy na pewno chcesz usunąć to zdjęcie? Tej operacji nie można cofnąć.',
+      confirmText: 'Usuń',
+      variant: 'danger',
+    });
+    if (!ok) return;
+
     const pid = effectiveProviderId;
     if (!serviceId || !pid) return;
     const res = await fetch(`${API_BASE_URL}/api/v1/providers/${pid}/services/${serviceId}/photos/${photoId}`, {
@@ -1217,6 +1228,8 @@ const ServiceFormPage: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      {ConfirmDialog}
       </div>
     </div>
   );
