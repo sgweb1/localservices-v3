@@ -1,131 +1,111 @@
-import React, { useState, useEffect } from 'react';
-import { useDashboardWidgets } from '../hooks/useDashboardWidgets';
-import { DashboardHero } from './DashboardHero';
-import { MainGrid } from './MainGrid';
-import { DevToolsPopup } from './DevToolsPopup';
+import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockDashboardData } from '../mocks/mockData';
-import { Loader2 } from 'lucide-react';
-import { OnboardingTour, OnboardingChecklist, PROVIDER_ONBOARDING_STEPS, PROVIDER_CHECKLIST_ITEMS } from '../../onboarding/OnboardingTour';
-import { EmptyText } from '@/components/ui/typography';
 
 /**
- * Provider Dashboard Page
+ * Provider Dashboard Page (STUB - under development)
  * 
- * Kompozycja hero + grid. Używa useDashboardWidgets() do pobrania danych.
- * Loading/error states + auto-refresh co 5min.
+ * Pokazuje podstawowe informacje o provideru
  */
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
-  const { data: apiData, isLoading, error, isError } = useDashboardWidgets();
-  
-  // Onboarding state
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [checklistItems, setChecklistItems] = useState(PROVIDER_CHECKLIST_ITEMS);
 
-  useEffect(() => {
-    // Check if user is new (first login)
-    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
-    if (!hasSeenOnboarding) {
-      setShowOnboarding(true);
-    }
-  }, []);
-
-  const handleOnboardingComplete = () => {
-    localStorage.setItem('hasSeenOnboarding', 'true');
-    setShowOnboarding(false);
-  };
-
-  const handleOnboardingSkip = () => {
-    localStorage.setItem('hasSeenOnboarding', 'true');
-    setShowOnboarding(false);
-  };
-
-  const handleChecklistItemComplete = (id: string) => {
-    setChecklistItems(prev => 
-      prev.map(item => item.id === id ? { ...item, completed: true } : item)
-    );
-  };
-
-  // Fallback do mocków tylko przy błędzie API
-  const data = isError ? mockDashboardData : apiData;
-
-  if (isLoading) {
+  if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-16 h-16 text-primary-600 animate-spin mx-auto mb-4" />
-          <EmptyText className="font-semibold text-base">Ładowanie dashboardu...</EmptyText>
+          <p className="text-gray-500">Musisz być zalogowany</p>
         </div>
       </div>
     );
   }
-
-  if (!data) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-16 h-16 text-primary-600 animate-spin mx-auto mb-4" />
-          <EmptyText className="font-semibold text-base">Ładowanie dashboardu...</EmptyText>
-        </div>
-      </div>
-    );
-  }
-
-  // Oblicz Trust Score z insights_card
-  const trustScore = data.insights_card?.trust_score || 0;
-  const planName = data.plan_card?.plan_name || 'FREE';
-  const userName = user?.name.split(' ')[0] || 'Użytkowniku';
-
-  const completedCount = checklistItems.filter(item => item.completed).length;
-  const showChecklist = completedCount < checklistItems.length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Onboarding Tour */}
-      {showOnboarding && (
-        <OnboardingTour
-          steps={PROVIDER_ONBOARDING_STEPS}
-          onComplete={handleOnboardingComplete}
-          onSkip={handleOnboardingSkip}
-        />
-      )}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-[1200px] mx-auto px-4 py-12">
+        <div className="space-y-8">
+          {/* Header */}
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+              Witaj, {user.name.split(' ')[0]}! 👋
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-400">
+              Panel Providera - LocalServices
+            </p>
+          </div>
 
-      <div className="max-w-[1600px] mx-auto px-4 py-8">
-        {/* DEV Banner - API Status Info */}
-        {import.meta.env.DEV && isError && (
-          <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 rounded-2xl flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white font-bold">
-                ⚠️
-              </div>
-              <div>
-                <p className="font-semibold text-gray-900">API Error</p>
-                <p className="text-sm text-gray-600">
-                  {error?.message || 'Błąd pobierania danych z API - fallback do mock data'}
-                </p>
-              </div>
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Usługi</div>
+              <div className="text-3xl font-bold text-primary-600">0</div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Rezerwacje</div>
+              <div className="text-3xl font-bold text-primary-600">0</div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Trust Score™</div>
+              <div className="text-3xl font-bold text-primary-600">85</div>
             </div>
           </div>
-        )}
 
-        {/* Onboarding Checklist - tylko dla nowych użytkowników */}
-        {showChecklist && (
-          <div className="mb-6">
-            <OnboardingChecklist
-              items={checklistItems}
-              onItemComplete={handleChecklistItemComplete}
-            />
+          {/* Message */}
+          <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-6 rounded-lg">
+            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+              ✨ Dashboard w przygotowaniu
+            </h3>
+            <p className="text-blue-800 dark:text-blue-200">
+              Pełny dashboard z analityką, zarządzaniem usługami i rezerwacjami będzie dostępny wkrótce.
+            </p>
           </div>
-        )}
 
-        <DashboardHero />
-        
-        <MainGrid />
+          {/* Navigation Links */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <a
+              href="/provider/services"
+              className="block p-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all"
+            >
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">📋 Moje Usługi</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Zarządzaj swoimi usługami</p>
+            </a>
+            <a
+              href="/provider/bookings"
+              className="block p-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all"
+            >
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">📅 Rezerwacje</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Przeglądaj i zarządzaj rezerwacjami</p>
+            </a>
+            <a
+              href="/provider/calendar"
+              className="block p-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all"
+            >
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">📆 Kalendarz</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Zarządzaj swoją dostępnością</p>
+            </a>
+            <a
+              href="/provider/messages"
+              className="block p-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all"
+            >
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">💬 Wiadomości</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Komunikuj się z klientami</p>
+            </a>
+            <a
+              href="/provider/subscription"
+              className="block p-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all"
+            >
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">⭐ Subskrypcja</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Zarządzaj planem subskrypcji</p>
+            </a>
+            <a
+              href="/provider/settings"
+              className="block p-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all"
+            >
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">⚙️ Ustawienia</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Zmień ustawienia profilu</p>
+            </a>
+          </div>
+        </div>
       </div>
-
-      {/* DEV Tools - tylko w local env */}
-      <DevToolsPopup />
     </div>
   );
 };

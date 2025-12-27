@@ -73,7 +73,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       }
       // Domyślny provider
-      return MOCK_USERS[0]; // Jan Kowalski
+      return MOCK_USERS[0]; // Marek Hydraulik (provider)
     }
     return null;
   });
