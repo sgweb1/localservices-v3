@@ -41,6 +41,16 @@ Route::middleware(['api'])->group(function () {
     // Tworzenie rezerwacji - wymaga autentykacji
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/bookings', [BookingController::class, 'store']);
+        Route::post('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
+    });
+
+    // Akcje providera na rezerwacjach - wymaga autentykacji
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::post('/provider/bookings/{id}/accept', [BookingController::class, 'accept']);
+        Route::post('/provider/bookings/{id}/decline', [BookingController::class, 'decline']);
+        Route::post('/provider/bookings/{id}/send-quote', [BookingController::class, 'sendQuote']);
+        Route::post('/provider/bookings/{id}/start', [BookingController::class, 'start']);
+        Route::post('/provider/bookings/{id}/complete', [BookingController::class, 'complete']);
     });
 
     // Recenzje - publiczne
@@ -52,6 +62,7 @@ Route::middleware(['api'])->group(function () {
     // Chat - wymaga autoryzacji
     Route::middleware(['auth:web'])->group(function () {
         Route::get('/conversations', [ChatController::class, 'conversations']);
+        Route::post('/conversations', [ChatController::class, 'store']);
         Route::get('/conversations/{conversationId}', [ChatController::class, 'show']);
         Route::get('/conversations/{conversationId}/messages', [ChatController::class, 'messages']);
         Route::post('/conversations/{conversationId}/messages', [ChatController::class, 'sendMessage']);

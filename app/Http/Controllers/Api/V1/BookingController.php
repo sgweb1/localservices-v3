@@ -329,4 +329,250 @@ class BookingController extends Controller
             ]
         );
     }
+
+    /**
+     * POST /api/v1/bookings/{id}/cancel
+     * Anuluj rezerwację (klient lub provider)
+     */
+    public function cancel(int $id, Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'reason' => 'nullable|string|max:500',
+        ]);
+
+        $booking = \App\Models\Booking::find($id);
+        
+        if (!$booking) {
+            return response()->json(['error' => 'Rezerwacja nie znaleziona'], 404);
+        }
+        
+        // Sprawdź czy użytkownik jest właścicielem
+        $user = $request->user();
+        if ($booking->customer_id !== $user->id && $booking->provider_id !== $user->id) {
+            return response()->json(['error' => 'Brak uprawnień'], 403);
+        }
+        
+        // Sprawdź czy rezerwacja może być anulowana
+        if (!in_array($booking->status, ['confirmed', 'pending'])) {
+            return response()->json([
+                'error' => 'Można anulować tylko potwierdzone rezerwacje',
+                'current_status' => $booking->status
+            ], 422);
+        }
+        
+        // Anuluj rezerwację
+        $booking->update([
+            'status' => 'cancelled',
+            'cancelled_by' => $user->id,
+            'cancelled_at' => now(),
+            'cancellation_reason' => $validated['reason'] ?? 'Anulowana',
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Rezerwacja anulowana',
+            'data' => new BookingResource($booking->fresh())
+        ]);
+    }
+
+    /**
+     * POST /api/v1/provider/bookings/{id}/accept
+     * Zaakceptuj rezerwację (request quote -> confirmed)
+     */
+    public function accept(int $id, Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'message' => 'nullable|string|max:1000',
+            'price' => 'nullable|numeric|min:0',
+        ]);
+
+        $booking = \App\Models\Booking::find($id);
+        
+        if (!$booking) {
+            return response()->json(['error' => 'Rezerwacja nie znaleziona'], 404);
+        }
+        
+        // Sprawdź czy provider jest właścicielem
+        if ($booking->provider_id !== $request->user()->id) {
+            return response()->json(['error' => 'Brak uprawnień'], 403);
+        }
+        
+        // Akceptuj rezerwację
+        $booking->update([
+            'status' => 'confirmed',
+            'service_price' => $validated['price'] ?? $booking->service_price,
+            'total_price' => $validated['price'] ?? $booking->service_price,
+            'confirmed_at' => now(),
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Rezerwacja zaakceptowana',
+            'data' => new BookingResource($booking->fresh(['service', 'customer', 'provider']))
+        ]);
+    }
+
+    /**
+     * POST /api/v1/provider/bookings/{id}/decline
+     * Odmów rezerwacji (provider reject)
+     */
+    public function decline(int $id, Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'reason' => 'nullable|string|max:500',
+        ]);
+
+        $booking = \App\Models\Booking::find($id);
+        
+        if (!$booking) {
+            return response()->json(['error' => 'Rezerwacja nie znaleziona'], 404);
+        }
+        
+        // Sprawdź czy provider jest właścicielem
+        if ($booking->provider_id !== $request->user()->id) {
+            return response()->json(['error' => 'Brak uprawnień'], 403);
+        }
+        
+        // Odmów rezerwacji
+        $booking->update([
+            'status' => 'declined',
+            'cancelled_by' => $request->user()->id,
+            'cancelled_at' => now(),
+            'cancellation_reason' => $validated['reason'] ?? 'Odrzucone',
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Rezerwacja odrzucona',
+            'data' => new BookingResource($booking->fresh())
+        ]);
+    }
+
+    /**
+     * POST /api/v1/provider/bookings/{id}/send-quote
+     * Wyślij cytat (wycena)
+     */
+    public function sendQuote(int $id, Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'price' => 'required|numeric|min:0',
+            'duration_hours' => 'nullable|numeric|min:0.5',
+            'description' => 'nullable|string|max:1000',
+        ]);
+
+        $booking = \App\Models\Booking::find($id);
+        
+        if (!$booking) {
+            return response()->json(['error' => 'Rezerwacja nie znaleziona'], 404);
+        }
+        
+        // Sprawdź czy provider jest właścicielem
+        if ($booking->provider_id !== $request->user()->id) {
+            return response()->json(['error' => 'Brak uprawnień'], 403);
+        }
+        
+        // Wyślij cytat
+        $booking->update([
+            'status' => 'quote_sent',
+            'service_price' => $validated['price'],
+            'total_price' => $validated['price'],
+            'duration_minutes' => $validated['duration_hours'] ? (int)($validated['duration_hours'] * 60) : null,
+            'provider_notes' => $validated['description'] ?? null,
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Cytat wysłany',
+            'data' => new BookingResource($booking->fresh())
+        ]);
+    }
+
+    /**
+     * POST /api/v1/provider/bookings/{id}/start
+     * Rozpocznij usługę (confirmed -> in_progress)
+     */
+    public function start(int $id, Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        $booking = \App\Models\Booking::find($id);
+        
+        if (!$booking) {
+            return response()->json(['error' => 'Rezerwacja nie znaleziona'], 404);
+        }
+        
+        // Sprawdź czy provider jest właścicielem
+        if ($booking->provider_id !== $request->user()->id) {
+            return response()->json(['error' => 'Brak uprawnień'], 403);
+        }
+        
+        // Sprawdź czy rezerwacja jest w statusie confirmed
+        if ($booking->status !== 'confirmed') {
+            return response()->json([
+                'error' => 'Można rozpocząć tylko potwierdzone rezerwacje',
+                'current_status' => $booking->status
+            ], 422);
+        }
+        
+        // Rozpocznij usługę
+        $booking->update([
+            'status' => 'in_progress',
+            'started_at' => now(),
+            'provider_notes' => $validated['notes'] ?? null,
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Usługa rozpoczęta',
+            'data' => new BookingResource($booking->fresh())
+        ]);
+    }
+
+    /**
+     * POST /api/v1/provider/bookings/{id}/complete
+     * Ukończ usługę (in_progress -> completed)
+     */
+    public function complete(int $id, Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'notes' => 'nullable|string|max:1000',
+            'final_price' => 'nullable|numeric|min:0',
+        ]);
+
+        $booking = \App\Models\Booking::find($id);
+        
+        if (!$booking) {
+            return response()->json(['error' => 'Rezerwacja nie znaleziona'], 404);
+        }
+        
+        // Sprawdź czy provider jest właścicielem
+        if ($booking->provider_id !== $request->user()->id) {
+            return response()->json(['error' => 'Brak uprawnień'], 403);
+        }
+        
+        // Sprawdź czy rezerwacja jest w statusie in_progress
+        if ($booking->status !== 'in_progress') {
+            return response()->json([
+                'error' => 'Można ukończyć tylko usługi w trakcie realizacji',
+                'current_status' => $booking->status
+            ], 422);
+        }
+        
+        // Ukończ usługę
+        $booking->update([
+            'status' => 'completed',
+            'completed_at' => now(),
+            'service_price' => $validated['final_price'] ?? $booking->service_price,
+            'total_price' => $validated['final_price'] ?? $booking->service_price,
+            'provider_notes' => ($booking->provider_notes ?? '') . "\n" . ($validated['notes'] ?? ''),
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Usługa ukończona',
+            'data' => new BookingResource($booking->fresh())
+        ]);
+    }
 }

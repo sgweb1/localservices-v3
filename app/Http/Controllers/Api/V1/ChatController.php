@@ -79,6 +79,49 @@ class ChatController extends Controller
     }
 
     /**
+     * POST /api/v1/conversations
+     * Utwórz lub pobierz konwersację z innym użytkownikiem
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $userId = auth()->id();
+        if (!$userId) {
+            return response()->json(['error' => 'Brak autoryzacji'], 401);
+        }
+
+        $validated = $request->validate([
+            'participant_id' => 'required|integer|exists:users,id',
+            'booking_id' => 'nullable|integer|exists:bookings,id',
+        ]);
+
+        $participantId = $validated['participant_id'];
+        
+        // Blokada self-chat
+        if ($participantId === $userId) {
+            return response()->json(['error' => 'Nie możesz czatować sam ze sobą'], 400);
+        }
+
+        // Utwórz lub pobierz istniejącą konwersację
+        $conversation = \App\Models\Conversation::where(function ($q) use ($userId, $participantId) {
+            $q->where('user_one_id', $userId)->where('user_two_id', $participantId);
+        })->orWhere(function ($q) use ($userId, $participantId) {
+            $q->where('user_one_id', $participantId)->where('user_two_id', $userId);
+        })->firstOrCreate(
+            [
+                'user_one_id' => min($userId, $participantId),
+                'user_two_id' => max($userId, $participantId),
+            ]
+        );
+
+        // Jeśli podano booking_id, powiąż go z konwersacją
+        if ($validated['booking_id'] ?? null) {
+            $conversation->update(['booking_id' => $validated['booking_id']]);
+        }
+
+        return response()->json(['data' => new ConversationResource($conversation)], 201);
+    }
+
+    /**
      * GET /api/v1/conversations/{conversationId}/messages
      * Wiadomości z rozmowy
      */

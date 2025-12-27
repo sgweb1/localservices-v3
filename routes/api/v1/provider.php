@@ -32,9 +32,12 @@ Route::middleware(['auth:sanctum'])->prefix('provider')->group(function () {
     
     // Bookings management
     Route::get('/bookings', [ProviderBookingController::class, 'index'])->name('api.provider.bookings.index');
+    Route::get('/statistics', [ProviderBookingController::class, 'statistics'])->name('api.provider.statistics');
     Route::post('/bookings/complete-overdue', [ProviderBookingController::class, 'completeOverdue'])->name('api.provider.bookings.complete-overdue');
     Route::post('/bookings/{id}/accept', [ProviderBookingController::class, 'accept'])->name('api.provider.bookings.accept');
-    Route::post('/bookings/{id}/reject', [ProviderBookingController::class, 'reject'])->name('api.provider.bookings.reject');
+    Route::post('/bookings/{id}/decline', [ProviderBookingController::class, 'reject'])->name('api.provider.bookings.decline');
+    Route::post('/bookings/{id}/send-quote', [ProviderBookingController::class, 'sendQuote'])->name('api.provider.bookings.send-quote');
+    Route::post('/bookings/{id}/start', [ProviderBookingController::class, 'start'])->name('api.provider.bookings.start');
     Route::post('/bookings/{id}/complete', [ProviderBookingController::class, 'complete'])->name('api.provider.bookings.complete');
     Route::patch('/bookings/{id}/confirm', [\App\Http\Controllers\Api\V1\BookingController::class, 'confirm'])->name('api.provider.bookings.confirm');
     Route::patch('/bookings/{id}/reject-booking', [\App\Http\Controllers\Api\V1\BookingController::class, 'reject'])->name('api.provider.bookings.reject-booking');

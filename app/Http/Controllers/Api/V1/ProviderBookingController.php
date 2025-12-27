@@ -355,14 +355,147 @@ class ProviderBookingController extends Controller
     }
 
     /**
-     * Ukryj rezerwację w panelu providera
-     * 
-     * Provider ukrywa rezerwację tylko w swoim panelu.
-     * Customer nadal widzi rezerwację w swoim panelu.
+     * Wyślij cytat
      * 
      * @param Request $request
      * @param int $id
      * @return JsonResponse
+     */
+    public function sendQuote(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user || $user->user_type !== UserType::Provider) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'price' => 'required|numeric|min:0',
+            'duration_hours' => 'nullable|numeric|min:0.5',
+            'description' => 'nullable|string|max:1000',
+        ]);
+
+        $booking = Booking::where('provider_id', $user->id)
+            ->where('id', $id)
+            ->first();
+
+        if (!$booking) {
+            return response()->json(['error' => 'Rezerwacja nie została znaleziona'], 404);
+        }
+
+        // Zaktualizuj cenę i status
+        $booking->update([
+            'status' => 'quote_sent',
+            'service_price' => $validated['price'],
+            'total_price' => $validated['price'],
+            'duration_minutes' => $validated['duration_hours'] ? (int)($validated['duration_hours'] * 60) : null,
+            'provider_notes' => $validated['description'] ?? null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cytat wysłany',
+            'booking' => [
+                'id' => $booking->id,
+                'status' => $booking->status,
+                'service_price' => (float) $booking->service_price,
+            ],
+        ]);
+    }
+
+    /**
+     * Rozpocznij usługę
+     * 
+     * @param Request $request
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function start(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user || $user->user_type !== UserType::Provider) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        $booking = Booking::where('provider_id', $user->id)
+            ->where('id', $id)
+            ->first();
+
+        if (!$booking) {
+            return response()->json(['error' => 'Rezerwacja nie została znaleziona'], 404);
+        }
+
+        if ($booking->status !== 'confirmed') {
+            return response()->json([
+                'error' => 'Można rozpocząć tylko potwierdzone rezerwacje',
+                'current_status' => $booking->status
+            ], 422);
+        }
+
+        // Oznacz jako w trakcie realizacji
+        $booking->update([
+            'status' => 'in_progress',
+            'started_at' => now(),
+            'provider_notes' => $validated['notes'] ?? null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Usługa rozpoczęta',
+            'booking' => [
+                'id' => $booking->id,
+                'status' => $booking->status,
+            ],
+        ]);
+    }
+
+    /**
+     * Pobierz statystyki providera
+     * 
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function statistics(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user || $user->user_type !== UserType::Provider) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $allBookings = Booking::where('provider_id', $user->id)->get();
+
+        // Policz statystyki
+        $totalBookings = $allBookings->count();
+        $completedBookings = $allBookings->where('status', 'completed')->count();
+        $pendingBookings = $allBookings->whereIn('status', ['pending', 'quote_sent'])->count();
+        $cancelledBookings = $allBookings->where('status', 'cancelled')->count();
+        $declinedBookings = $allBookings->where('status', 'declined')->count();
+
+        $completionRate = $totalBookings > 0 ? ($completedBookings / $totalBookings) * 100 : 0;
+
+        return response()->json([
+            'data' => [
+                'total_bookings' => $totalBookings,
+                'completed_bookings' => $completedBookings,
+                'pending_bookings' => $pendingBookings,
+                'cancelled_bookings' => $cancelledBookings,
+                'declined_bookings' => $declinedBookings,
+                'completion_rate' => round($completionRate, 2),
+                'average_rating' => 0, // TODO: dodać recenzje
+                'trust_score' => 0, // TODO: Trust Score ze ProviderProfile
+                'response_time' => 0, // TODO: z ProviderProfile
+            ],
+        ]);
+    }
+
+    /**
+     * Początek destroy metody
      */
     public function destroy(Request $request, int $id): JsonResponse
     {
