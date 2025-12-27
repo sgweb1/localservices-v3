@@ -61,6 +61,7 @@ return new class extends Migration
             // Status rezerwacji
             $table->enum('status', [
                 'pending',          // Oczekuje na potwierdzenie
+                'quote_sent',       // Cytat wysłany
                 'confirmed',        // Potwierdzona
                 'in_progress',      // W trakcie realizacji
                 'completed',        // Zakończona

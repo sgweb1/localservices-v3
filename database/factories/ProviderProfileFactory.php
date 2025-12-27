@@ -39,6 +39,8 @@ class ProviderProfileFactory extends Factory
             'verification_level' => fake()->numberBetween(1, 5),
             'id_verified' => fake()->boolean(50),
             'background_check_passed' => fake()->boolean(30),
+            'response_time_hours' => fake()->numberBetween(1, 48),
+            'completion_rate' => fake()->numberBetween(50, 100),
         ];
     }
 

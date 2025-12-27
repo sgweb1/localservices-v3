@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\UserType;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\BookingResource;
 use App\Models\Booking;
 use App\Services\NotificationService;
 use Carbon\Carbon;
@@ -169,26 +170,9 @@ class ProviderBookingController extends Controller
             );
         }
 
-        // Pobierz dane toast dla response
-        $toastData = $this->notificationService->getToastData(
-            'booking.confirmed',
-            'provider',
-            [
-                'customer_name' => $booking->customer?->name ?? 'Klient',
-                'service_name' => $booking->service->title ?? 'Usługa',
-                'booking_date' => Carbon::parse($booking->booking_date)->format('d.m.Y'),
-            ]
-        );
-
         return response()->json([
-            'success' => true,
-            'message' => 'Rezerwacja została zaakceptowana',
-            'booking' => [
-                'id' => $booking->id,
-                'status' => $booking->status,
-            ],
-            'toast' => $toastData,
-        ]);
+            'data' => new BookingResource($booking->fresh(['service', 'customer', 'provider'])),
+        ], 200);
     }
 
     /**
@@ -215,10 +199,10 @@ class ProviderBookingController extends Controller
         }
 
         if ($booking->status !== 'pending') {
-            return response()->json(['error' => 'Booking is not pending'], 400);
+            return response()->json(['error' => 'Booking is not pending'], 422);
         }
 
-        $booking->update(['status' => 'rejected']);
+        $booking->update(['status' => 'cancelled']);
 
         // Wyślij powiadomienie do customera
         if ($booking->customer) {
@@ -239,13 +223,8 @@ class ProviderBookingController extends Controller
         }
 
         return response()->json([
-            'success' => true,
-            'message' => 'Rezerwacja została odrzucona',
-            'booking' => [
-                'id' => $booking->id,
-                'status' => $booking->status,
-            ],
-        ]);
+            'data' => new BookingResource($booking->fresh(['service', 'customer', 'provider'])),
+        ], 200);
     }
 
     /**
@@ -272,7 +251,10 @@ class ProviderBookingController extends Controller
         }
 
         if ($booking->status !== 'confirmed') {
-            return response()->json(['error' => 'Booking is not confirmed'], 400);
+            return response()->json([
+                'error' => 'Można rozpocząć tylko potwierdzone rezerwacje',
+                'current_status' => $booking->status
+            ], 422);
         }
 
         $booking->update(['status' => 'completed']);
@@ -295,13 +277,8 @@ class ProviderBookingController extends Controller
         }
 
         return response()->json([
-            'success' => true,
-            'message' => 'Rezerwacja została oznaczona jako ukończona',
-            'booking' => [
-                'id' => $booking->id,
-                'status' => $booking->status,
-            ],
-        ]);
+            'data' => new BookingResource($booking->fresh(['service', 'customer', 'provider'])),
+        ], 200);
     }
 
     /**
@@ -393,14 +370,8 @@ class ProviderBookingController extends Controller
         ]);
 
         return response()->json([
-            'success' => true,
-            'message' => 'Cytat wysłany',
-            'booking' => [
-                'id' => $booking->id,
-                'status' => $booking->status,
-                'service_price' => (float) $booking->service_price,
-            ],
-        ]);
+            'data' => new BookingResource($booking->fresh(['service', 'customer', 'provider'])),
+        ], 200);
     }
 
     /**
@@ -445,13 +416,8 @@ class ProviderBookingController extends Controller
         ]);
 
         return response()->json([
-            'success' => true,
-            'message' => 'Usługa rozpoczęta',
-            'booking' => [
-                'id' => $booking->id,
-                'status' => $booking->status,
-            ],
-        ]);
+            'data' => new BookingResource($booking->fresh(['service', 'customer', 'provider'])),
+        ], 200);
     }
 
     /**

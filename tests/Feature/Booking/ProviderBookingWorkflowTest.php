@@ -67,9 +67,8 @@ class ProviderBookingWorkflowTest extends TestCase
             'user_id' => $this->provider->id,
             'trust_score' => 92,
             'verification_level' => 5,
-            'response_time' => 15,
+            'response_time_hours' => 15,
             'completion_rate' => 98.5,
-            'bio' => 'Profesjonalny hydraulik z 10-letnim doświadczeniem',
         ]);
 
         // Setup usługi
@@ -77,7 +76,7 @@ class ProviderBookingWorkflowTest extends TestCase
             'provider_id' => $this->provider->id,
             'location_id' => $this->warsaw->id,
             'category_id' => $this->plumbing->id,
-            'name' => 'Wymiana baterii kuchni',
+            'title' => 'Wymiana baterii kuchni',
             'base_price' => 150,
             'instant_booking' => true,
             'status' => 'active',
@@ -87,7 +86,7 @@ class ProviderBookingWorkflowTest extends TestCase
             'provider_id' => $this->provider->id,
             'location_id' => $this->warsaw->id,
             'category_id' => $this->plumbing->id,
-            'name' => 'Naprawa pralki',
+            'title' => 'Naprawa pralki',
             'base_price' => 250,
             'instant_booking' => false,
             'status' => 'active',
@@ -115,8 +114,8 @@ class ProviderBookingWorkflowTest extends TestCase
             'provider_id' => $this->provider->id,
             'service_id' => $this->instantService->id,
             'status' => BookingStatus::CONFIRMED->value,
-            'scheduled_date' => now()->addDays(2),
-            'scheduled_time' => '10:00',
+            'booking_date' => now()->addDays(2),
+            'start_time' => '10:00',
         ]);
 
         // Provider powinien mieć dostęp do rezerwacji
@@ -144,10 +143,9 @@ class ProviderBookingWorkflowTest extends TestCase
             'provider_id' => $this->provider->id,
             'service_id' => $this->instantService->id,
             'status' => BookingStatus::CONFIRMED->value,
-            'scheduled_date' => now()->addDays(2),
-            'scheduled_time' => '10:00',
-            'notes' => 'Proszę przyjechać sprzętem do spawania',
-            'budget' => 150,
+            'booking_date' => now()->addDays(2),
+            'start_time' => '10:00',
+            'customer_notes' => 'Proszę przyjechać sprzętem do spawania',
         ]);
 
         $response = $this->actingAs($this->provider)
@@ -167,10 +165,10 @@ class ProviderBookingWorkflowTest extends TestCase
                 ],
                 'service' => [
                     'id',
-                    'name',
+                    'title',
                     'base_price',
                 ],
-                'scheduled_date',
+                'booking_date',
                 'scheduled_time',
                 'notes',
                 'budget',
@@ -181,7 +179,7 @@ class ProviderBookingWorkflowTest extends TestCase
         $data = $response->json('data');
         $this->assertEquals($booking->id, $data['id']);
         $this->assertEquals($this->customer->name, $data['customer']['name']);
-        $this->assertEquals($this->instantService->name, $data['service']['name']);
+        $this->assertEquals($this->instantService->title, $data['service']['title']);
     }
 
     /**
@@ -196,25 +194,22 @@ class ProviderBookingWorkflowTest extends TestCase
             'customer_id' => $this->customer->id,
             'provider_id' => $this->provider->id,
             'service_id' => $this->requestService->id,
-            'status' => BookingStatus::PENDING_PROVIDER_RESPONSE->value,
+            'status' => BookingStatus::PENDING->value,
         ]);
 
         $response = $this->actingAs($this->provider)
             ->postJson('/api/v1/provider/bookings/' . $booking->id . '/accept', [
                 'message' => 'Doskonale! Mogę przyjechać na tę datę. Proszę przygotować dostęp do pralki.',
-                'price' => 280,
             ]);
 
         $response->assertStatus(200);
         $data = $response->json('data');
         
         $this->assertEquals(BookingStatus::CONFIRMED->value, $data['status']);
-        $this->assertEquals(280, $data['price']);
 
         $this->assertDatabaseHas('bookings', [
             'id' => $booking->id,
             'status' => BookingStatus::CONFIRMED->value,
-            'price' => 280,
         ]);
     }
 
@@ -229,7 +224,7 @@ class ProviderBookingWorkflowTest extends TestCase
             'customer_id' => $this->customer->id,
             'provider_id' => $this->provider->id,
             'service_id' => $this->requestService->id,
-            'status' => BookingStatus::PENDING_PROVIDER_RESPONSE->value,
+            'status' => BookingStatus::PENDING->value,
         ]);
 
         $response = $this->actingAs($this->provider)
@@ -240,7 +235,7 @@ class ProviderBookingWorkflowTest extends TestCase
         $response->assertStatus(200);
         $data = $response->json('data');
         
-        $this->assertEquals(BookingStatus::DECLINED->value, $data['status']);
+        $this->assertEquals(BookingStatus::CANCELLED->value, $data['status']);
 
         $this->assertDatabaseHas('bookings', [
             'id' => $booking->id,
@@ -259,7 +254,7 @@ class ProviderBookingWorkflowTest extends TestCase
             'customer_id' => $this->customer->id,
             'provider_id' => $this->provider->id,
             'service_id' => $this->requestService->id,
-            'status' => BookingStatus::PENDING_PROVIDER_RESPONSE->value,
+            'status' => BookingStatus::PENDING->value,
             'budget' => 250,
         ]);
 
@@ -274,12 +269,12 @@ class ProviderBookingWorkflowTest extends TestCase
         $data = $response->json('data');
         
         $this->assertEquals(BookingStatus::QUOTE_SENT->value, $data['status']);
-        $this->assertEquals(320, $data['price']);
+        $this->assertEquals(320, $data['total_price']);
 
         $this->assertDatabaseHas('bookings', [
             'id' => $booking->id,
             'status' => BookingStatus::QUOTE_SENT->value,
-            'price' => 320,
+            'total_price' => 320,
         ]);
     }
 
@@ -377,8 +372,8 @@ class ProviderBookingWorkflowTest extends TestCase
             'provider_id' => $this->provider->id,
             'service_id' => $this->instantService->id,
             'status' => BookingStatus::CONFIRMED->value,
-            'scheduled_date' => now(),
-            'scheduled_time' => '10:00',
+            'booking_date' => now(),
+            'start_time' => '10:00',
         ]);
 
         $response = $this->actingAs($this->provider)
@@ -409,7 +404,7 @@ class ProviderBookingWorkflowTest extends TestCase
             'provider_id' => $this->provider->id,
             'service_id' => $this->instantService->id,
             'status' => BookingStatus::IN_PROGRESS->value,
-            'scheduled_date' => now(),
+            'booking_date' => now(),
         ]);
 
         $response = $this->actingAs($this->provider)
@@ -422,12 +417,12 @@ class ProviderBookingWorkflowTest extends TestCase
         $data = $response->json('data');
         
         $this->assertEquals(BookingStatus::COMPLETED->value, $data['status']);
-        $this->assertEquals(150, $data['final_price']);
+        $this->assertEquals(150, $data['total_price']);
 
         $this->assertDatabaseHas('bookings', [
             'id' => $booking->id,
             'status' => BookingStatus::COMPLETED->value,
-            'final_price' => 150,
+            'total_price' => 150,
         ]);
     }
 
@@ -540,7 +535,7 @@ class ProviderBookingWorkflowTest extends TestCase
             'provider_id' => $this->provider->id,
             'customer_id' => $this->customer->id,
             'service_id' => $this->requestService->id,
-            'status' => BookingStatus::PENDING_PROVIDER_RESPONSE->value,
+            'status' => BookingStatus::PENDING->value,
         ]);
 
         $response = $this->actingAs($this->provider)

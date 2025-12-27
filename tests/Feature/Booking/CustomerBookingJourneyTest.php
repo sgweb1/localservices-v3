@@ -75,7 +75,7 @@ class CustomerBookingJourneyTest extends TestCase
             'user_id' => $this->provider->id,
             'trust_score' => 92,
             'verification_level' => 5,
-            'response_time' => 15,
+            'response_time_hours' => 15,
             'completion_rate' => 98.5,
         ]);
 
@@ -84,7 +84,7 @@ class CustomerBookingJourneyTest extends TestCase
             'provider_id' => $this->provider->id,
             'location_id' => $this->warsaw->id,
             'category_id' => $this->plumbing->id,
-            'name' => 'Wymiana baterii kuchni',
+            'title' => 'Wymiana baterii kuchni',
             'description' => 'Szybka wymiana baterii kuchni',
             'base_price' => 150,
             'instant_booking' => true,
@@ -95,7 +95,7 @@ class CustomerBookingJourneyTest extends TestCase
             'provider_id' => $this->provider->id,
             'location_id' => $this->warsaw->id,
             'category_id' => $this->plumbing->id,
-            'name' => 'Naprawa pralki',
+            'title' => 'Naprawa pralki',
             'description' => 'Profesjonalna naprawa pralki',
             'base_price' => 250,
             'instant_booking' => false,
@@ -124,7 +124,7 @@ class CustomerBookingJourneyTest extends TestCase
             'data' => [
                 '*' => [
                     'id',
-                    'name',
+                    'title',
                     'base_price',
                     'instant_booking',
                     'provider' => [
@@ -204,7 +204,7 @@ class CustomerBookingJourneyTest extends TestCase
                 'services' => [
                     '*' => [
                         'id',
-                        'name',
+                        'title',
                         'description',
                         'base_price',
                         'instant_booking',
@@ -242,7 +242,7 @@ class CustomerBookingJourneyTest extends TestCase
                 'status',
                 'customer' => ['id', 'name'],
                 'provider' => ['id', 'name'],
-                'service' => ['id', 'name', 'base_price'],
+                'service' => ['id', 'title', 'base_price'],
                 'scheduled_date',
                 'scheduled_time',
             ],
@@ -283,11 +283,11 @@ class CustomerBookingJourneyTest extends TestCase
         $response->assertStatus(201);
         $booking = $response->json('data');
         
-        $this->assertEquals(BookingStatus::PENDING_PROVIDER_RESPONSE->value, $booking['status']);
+        $this->assertEquals(BookingStatus::PENDING->value, $booking['status']);
         
         $this->assertDatabaseHas('bookings', [
             'id' => $booking['id'],
-            'status' => BookingStatus::PENDING_PROVIDER_RESPONSE->value,
+            'status' => BookingStatus::PENDING->value,
         ]);
     }
 
@@ -352,9 +352,9 @@ class CustomerBookingJourneyTest extends TestCase
             'provider_id' => $this->provider->id,
             'service_id' => $this->instantService->id,
             'status' => BookingStatus::CONFIRMED->value,
-            'scheduled_date' => now()->addDays(3),
-            'scheduled_time' => '10:00',
-            'notes' => 'Szybka wymiana',
+            'booking_date' => now()->addDays(3),
+            'start_time' => '10:00',
+            'customer_notes' => 'Szybka wymiana',
         ]);
 
         $response = $this->actingAs($this->customer)
@@ -367,10 +367,11 @@ class CustomerBookingJourneyTest extends TestCase
                 'status',
                 'customer' => ['id', 'name', 'phone'],
                 'provider' => ['id', 'name', 'phone', 'profile'],
-                'service' => ['id', 'name', 'base_price'],
-                'scheduled_date',
-                'scheduled_time',
-                'notes',
+                'service' => ['id', 'title', 'base_price'],
+                'booking_date',
+                'start_time',
+                'end_time',
+                'customer_notes',
                 'created_at',
                 'updated_at',
             ],
@@ -454,11 +455,12 @@ class CustomerBookingJourneyTest extends TestCase
             ->postJson('/api/v1/bookings', [
                 'service_id' => $this->instantService->id,
                 'scheduled_date' => now()->subDays(1)->format('Y-m-d'),
+                'start_time' => '10:00',
                 'scheduled_time' => '10:00',
             ]);
 
         $response->assertStatus(422);
-        $response->assertJsonValidationErrors(['scheduled_date']);
+        $response->assertJsonValidationErrors(['booking_date']);
     }
 
     /**
