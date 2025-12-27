@@ -1,17 +1,21 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { LayoutGrid, TrendingUp, Calendar, MessageSquare, Star, Bell, CreditCard, Settings } from 'lucide-react';
+import { LayoutGrid, TrendingUp, Calendar, MessageSquare, Star, Bell, CreditCard, Settings, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { PerformanceMetrics } from './PerformanceMetrics';
+import { RecentBookings } from './RecentBookings';
+import { RecentReviews } from './RecentReviews';
+import { RecentMessages } from './RecentMessages';
 
 /**
- * Provider Dashboard Page
- * Wyświetla kluczowe metryki i szybkie linki
+ * Provider Dashboard Page - FULL VERSION
+ * Wyświetla kompletny dashboard z metrykami, rezerwacjami, recenzjami i wiadomościami
  */
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   
-  // Mock metrics data
-  const metrics = {
+  // Quick stats
+  const stats = {
     bookingsToday: 3,
     upcomingBookings: 7,
     reviewsAvg: 4.8,
@@ -86,7 +90,7 @@ export const DashboardPage: React.FC = () => {
             </div>
             <div className="text-right">
               <div className="text-5xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
-                {metrics.trustScore}
+                {stats.trustScore}
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Trust Score™</p>
             </div>
@@ -95,10 +99,10 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 pb-12">
+      <div className="max-w-7xl mx-auto px-6 pb-12 space-y-8">
         
-        {/* Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Top Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Rezerwacje dzisiaj */}
           <div className="bg-white dark:bg-gray-950 rounded-2xl p-6 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between">
@@ -107,7 +111,7 @@ export const DashboardPage: React.FC = () => {
                   Rezerwacje dzisiaj
                 </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
-                  {metrics.bookingsToday}
+                  {stats.bookingsToday}
                 </p>
               </div>
               <Calendar className="w-12 h-12 text-blue-500 opacity-30" />
@@ -122,7 +126,7 @@ export const DashboardPage: React.FC = () => {
                   Nadchodzące rezerwacje
                 </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
-                  {metrics.upcomingBookings}
+                  {stats.upcomingBookings}
                 </p>
               </div>
               <TrendingUp className="w-12 h-12 text-green-500 opacity-30" />
@@ -137,7 +141,7 @@ export const DashboardPage: React.FC = () => {
                   Średnia ocena
                 </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
-                  {metrics.reviewsAvg}⭐
+                  {stats.reviewsAvg}⭐
                 </p>
               </div>
               <Star className="w-12 h-12 text-yellow-500 opacity-30" />
@@ -152,13 +156,31 @@ export const DashboardPage: React.FC = () => {
                   Nowe wiadomości
                 </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
-                  {metrics.unreadMessages}
+                  {stats.unreadMessages}
                 </p>
               </div>
               <MessageSquare className="w-12 h-12 text-purple-500 opacity-30" />
             </div>
           </div>
         </div>
+
+        {/* Performance Metrics Section */}
+        <div>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+            <Zap size={24} className="text-primary-600" />
+            Wydajność
+          </h2>
+          <PerformanceMetrics />
+        </div>
+
+        {/* Recent Activities Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <RecentBookings />
+          <RecentMessages />
+        </div>
+
+        {/* Reviews Section */}
+        <RecentReviews />
 
         {/* Quick Links */}
         <div>
@@ -187,12 +209,12 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {/* Footer Info */}
-        <div className="mt-12 p-6 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-2xl border border-blue-200 dark:border-blue-800">
+        <div className="p-6 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-2xl border border-blue-200 dark:border-blue-800">
           <h3 className="font-bold text-gray-900 dark:text-white mb-2">
             💡 Wskazówka
           </h3>
           <p className="text-gray-700 dark:text-gray-300 text-sm">
-            Utrzymuj swój Trust Score powyżej 70, aby uzyskać dostęp do premium funkcji i wyższą widoczność w wyszukiwaniu.
+            Utrzymuj swój Trust Score powyżej 70, aby uzyskać dostęp do premium funkcji i wyższą widoczność w wyszukiwaniu. Odpowiadaj na wiadomości szybko - to wpływa na Twoją wydajność!
           </p>
         </div>
       </div>
