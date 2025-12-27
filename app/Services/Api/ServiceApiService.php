@@ -113,7 +113,7 @@ class ServiceApiService
      * @param array $filters Filtry: page, per_page, sort_by, sort_order
      * @return Paginator
      */
-    public function getProviderServices(int $providerId, array $filters = []): Paginator
+    public function getProviderServices(int $providerId, array $filters = []): LengthAwarePaginator
     {
         $query = Service::query()
             ->where('provider_id', $providerId)

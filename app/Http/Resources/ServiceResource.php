@@ -54,6 +54,8 @@ class ServiceResource extends JsonResource
                 'uuid' => $this->provider?->uuid,
                 'name' => $this->provider?->name,
                 'avatar' => $this->provider?->avatar,
+                'rating_average' => (float) ($this->provider?->rating_average ?? 0),
+                'rating_count' => (int) ($this->provider?->rating_count ?? 0),
             ],
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),

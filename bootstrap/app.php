@@ -22,11 +22,6 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->prefix('api/v1')
                 ->group(base_path('routes/api/v1/profile.php'));
 
-            // Marketplace - public routes, no auth required
-            Route::middleware([])
-                ->prefix('api/v1')
-                ->group(base_path('routes/api/v1/marketplace.php'));
-
             Route::middleware(['api', 'auth:sanctum'])
                 ->prefix('api/v1')
                 ->group(base_path('routes/api/v1/provider.php'));
@@ -35,8 +30,11 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->prefix('api/v1')
                 ->group(base_path('routes/api/v1/provider-services.php'));
 
-            Route::middleware([])
-                ->prefix('api/v1')
+            // Marketplace - public routes, NO AUTH - MUST BE LAST to override provider-services.php GET /providers/{providerId}/services
+            Route::prefix('api/v1')
+                ->group(base_path('routes/api/v1/marketplace.php'));
+
+            Route::prefix('api/v1')
                 ->group(base_path('routes/api/v1/push.php'));
 
             Route::middleware('web')

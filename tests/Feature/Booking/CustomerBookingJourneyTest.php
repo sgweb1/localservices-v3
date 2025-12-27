@@ -164,12 +164,13 @@ class CustomerBookingJourneyTest extends TestCase
         ]);
 
         Sanctum::actingAs($this->customer);
-        $response = $this->getJson('/api/v1/services?location=' . $this->warsaw->slug . '&category=' . $this->plumbing->slug);
+        $response = $this->getJson('/api/v1/services?location_id=' . $this->warsaw->id . '&category_id=' . $this->plumbing->id);
 
         $response->assertStatus(200);
         $services = $response->json('data');
         
-        // Powinny być tylko hydrauliczne usługi
+        // Powinny być tylko hydrauliczne usługi (2 z setup)
+        $this->assertCount(2, $services);
         foreach ($services as $service) {
             $this->assertEquals($this->plumbing->id, $service['category_id']);
         }
@@ -182,16 +183,14 @@ class CustomerBookingJourneyTest extends TestCase
      */
     public function test_customer_can_view_provider_details(): void
     {
-        // Endpoint jest publiczny, nie wymaga autentykacji
-        $url = '/api/v1/providers/' . $this->provider->id . '/services';
-        $response = $this->getJson($url);
+        $response = $this->getJson('/api/v1/providers/' . $this->provider->id . '/services');
 
         $response->assertStatus(200);
         $services = $response->json('data');
         
         $this->assertGreaterThanOrEqual(2, count($services));
         foreach ($services as $service) {
-            $this->assertEquals($this->provider->id, $service['provider_id']);
+            $this->assertEquals($this->provider->id, $service['provider']['id']);
             $this->assertNotEmpty($service['title']);
             $this->assertNotNull($service['category_id']);
         }
