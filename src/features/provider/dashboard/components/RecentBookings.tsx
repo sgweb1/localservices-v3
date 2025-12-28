@@ -1,14 +1,34 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Calendar, MapPin, User, Clock, ChevronRight } from 'lucide-react';
 import { useRecentBookings } from '../hooks/useDashboardData';
 import { Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
+import '@/lib/echo';
 
 /**
  * Ostatnie rezerwacje
  */
 export const RecentBookings: React.FC = () => {
   const { data, isLoading } = useRecentBookings(5);
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  // Realtime: odśwież po zmianie rezerwacji
+  useEffect(() => {
+    if (!user?.id || !window.Echo) return;
+    const channel = window.Echo.private(`user.${user.id}`);
+    const handler = (payload: any) => {
+      try {
+        if (payload?.metadata?.event?.startsWith('booking.')) {
+          queryClient.invalidateQueries({ queryKey: ['dashboard', 'bookings'] });
+        }
+      } catch (_) {}
+    };
+    channel.listen('NotificationToast', handler);
+    return () => { try { channel.stopListening('NotificationToast'); } catch (_) {} };
+  }, [user?.id, queryClient]);
 
   if (isLoading) {
     return (
@@ -44,14 +64,14 @@ export const RecentBookings: React.FC = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-950 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+    <div className="glass-card rounded-2xl overflow-hidden">
       <div className="p-6 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+        <h3 className="text-lg font-bold text-gradient-strong">
           Ostatnie rezerwacje
         </h3>
         <Link
           to="/provider/bookings"
-          className="text-sm text-primary-600 hover:text-primary-700 font-semibold flex items-center gap-1"
+          className="text-sm btn-gradient font-semibold flex items-center gap-1 px-3 py-1 rounded-xl"
         >
           Wszystkie <ChevronRight size={16} />
         </Link>
@@ -66,11 +86,11 @@ export const RecentBookings: React.FC = () => {
           bookings.map((booking) => (
             <div
               key={booking.id}
-              className="p-6 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors"
+              className="p-6 card-hover"
             >
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white">
+                  <h4 className="font-semibold text-gray-900 dark:text-white font-heading">
                     {booking.service}
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1 mt-1">

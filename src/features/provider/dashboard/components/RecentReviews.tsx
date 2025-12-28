@@ -1,14 +1,34 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Star, User, Quote, ChevronRight } from 'lucide-react';
 import { useRecentReviews } from '../hooks/useDashboardData';
 import { Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
+import '@/lib/echo';
 
 /**
  * Ostatnie recenzje
  */
 export const RecentReviews: React.FC = () => {
   const { data, isLoading } = useRecentReviews(4);
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  // Realtime: odśwież po nowej recenzji
+  useEffect(() => {
+    if (!user?.id || !window.Echo) return;
+    const channel = window.Echo.private(`user.${user.id}`);
+    const handler = (payload: any) => {
+      try {
+        if (payload?.metadata?.event === 'review.created') {
+          queryClient.invalidateQueries({ queryKey: ['dashboard', 'reviews'] });
+        }
+      } catch (_) {}
+    };
+    channel.listen('NotificationToast', handler);
+    return () => { try { channel.stopListening('NotificationToast'); } catch (_) {} };
+  }, [user?.id, queryClient]);
 
   if (isLoading) {
     return (
@@ -22,14 +42,14 @@ export const RecentReviews: React.FC = () => {
   const reviews = data?.data || [];
 
   return (
-    <div className="bg-white dark:bg-gray-950 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+    <div className="glass-card rounded-2xl overflow-hidden">
       <div className="p-6 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+        <h3 className="text-lg font-bold text-gradient-strong">
           Ostatnie recenzje
         </h3>
         <Link
           to="/provider/reviews"
-          className="text-sm text-primary-600 hover:text-primary-700 font-semibold flex items-center gap-1"
+          className="text-sm btn-gradient font-semibold flex items-center gap-1 px-3 py-1 rounded-xl"
         >
           Wszystkie <ChevronRight size={16} />
         </Link>
@@ -44,7 +64,7 @@ export const RecentReviews: React.FC = () => {
           reviews.map((review) => (
             <div
               key={review.id}
-              className="p-6 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors"
+              className="p-6 card-hover"
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
@@ -52,7 +72,7 @@ export const RecentReviews: React.FC = () => {
                     <User size={18} className="text-primary-600" />
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                    <p className="font-semibold text-gray-900 dark:text-white text-sm font-heading">
                       {review.customer_name}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-500">

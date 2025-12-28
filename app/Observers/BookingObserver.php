@@ -40,6 +40,20 @@ class BookingObserver
                     'start_time' => $booking->start_time,
                 ],
             );
+
+            // Broadcast do prywatnego kanału providera (Realtime dla dashboardu)
+            \App\Events\NotificationToastEvent::dispatch(
+                userId: (int) $booking->provider->id,
+                title: 'Nowa rezerwacja',
+                message: $booking->service->name . ' • ' . ($booking->customer->name ?? ''),
+                type: 'success',
+                actionUrl: '/provider/bookings',
+                metadata: [
+                    'event' => 'booking.created',
+                    'booking_id' => $booking->id,
+                    'provider_id' => $booking->provider_id,
+                ],
+            );
         }
     }
 
@@ -73,6 +87,20 @@ class BookingObserver
                         ]
                     );
                 }
+
+                // Realtime dla providera – odśwież listę rezerwacji
+                \App\Events\NotificationToastEvent::dispatch(
+                    userId: (int) $booking->provider_id,
+                    title: 'Rezerwacja potwierdzona',
+                    message: $booking->service->name,
+                    type: 'info',
+                    actionUrl: '/provider/bookings',
+                    metadata: [
+                        'event' => 'booking.updated',
+                        'booking_id' => $booking->id,
+                        'status' => 'confirmed',
+                    ],
+                );
             }
 
             // Jeśli rezerwacja została anulowana lub odrzucona
@@ -91,6 +119,22 @@ class BookingObserver
                         );
                     }
                 }
+
+                // Realtime – odśwież listę rezerwacji providera
+                if ($booking->provider_id) {
+                    \App\Events\NotificationToastEvent::dispatch(
+                        userId: (int) $booking->provider_id,
+                        title: 'Rezerwacja anulowana',
+                        message: $booking->service->name,
+                        type: 'warning',
+                        actionUrl: '/provider/bookings',
+                        metadata: [
+                            'event' => 'booking.updated',
+                            'booking_id' => $booking->id,
+                            'status' => (string) $newStatus,
+                        ],
+                    );
+                }
             }
 
             // Jeśli rezerwacja została ukończona
@@ -107,6 +151,22 @@ class BookingObserver
                             ]
                         );
                     }
+                }
+
+                // Realtime – odśwież listę rezerwacji providera
+                if ($booking->provider_id) {
+                    \App\Events\NotificationToastEvent::dispatch(
+                        userId: (int) $booking->provider_id,
+                        title: 'Rezerwacja ukończona',
+                        message: $booking->service->name,
+                        type: 'success',
+                        actionUrl: '/provider/bookings',
+                        metadata: [
+                            'event' => 'booking.updated',
+                            'booking_id' => $booking->id,
+                            'status' => 'completed',
+                        ],
+                    );
                 }
             }
         }

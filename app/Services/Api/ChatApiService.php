@@ -173,6 +173,45 @@ class ChatApiService
         // Broadcast event
         \App\Events\MessageSent::dispatch($message);
 
+        // Dodatkowo wyślij powiadomienie toast do uczestników rozmowy
+        // aby frontend mógł zareagować (np. zainwalidować cache React Query)
+        if ($conversation) {
+            // Określ odbiorców (drugi uczestnik oraz nadawca)
+            $recipientId = $message->sender_id === $conversation->customer_id
+                ? (int) $conversation->provider_id
+                : (int) $conversation->customer_id;
+
+            // Wyślij do odbiorcy
+            \App\Events\NotificationToastEvent::dispatch(
+                userId: $recipientId,
+                title: 'Nowa wiadomość',
+                message: mb_substr($message->body ?? '', 0, 140),
+                type: 'info',
+                actionUrl: '/provider/messages?conv=' . $conversationId,
+                metadata: [
+                    'event' => 'message.sent',
+                    'conversation_id' => $conversationId,
+                    'sender_id' => $message->sender_id,
+                    'preview' => mb_substr($message->body ?? '', 0, 60),
+                ],
+            );
+
+            // Opcjonalnie: wyślij także do nadawcy (aby odświeżyć jego listy bez dodatkowego requestu)
+            \App\Events\NotificationToastEvent::dispatch(
+                userId: (int) $message->sender_id,
+                title: 'Wiadomość wysłana',
+                message: mb_substr($message->body ?? '', 0, 140),
+                type: 'success',
+                actionUrl: '/provider/messages?conv=' . $conversationId,
+                metadata: [
+                    'event' => 'message.sent',
+                    'conversation_id' => $conversationId,
+                    'sender_id' => $message->sender_id,
+                    'preview' => mb_substr($message->body ?? '', 0, 60),
+                ],
+            );
+        }
+
         return $message;
     }
 

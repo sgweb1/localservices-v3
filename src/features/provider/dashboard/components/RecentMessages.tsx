@@ -1,14 +1,39 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { MessageCircle, User, Clock, ChevronRight } from 'lucide-react';
 import { useRecentMessages } from '../hooks/useDashboardData';
 import { Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
+import '@/lib/echo';
 
 /**
  * Ostatnie wiadomości z rozmów
  */
 export const RecentMessages: React.FC = () => {
   const { data, isLoading } = useRecentMessages(5);
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  // Realtime invalidacja cache po nowej wiadomości
+  useEffect(() => {
+    if (!user?.id || !window.Echo) return;
+
+    const channel = window.Echo.private(`user.${user.id}`);
+    const handler = (payload: any) => {
+      try {
+        if (payload?.metadata?.event === 'message.sent') {
+          // Odśwież listę rozmów na dashboardzie
+          queryClient.invalidateQueries({ queryKey: ['dashboard', 'messages'] });
+        }
+      } catch (_) {}
+    };
+
+    channel.listen('NotificationToast', handler);
+    return () => {
+      try { channel.stopListening('NotificationToast'); } catch (_) {}
+    };
+  }, [user?.id, queryClient]);
 
   if (isLoading) {
     return (

@@ -36,6 +36,20 @@ class ReviewObserver
                     'service_name' => $review->booking->service->name ?? '',
                 ]
             );
+
+            // Realtime – odśwież listę recenzji na dashboardzie
+            \App\Events\NotificationToastEvent::dispatch(
+                userId: (int) $review->provider->id,
+                title: 'Nowa recenzja',
+                message: ($review->customer->name ?? '') . ' • ' . ((int) $review->rating) . '/5',
+                type: 'info',
+                actionUrl: '/provider/reviews',
+                metadata: [
+                    'event' => 'review.created',
+                    'review_id' => (int) $review->id,
+                    'provider_id' => (int) $review->provider_id,
+                ],
+            );
         }
     }
 
