@@ -10,6 +10,7 @@ use App\Observers\MessageObserver;
 use App\Observers\ReviewObserver;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\URL;
 use App\Events\ProfileUpdated;
 use App\Events\AvatarUpdated;
 use App\Listeners\Profile\LogProfileChangeListener;
@@ -34,6 +35,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Force HTTPS dla assetów gdy APP_URL używa https://
+        if (str_starts_with(config('app.url'), 'https://')) {
+            URL::forceScheme('https');
+        }
+
         // Rejestracja observerów
         Booking::observe(BookingObserver::class);
         Review::observe(ReviewObserver::class);

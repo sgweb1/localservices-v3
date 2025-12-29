@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { isMockMode } from '@/utils/mockMode';
+import { getAuthToken } from '@/utils/apiHelpers';
 import { MOCK_SUBPAGES } from '../mocks/subpages';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://ls.test';
@@ -21,9 +22,18 @@ export interface ServicesResponse {
 }
 
 const fetchServices = async (): Promise<ServicesResponse> => {
+  const authToken = getAuthToken();
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+  };
+
+  if (authToken) {
+    headers.Authorization = `Bearer ${authToken}`;
+  }
+
   const res = await fetch(`${API_BASE_URL}/api/v1/provider/services`, {
     credentials: 'include',
-    headers: { Accept: 'application/json' },
+    headers,
   });
 
   if (!res.ok) {

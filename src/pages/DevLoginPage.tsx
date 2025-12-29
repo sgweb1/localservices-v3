@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth, MOCK_USERS } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Shield, Briefcase, LogOut, CheckCircle2, Loader2 } from 'lucide-react';
 import axios from 'axios';
 
@@ -14,7 +14,11 @@ import axios from 'axios';
 export const DevLoginPage: React.FC = () => {
   const { user, login, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  // Skąd użytkownik został przekierowany (np. z ProtectedRoute)
+  const from = (location.state as any)?.from?.pathname || null;
 
   const handleLogin = async (mockUser: typeof MOCK_USERS[0]) => {
     setIsLoggingIn(true);
@@ -31,8 +35,11 @@ export const DevLoginPage: React.FC = () => {
       // 3. Zapisz lokalnie w React state
       login(mockUser);
       
-      // 4. Redirect based on role
-      if (mockUser.role === 'provider') {
+      // 4. Redirect - wróć tam skąd przyszedł lub domyślna strona dla roli
+      if (from && mockUser.role === 'provider' && from.startsWith('/provider')) {
+        // Użytkownik próbował wejść na provider route - wróć tam
+        navigate(from);
+      } else if (mockUser.role === 'provider') {
         navigate('/provider/dashboard');
       } else if (mockUser.role === 'admin') {
         navigate('/'); // TODO: admin panel

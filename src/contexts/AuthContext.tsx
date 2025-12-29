@@ -80,18 +80,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         try {
           return JSON.parse(savedUser);
         } catch {
-          // Fallback do domyślnego providera
+          // Invalid JSON - stay logged out
         }
       }
-      // Domyślny provider
-      return MOCK_USERS[0]; // Marek Hydraulik (provider)
     }
+    // Domyślnie NIEZALOGOWANY - wymaga ręcznego logowania przez /dev/login
     return null;
   });
 
   const [token, setToken] = useState<string | null>(() => {
     if (import.meta.env.DEV) {
-      return localStorage.getItem('dev_mock_token') || generateMockToken(6);
+      return localStorage.getItem('dev_mock_token') || null;
     }
     return localStorage.getItem('sanctum_token') || null;
   });

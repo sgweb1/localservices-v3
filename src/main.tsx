@@ -25,6 +25,7 @@ import { AnalyticsPage } from './features/provider/analytics/AnalyticsPage';
 import { ProfilePage } from './features/provider/profile/ProfilePage';
 import { ServiceFormPage } from './features/provider/pages/ServiceFormPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import { Footer } from './components/Footer';
 import { useToastNotifications } from './hooks/useToastNotifications';
 import '../resources/css/app.css';
@@ -152,8 +153,12 @@ const App = () => {
           <Route path="/szukaj/:category/:city" element={<ServicesPage />} />
           <Route path="/dev/login" element={<DevLoginPage />} />
           
-          {/* Provider Routes */}
-          <Route path="/provider" element={<ProviderLayout />}>
+          {/* Provider Routes - wymagają autoryzacji jako provider */}
+          <Route path="/provider" element={
+            <ProtectedRoute requiredRole="provider">
+              <ProviderLayout />
+            </ProtectedRoute>
+          }>
             <Route index element={<DashboardPage />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="bookings" element={<BookingsPageWithTabs />} />

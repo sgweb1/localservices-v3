@@ -11,8 +11,8 @@ export const PerformanceMetrics: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-gray-950 rounded-2xl p-6 border border-gray-200 dark:border-gray-800 flex items-center justify-center min-h-[200px]">
-        <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
+      <div className="glass-card rounded-2xl p-6 border border-slate-200/70 bg-white/80 shadow-sm flex items-center justify-center min-h-[200px]">
+        <Loader2 className="w-8 h-8 text-cyan-600 animate-spin" />
       </div>
     );
   }
@@ -62,24 +62,27 @@ export const PerformanceMetrics: React.FC = () => {
       {metricsList.map((metric) => {
         const Icon = metric.icon;
         const TrendIcon = metric.trend === 'positive' ? TrendingUp : TrendingDown;
-        const trendColor = metric.trend === 'positive' ? 'text-green-600' : 'text-red-600';
+        const trendColor = metric.trend === 'positive' ? 'text-emerald-600' : 'text-red-600';
+        const iconBg = metric.trend === 'positive' ? 'bg-gradient-to-br from-emerald-400 to-teal-500' : 'bg-gradient-to-br from-red-400 to-orange-500';
 
         return (
           <div
             key={metric.label}
-            className="bg-white dark:bg-gray-950 rounded-2xl p-6 border border-gray-200 dark:border-gray-800 hover:shadow-lg transition-all"
+            className="glass-card rounded-2xl p-5 border border-slate-200/70 bg-white/80 shadow-sm hover:shadow-md transition-all"
           >
-            <div className="flex items-start justify-between mb-4">
-              <Icon className="w-8 h-8 text-primary-600 opacity-50" />
-              <TrendIcon className={`w-5 h-5 ${trendColor}`} />
+            <div className="flex items-start justify-between mb-3">
+              <div className={`p-2 rounded-lg ${iconBg} text-white shadow-md`}>
+                <Icon className="w-5 h-5" />
+              </div>
+              <TrendIcon className={`w-4 h-4 ${trendColor}`} />
             </div>
-            <p className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-1">
+            <p className="text-slate-600 text-sm font-semibold mb-1">
               {metric.label}
             </p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+            <p className="text-3xl font-black text-gradient mb-2">
               {metric.value}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-500">
+            <p className="text-xs text-slate-500">
               Cel: {metric.target}
             </p>
           </div>

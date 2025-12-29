@@ -32,8 +32,8 @@ export const RecentBookings: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-gray-950 rounded-2xl p-6 border border-gray-200 dark:border-gray-800 flex items-center justify-center min-h-[300px]">
-        <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
+      <div className="glass-card rounded-2xl p-6 border border-slate-200/70 bg-white/80 shadow-sm flex items-center justify-center min-h-[300px]">
+        <Loader2 className="w-8 h-8 text-cyan-600 animate-spin" />
       </div>
     );
   }
@@ -44,13 +44,13 @@ export const RecentBookings: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'confirmed':
-        return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300';
+        return 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white';
       case 'pending':
-        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300';
+        return 'bg-gradient-to-r from-amber-400 to-orange-500 text-white';
       case 'completed':
-        return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300';
+        return 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white';
       default:
-        return 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300';
+        return 'bg-gradient-to-r from-slate-400 to-slate-500 text-white';
     }
   };
 
@@ -64,54 +64,54 @@ export const RecentBookings: React.FC = () => {
   };
 
   return (
-    <div className="glass-card rounded-2xl overflow-hidden">
-      <div className="p-6 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-        <h3 className="text-lg font-bold text-gradient-strong">
+    <div className="glass-card rounded-2xl overflow-hidden border border-slate-200/70 bg-white/80 shadow-sm">
+      <div className="p-6 border-b border-slate-200/70 flex items-center justify-between">
+        <h3 className="text-lg font-bold text-slate-900">
           Ostatnie rezerwacje
         </h3>
         <Link
           to="/provider/bookings"
-          className="text-sm btn-gradient font-semibold flex items-center gap-1 px-3 py-1 rounded-xl"
+          className="text-sm font-semibold flex items-center gap-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-500 text-white hover:shadow-md transition-all"
         >
           Wszystkie <ChevronRight size={16} />
         </Link>
       </div>
 
-      <div className="divide-y divide-gray-200 dark:divide-gray-800">
+      <div className="divide-y divide-slate-100">
         {bookings.length === 0 ? (
-          <div className="p-6 text-center text-gray-500">
+          <div className="p-6 text-center text-slate-500">
             <p>Brak rezerwacji</p>
           </div>
         ) : (
           bookings.map((booking) => (
             <div
               key={booking.id}
-              className="p-6 card-hover"
+              className="p-5 hover:bg-slate-50/70 transition-colors"
             >
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white font-heading">
+                  <h4 className="font-semibold text-slate-900">
                     {booking.service}
                   </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1 mt-1">
-                    <User size={14} />
+                  <p className="text-sm text-slate-600 flex items-center gap-1 mt-1">
+                    <User size={14} className="text-cyan-600" />
                     {booking.customer_name}
                   </p>
                 </div>
                 <span
-                  className={`text-xs px-3 py-1 rounded-full font-medium ${getStatusColor(booking.status)}`}
+                  className={`text-xs px-2.5 py-1 rounded-lg font-semibold shadow-sm ${getStatusColor(booking.status)}`}
                 >
                   {getStatusLabel(booking.status)}
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 text-xs text-gray-600 dark:text-gray-400">
+              <div className="grid grid-cols-2 gap-3 text-xs text-slate-600">
                 <div className="flex items-center gap-2">
-                  <Calendar size={14} className="text-primary-600" />
+                  <Calendar size={14} className="text-cyan-600" />
                   {booking.date} {booking.time}
                 </div>
                 <div className="flex items-center gap-2">
-                  <MapPin size={14} className="text-primary-600" />
+                  <MapPin size={14} className="text-teal-600" />
                   {booking.location}
                 </div>
               </div>

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { isMockMode } from '@/utils/mockMode';
 import { MOCK_SUBPAGES } from '../mocks/subpages';
+import { getAuthToken } from '@/utils/apiHelpers';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://ls.test';
 
@@ -64,9 +65,15 @@ const fetchNotifications = async (page = 1, unread = false): Promise<Notificatio
     params.append('unread', '1');
   }
 
+  const authToken = getAuthToken();
+  const headers: Record<string, string> = { Accept: 'application/json' };
+  if (authToken) {
+    headers['Authorization'] = `Bearer ${authToken}`;
+  }
+
   const res = await fetch(`${API_BASE_URL}/api/v1/notifications?${params}`, {
     credentials: 'include',
-    headers: { Accept: 'application/json' },
+    headers,
   });
 
   if (!res.ok) {
@@ -89,9 +96,15 @@ const fetchNotifications = async (page = 1, unread = false): Promise<Notificatio
 };
 
 const fetchUnreadCount = async (): Promise<UnreadCountResponse> => {
+  const authToken = getAuthToken();
+  const headers: Record<string, string> = { Accept: 'application/json' };
+  if (authToken) {
+    headers['Authorization'] = `Bearer ${authToken}`;
+  }
+
   const res = await fetch(`${API_BASE_URL}/api/v1/notifications/unread-count`, {
     credentials: 'include',
-    headers: { Accept: 'application/json' },
+    headers,
   });
 
   if (!res.ok) {
@@ -105,13 +118,19 @@ const fetchUnreadCount = async (): Promise<UnreadCountResponse> => {
 };
 
 const markAsRead = async (id: number): Promise<void> => {
+  const authToken = getAuthToken();
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    'X-XSRF-TOKEN': getCsrfToken(),
+  };
+  if (authToken) {
+    headers['Authorization'] = `Bearer ${authToken}`;
+  }
+
   const res = await fetch(`${API_BASE_URL}/api/v1/notifications/${id}/read`, {
     method: 'PUT',
     credentials: 'include',
-    headers: {
-      Accept: 'application/json',
-      'X-XSRF-TOKEN': getCsrfToken(),
-    },
+    headers,
   });
 
   if (!res.ok) {
@@ -120,13 +139,19 @@ const markAsRead = async (id: number): Promise<void> => {
 };
 
 const markAllAsRead = async (): Promise<void> => {
+  const authToken = getAuthToken();
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    'X-XSRF-TOKEN': getCsrfToken(),
+  };
+  if (authToken) {
+    headers['Authorization'] = `Bearer ${authToken}`;
+  }
+
   const res = await fetch(`${API_BASE_URL}/api/v1/notifications/read-all`, {
     method: 'PUT',
     credentials: 'include',
-    headers: {
-      Accept: 'application/json',
-      'X-XSRF-TOKEN': getCsrfToken(),
-    },
+    headers,
   });
 
   if (!res.ok) {

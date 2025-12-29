@@ -19,26 +19,30 @@ export const RecentMessages: React.FC = () => {
   useEffect(() => {
     if (!user?.id || !window.Echo) return;
 
-    const channel = window.Echo.private(`user.${user.id}`);
+    const userChannel = window.Echo.private(`user.${user.id}`);
+    const providerChannel = window.Echo.private(`provider.${user.id}`);
+
     const handler = (payload: any) => {
       try {
         if (payload?.metadata?.event === 'message.sent') {
-          // Odśwież listę rozmów na dashboardzie
           queryClient.invalidateQueries({ queryKey: ['dashboard', 'messages'] });
         }
       } catch (_) {}
     };
 
-    channel.listen('NotificationToast', handler);
+    userChannel.listen('NotificationToast', handler);
+    providerChannel.listen('NotificationToast', handler);
+
     return () => {
-      try { channel.stopListening('NotificationToast'); } catch (_) {}
+      try { userChannel.stopListening('NotificationToast'); } catch (_) {}
+      try { providerChannel.stopListening('NotificationToast'); } catch (_) {}
     };
   }, [user?.id, queryClient]);
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-gray-950 rounded-2xl p-6 border border-gray-200 dark:border-gray-800 flex items-center justify-center min-h-[300px]">
-        <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
+      <div className="glass-card rounded-2xl p-6 border border-slate-200/70 bg-white/80 shadow-sm flex items-center justify-center min-h-[300px]">
+        <Loader2 className="w-8 h-8 text-cyan-600 animate-spin" />
       </div>
     );
   }
@@ -47,22 +51,20 @@ export const RecentMessages: React.FC = () => {
   const conversations = data?.data || [];
 
   return (
-    <div className="bg-white dark:bg-gray-950 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-      <div className="p-6 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-          Ostatnie wiadomości
-        </h3>
+    <div className="glass-card rounded-2xl overflow-hidden border border-slate-200/70 bg-white/80 shadow-sm">
+      <div className="p-6 border-b border-slate-200/70 flex items-center justify-between">
+        <h3 className="text-lg font-bold text-slate-900">Ostatnie wiadomości</h3>
         <Link
           to="/provider/messages"
-          className="text-sm text-primary-600 hover:text-primary-700 font-semibold flex items-center gap-1"
+          className="text-sm font-semibold flex items-center gap-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-500 text-white hover:shadow-md transition-all"
         >
           Wszystkie <ChevronRight size={16} />
         </Link>
       </div>
 
-      <div className="divide-y divide-gray-200 dark:divide-gray-800">
+      <div className="divide-y divide-slate-100">
         {conversations.length === 0 ? (
-          <div className="p-6 text-center text-gray-500">
+          <div className="p-6 text-center text-slate-500">
             <p>Brak wiadomości</p>
           </div>
         ) : (
@@ -70,28 +72,28 @@ export const RecentMessages: React.FC = () => {
             <Link
               key={conv.id}
               to={`/provider/messages?conv=${conv.id}`}
-              className="p-6 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors flex items-center gap-4"
+              className="p-5 hover:bg-slate-50/70 transition-colors flex items-center gap-4"
             >
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center flex-shrink-0 shadow-md">
                 <User size={20} className="text-white" />
               </div>
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
-                  <p className="font-semibold text-gray-900 dark:text-white">
+                  <p className="font-semibold text-slate-900">
                     {conv.customer_name}
                   </p>
                   <div className="flex items-center gap-2">
                     {conv.unread > 0 && (
-                      <span className="w-2 h-2 rounded-full bg-primary-600"></span>
+                      <span className="w-2 h-2 rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 shadow-sm"></span>
                     )}
-                    <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                      <Clock size={12} />
+                    <span className="text-xs text-slate-500 flex items-center gap-1">
+                      <Clock size={12} className="text-slate-400" />
                       {conv.time}
                     </span>
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                <p className="text-sm text-slate-600 truncate">
                   {conv.last_message}
                 </p>
               </div>

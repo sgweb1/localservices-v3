@@ -138,6 +138,10 @@ export interface MessageCenter {
   items: MessageRequest[];  // max 4
   unread_count: number;     // 3
   messages_url: string;     // "/provider/messages"
+
+  // Aliasowe pola z backendu LS2
+  requests?: MessageRequest[];
+  unread_notifications?: number;
 }
 
 // ==================== NOTIFICATIONS CARD ====================
@@ -174,6 +178,7 @@ export interface ServicesCard {
 // ==================== DASHBOARD WIDGETS (ALL) ====================
 
 export interface DashboardWidgets {
+  // Oryginalne klucze (LS1) – wymagane przez istniejące widgety
   plan_card: PlanCard;
   addons_carousel: AddonCard[];
   pipeline_board: PipelineBoard;
@@ -184,6 +189,19 @@ export interface DashboardWidgets {
   message_center: MessageCenter;
   notifications_card: NotificationsCard;
   services_card: ServicesCard;
+
+  // Aliasowe klucze z backendu LS2 (plan, addons, pipeline, itp.)
+  plan?: PlanCard;
+  addons?: AddonCard[];
+  pipeline?: PipelineBoard;
+  insights?: InsightsCard;
+  tasks?: TasksCard;
+  performance?: PerformanceSnapshot;
+  calendar?: CalendarGlance;
+  messages?: MessageCenter;
+  notifications?: NotificationsCard;
+  services?: ServicesCard;
+  live_activity?: { activities: unknown[] };
 }
 
 // ==================== API RESPONSE ====================

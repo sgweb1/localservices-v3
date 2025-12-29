@@ -5,6 +5,7 @@
  */
 
 import { DashboardWidgetsResponse } from '@/features/provider/dashboard/types';
+import { getAuthToken } from '@/utils/apiHelpers';
 
 const API_BASE_URL = import.meta.env.DEV
   ? '' // DEV: same-origin via Vite proxy
@@ -17,13 +18,20 @@ const API_BASE_URL = import.meta.env.DEV
  * Cache: 60s (zarządzane przez React Query w hooku)
  */
 export async function fetchDashboardWidgets(): Promise<DashboardWidgetsResponse> {
+  const authToken = getAuthToken();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
+  // DEV: wspieraj MockAuthMiddleware przez Bearer dev_mock_* token
+  if (authToken) {
+    headers['Authorization'] = `Bearer ${authToken}`;
+  }
+
   const response = await fetch(`${API_BASE_URL}/api/v1/provider/dashboard/widgets`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-    credentials: 'include', // ważne dla Sanctum cookies
+    headers,
+    credentials: 'include', // Sanctum session cookies
   });
 
   if (!response.ok) {

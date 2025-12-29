@@ -1,104 +1,98 @@
 import React from 'react';
 import { useServices } from '../dashboard/hooks/useServices';
-import { Briefcase, Plus, Edit, Eye } from 'lucide-react';
-import { PageTitle, Text, Badge, Caption, EmptyText, CardTitle, StatValue } from '@/components/ui/typography';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Briefcase, Plus, Sparkles, TrendingUp } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { PageHeader } from '../components/PageHeader';
+import { ServiceCard } from '../components/ServiceCard';
 
 /**
- * Services Page - zgodny z localservices
+ * Services Page - spójny z Dashboard, Calendar, Bookings
  * 
- * Grid usług z obrazkami, views, edycją.
+ * Glass-card design z gradientami cyan/teal.
+ * Używa standardowych komponentów PageHeader i ServiceCard.
  */
 export const ServicesPage: React.FC = () => {
   const { data, isLoading, error } = useServices();
   const items = data?.data ?? [];
   const activeCount = data?.counts?.active ?? 0;
   const inactiveCount = data?.counts?.inactive ?? 0;
+  const totalViews = items.reduce((sum, s) => sum + (s.views ?? 0), 0);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <PageTitle gradient>Moje Usługi</PageTitle>
-          <Text muted size="sm" className="mt-2">
-            <Badge variant="success">{activeCount} aktywnych</Badge> · <Badge variant="default">{inactiveCount} nieaktywnych</Badge>
-          </Text>
-        </div>
-        <Button
-          onClick={() => window.location.href = '/provider/services/create'}
-          className="bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white"
-        >
-          <Plus className="w-5 h-5" />
-          Dodaj usługę
-        </Button>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+        {/* Hero Section */}
+        <PageHeader
+          title="Moje Usługi"
+          subtitle="Zarządzaj ofertą"
+          stats={[
+            { label: 'Aktywne usługi', value: activeCount, icon: Sparkles, accent: 'from-emerald-400 to-teal-500' },
+            { label: 'Nieaktywne', value: inactiveCount, icon: Briefcase, accent: 'from-slate-400 to-slate-500' },
+            { label: 'Wyświetlenia', value: totalViews, icon: TrendingUp, accent: 'from-cyan-400 to-blue-500' },
+          ]}
+          actionButton={{
+            label: 'Dodaj usługę',
+            icon: Plus,
+            href: '/provider/services/create',
+          }}
+        />
 
-      {/* Grid usług */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {isLoading && (
-          <div className="col-span-full text-center py-12"><EmptyText>Ładowanie...</EmptyText></div>
-        )}
-        {error && !isLoading && (
-          <div className="col-span-full text-center py-12"><EmptyText className="text-red-600">Błąd ładowania usług</EmptyText></div>
-        )}
-        {!isLoading && items.map(s => (
-          <Card key={s.id} className="overflow-hidden hover:shadow-lg transition-all">
-            {/* Image placeholder */}
-            <div className="h-48 bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center">
-              <Briefcase className="w-16 h-16 text-white opacity-50" />
+        {/* Services Grid - glass cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {isLoading && (
+            <div className="col-span-full">
+              <div className="glass-card rounded-2xl p-12 text-center">
+                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-cyan-100 to-teal-100 rounded-2xl flex items-center justify-center mb-4">
+                  <Briefcase className="w-8 h-8 text-cyan-600 animate-pulse" />
+                </div>
+                <p className="text-slate-600 font-semibold">Ładowanie usług...</p>
+              </div>
             </div>
+          )}
 
-            {/* Content */}
-            <div className="p-6">
-              <div className="flex items-start justify-between mb-2">
-                <CardTitle>{s.name}</CardTitle>
-                <Badge variant={s.status==='active' ? 'success' : 'default'}>
-                  {s.status === 'active' ? 'Aktywna' : 'Nieaktywna'}
-                </Badge>
+          {error && !isLoading && (
+            <div className="col-span-full">
+              <div className="glass-card rounded-2xl p-12 text-center border-2 border-red-200 bg-red-50/50">
+                <p className="text-red-600 font-semibold">Błąd ładowania usług</p>
+                <p className="text-sm text-red-500 mt-2">Spróbuj odświeżyć stronę</p>
               </div>
-              <Caption muted className="mb-3">{s.category}</Caption>
-              <StatValue gradient className="mb-4">{s.price}</StatValue>
+            </div>
+          )}
 
-              {/* Stats */}
-              <div className="flex items-center gap-4 mb-4">
-                <Caption className="flex items-center gap-1">
-                  <Eye className="w-4 h-4" />
-                  <span>0 wyświetleń</span>
-                </Caption>
-              </div>
+          {!isLoading && items.map((service) => (
+            <ServiceCard
+              key={service.id}
+              id={service.id}
+              name={service.name}
+              category={service.category}
+              price={service.price}
+              status={service.status as 'active' | 'inactive'}
+              views={service.views ?? 0}
+            />
+          ))}
 
-              {/* Actions */}
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={() => window.location.href = `/provider/services/edit/${s.id}`}
-                  className="flex-1 bg-slate-100 text-slate-700 hover:bg-slate-200"
+          {/* Empty State */}
+          {!isLoading && items.length === 0 && (
+            <div className="col-span-full">
+              <div className="glass-card rounded-2xl p-12 text-center">
+                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-cyan-100 to-teal-100 rounded-2xl flex items-center justify-center mb-6">
+                  <Briefcase className="w-10 h-10 text-cyan-600" />
+                </div>
+                <h3 className="text-2xl font-black text-slate-900 mb-3">Brak usług w ofercie</h3>
+                <p className="text-slate-600 mb-8 max-w-md mx-auto">
+                  Dodaj pierwszą usługę, aby klienci mogli Cię znaleźć w wyszukiwarce LocalServices
+                </p>
+                <Link
+                  to="/provider/services/create"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-bold text-lg rounded-xl hover:from-teal-700 hover:to-cyan-700 transition-all shadow-lg hover:shadow-xl hover:scale-105"
                 >
-                  <Edit className="w-4 h-4" />
-                  Edytuj
-                </Button>
-                <Button className="text-cyan-600 hover:bg-cyan-50">
-                  Podgląd
-                </Button>
+                  <Plus className="w-6 h-6" />
+                  Dodaj pierwszą usługę
+                </Link>
               </div>
             </div>
-          </Card>
-        ))}
-        {!isLoading && items.length===0 && (
-          <div className="col-span-full text-center py-12">
-            <Briefcase className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-            <EmptyText className="mb-2 text-base">Brak usług w ofercie</EmptyText>
-            <Text muted size="sm" className="mb-6">Dodaj pierwszą usługę, aby klienci mogli Cię znaleźć</Text>
-            <Button
-              onClick={() => window.location.href = '/provider/services/create'}
-              className="bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white"
-            >
-              <Plus className="w-5 h-5" />
-              Dodaj pierwszą usługę
-            </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
