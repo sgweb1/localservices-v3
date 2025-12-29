@@ -23,28 +23,45 @@ export const DevLoginPage: React.FC = () => {
   const handleLogin = async (mockUser: typeof MOCK_USERS[0]) => {
     setIsLoggingIn(true);
     try {
-      // 1. Pobierz CSRF cookie
-      await axios.get(`/sanctum/csrf-cookie`, { withCredentials: true });
-      
-      // 2. Zaloguj przez prawdziwy endpoint Sanctum
-      await axios.post(`/api/v1/login`, {
-        email: mockUser.email,
-        password: mockUser.password || 'password',
-      }, { withCredentials: true });
-      
-      // 3. Zapisz lokalnie w React state
-      login(mockUser);
-      
-      // 4. Redirect - wróć tam skąd przyszedł lub domyślna strona dla roli
-      if (from && mockUser.role === 'provider' && from.startsWith('/provider')) {
-        // Użytkownik próbował wejść na provider route - wróć tam
-        navigate(from);
-      } else if (mockUser.role === 'provider') {
-        navigate('/provider/dashboard');
-      } else if (mockUser.role === 'admin') {
-        navigate('/'); // TODO: admin panel
+      // W DEV: tylko zapisz lokalnie, bez prawdziwego API logowania
+      // MockAuthMiddleware na backendzie obsłuży autoryzację przez Bearer token
+      if (import.meta.env.DEV) {
+        login(mockUser);
+        
+        // Redirect - wróć tam skąd przyszedł lub domyślna strona dla roli
+        if (from && mockUser.role === 'provider' && from.startsWith('/provider')) {
+          navigate(from);
+        } else if (mockUser.role === 'provider') {
+          navigate('/provider/dashboard');
+        } else if (mockUser.role === 'admin') {
+          navigate('/');
+        } else {
+          navigate('/szukaj');
+        }
       } else {
-        navigate('/szukaj');
+        // PROD: prawdziwe logowanie przez Sanctum
+        // 1. Pobierz CSRF cookie
+        await axios.get(`/sanctum/csrf-cookie`, { withCredentials: true });
+        
+        // 2. Zaloguj przez prawdziwy endpoint Sanctum
+        await axios.post(`/api/v1/login`, {
+          email: mockUser.email,
+          password: mockUser.password || 'password',
+        }, { withCredentials: true });
+        
+        // 3. Zapisz lokalnie w React state
+        login(mockUser);
+        
+        // 4. Redirect
+        if (from && mockUser.role === 'provider' && from.startsWith('/provider')) {
+          navigate(from);
+        } else if (mockUser.role === 'provider') {
+          navigate('/provider/dashboard');
+        } else if (mockUser.role === 'admin') {
+          navigate('/');
+        } else {
+          navigate('/szukaj');
+        }
       }
     } catch (error) {
       console.error('Login failed:', error);
