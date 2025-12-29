@@ -62,6 +62,9 @@ Route::middleware(['auth:sanctum'])->prefix('provider')->group(function () {
     
     // Analytics
     Route::get('/analytics', [AnalyticsController::class, 'providerDashboard'])->name('api.provider.analytics');
+
+    // Subscription (current plan)
+    Route::get('/subscription', [\App\Http\Controllers\Api\V1\SubscriptionController::class, 'getProviderSubscription'])->name('api.provider.subscription');
     
     // Settings
     Route::prefix('settings')->group(function () {
