@@ -76,14 +76,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // DEV ONLY - check localStorage for saved user
     if (import.meta.env.DEV) {
       const savedUser = localStorage.getItem('dev_mock_user');
+      console.log('[AuthContext] Inicjalizacja - dev_mock_user z localStorage:', savedUser ? 'znaleziono' : 'brak');
       if (savedUser) {
         try {
-          return JSON.parse(savedUser);
-        } catch {
+          const parsed = JSON.parse(savedUser);
+          console.log('[AuthContext] Przywrócono użytkownika:', parsed.name, parsed.role);
+          return parsed;
+        } catch (e) {
+          console.error('[AuthContext] Błąd parsowania dev_mock_user:', e);
           // Invalid JSON - stay logged out
         }
       }
     }
+    console.log('[AuthContext] Inicjalizacja bez zalogowanego użytkownika');
     // Domyślnie NIEZALOGOWANY - wymaga ręcznego logowania przez /dev/login
     return null;
   });
@@ -96,6 +101,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   });
 
   const login = (userData: User) => {
+    console.log('[AuthContext] Login:', userData.name, userData.role);
     setUser(userData);
     const newToken = import.meta.env.DEV 
       ? generateMockToken(userData.id)
@@ -104,12 +110,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (import.meta.env.DEV) {
       localStorage.setItem('dev_mock_user', JSON.stringify(userData));
       localStorage.setItem('dev_mock_token', newToken);
+      console.log('[AuthContext] Zapisano do localStorage:', {
+        user: userData.name,
+        token: newToken.substring(0, 30) + '...'
+      });
     } else {
       localStorage.setItem('sanctum_token', newToken);
     }
   };
 
   const logout = () => {
+    console.log('[AuthContext] Logout - czyszczenie danych');
     setUser(null);
     setToken(null);
     if (import.meta.env.DEV) {
