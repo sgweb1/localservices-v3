@@ -75,6 +75,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
     // DEV ONLY - check localStorage for saved user
     if (import.meta.env.DEV) {
+      try {
+        // Test localStorage availability
+        const testKey = '__ls_test__';
+        localStorage.setItem(testKey, 'test');
+        localStorage.removeItem(testKey);
+        console.log('[AuthContext] localStorage jest dostępny');
+      } catch (e) {
+        console.error('[AuthContext] ⚠️ localStorage NIE jest dostępny! Prawdopodobnie problem z certyfikatem HTTPS.', e);
+        alert('⚠️ localStorage jest zablokowany przez przeglądarkę.\n\nProszę dodać wyjątek dla certyfikatu https://ls.test\nlub użyć HTTP zamiast HTTPS (zmień APP_URL w .env na http://ls.test)');
+      }
+      
       const savedUser = localStorage.getItem('dev_mock_user');
       console.log('[AuthContext] Inicjalizacja - dev_mock_user z localStorage:', savedUser ? 'znaleziono' : 'brak');
       if (savedUser) {
