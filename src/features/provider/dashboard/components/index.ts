@@ -3,6 +3,7 @@
  */
 export { DashboardPage } from './DashboardPage';
 export { DashboardHero } from './DashboardHero';
-export { DashboardGrid } from './DashboardGrid';
-export { DevToolsPopup } from './DevToolsPopup';
-export * from './widgets';
+export { PerformanceMetrics } from './PerformanceMetrics';
+export { RecentBookings } from './RecentBookings';
+export { RecentMessages } from './RecentMessages';
+

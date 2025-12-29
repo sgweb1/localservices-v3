@@ -12,18 +12,9 @@ import { ProviderLayout } from './features/provider/dashboard/components/Provide
 import { BookingsPageWithTabs } from './features/provider/pages/BookingsPageWithTabs';
 import { MessagesPage } from './features/provider/pages/MessagesPage';
 import { ServicesPage as ProviderServicesPage } from './features/provider/pages/ServicesPage';
-import { ReviewsPage } from './features/provider/pages/ReviewsPage';
-import { NotificationsPage } from './features/provider/pages/NotificationsPage';
-import { SubscriptionPage } from './features/provider/pages/SubscriptionPage';
-import { PlansPage } from './features/provider/pages/PlansPage';
-import { CheckoutPage } from './features/provider/pages/CheckoutPage';
 import { SettingsPage } from './features/provider/pages/SettingsPage';
-import { SupportPage } from './features/provider/pages/SupportPage';
 import { CalendarPage } from './features/provider/calendar/CalendarPage';
-import { MarketingTipsPage } from './features/provider/marketing/MarketingTipsPage';
-import { AnalyticsPage } from './features/provider/analytics/AnalyticsPage';
 import { ProfilePage } from './features/provider/profile/ProfilePage';
-import { ServiceFormPage } from './features/provider/pages/ServiceFormPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Footer } from './components/Footer';
@@ -165,18 +156,8 @@ const App = () => {
             <Route path="calendar" element={<CalendarPage />} />
             <Route path="messages" element={<MessagesPage />} />
             <Route path="services" element={<ProviderServicesPage />} />
-            <Route path="services/create" element={<ServiceFormPage />} />
-            <Route path="services/edit/:id" element={<ServiceFormPage />} />
-            <Route path="reviews" element={<ReviewsPage />} />
-            <Route path="marketing" element={<MarketingTipsPage />} />
-            <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="profile" element={<ProfilePage />} />
-            <Route path="notifications" element={<NotificationsPage />} />
-            <Route path="subscription" element={<SubscriptionPage />} />
-            <Route path="subscription/plans" element={<PlansPage />} />
-            <Route path="subscription/checkout/:planId" element={<CheckoutPage />} />
             <Route path="settings" element={<SettingsPage />} />
-            <Route path="support" element={<SupportPage />} />
           </Route>
         </Routes>
       </main>
