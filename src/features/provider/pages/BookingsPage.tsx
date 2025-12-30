@@ -452,7 +452,7 @@ export const BookingsPage: React.FC = () => {
                               </div>
                               <p className="text-sm font-medium text-slate-700 mt-1">{booking.serviceName}</p>
                               
-                              {booking.serviceAddress && (
+                              {booking.serviceAddress && typeof booking.serviceAddress === 'object' && (
                                 <div className="mt-2 flex items-start gap-2 text-xs text-slate-500">
                                   <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
                                   <span>
