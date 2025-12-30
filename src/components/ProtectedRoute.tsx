@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { Spinner } from '@/components/ui/spinner';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -15,8 +16,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children, 
   requiredRole 
 }) => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isInitialized } = useAuth();
   const location = useLocation();
+
+  // Czekaj aż auth się zainicjalizuje
+  if (!isInitialized) {
+    return <Spinner />;
+  }
 
   if (!isAuthenticated || !user) {
     // Przekieruj do logowania, zapamiętaj gdzie chciał iść

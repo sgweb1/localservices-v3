@@ -16,3 +16,10 @@ Route::middleware('auth:web')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
 });
+
+// Wymagają quick token (dev only)
+Route::middleware('quick_token_auth')->group(function () {
+    Route::get('/user', [AuthController::class, 'user']);
+});
+
+
