@@ -40,23 +40,12 @@ class DevEventController extends Controller
             abort(403, 'Endpoint dostępny tylko w trybie dev');
         }
 
-        // Sprawdź autentykację ręcznie (bez middleware)
-        $user = null;
-        
-        // 1. Spróbuj pobrać z Sanctum bearer token
-        if ($request->bearerToken()) {
-            $user = \Laravel\Sanctum\PersonalAccessToken::findToken($request->bearerToken())?->tokenable;
-        }
-        
-        // 2. Spróbuj pobrać z session (jeśli not set z token)
-        if (!$user && $request->user()) {
-            $user = $request->user();
-        }
+        // Pobierz user z auth (session lub guard)
+        $user = auth('sanctum')->user() ?? auth()->user();
         
         \Log::info('[DevEventController] simulateEvents called', [
             'user_id' => $user?->id,
             'user_type' => $user?->user_type,
-            'auth_method' => $request->bearerToken() ? 'bearer' : 'session',
         ]);
 
         if (!$user || $user->user_type !== UserType::Provider) {
