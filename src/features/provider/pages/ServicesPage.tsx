@@ -1,5 +1,5 @@
 import React from 'react';
-import { useServices } from '../dashboard/hooks/useServices';
+import { useServices } from '../hooks/useServices';
 import { Briefcase, Plus, Sparkles, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/PageHeader';

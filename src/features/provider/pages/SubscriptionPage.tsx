@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSubscription } from '../dashboard/hooks/useSubscription';
+import { useSubscription } from '../hooks/useSubscription';
 import { Check, Crown, Zap, TrendingUp, AlertCircle, Sparkles, Gift } from 'lucide-react';
 import { PageTitle, Text, SectionTitle, Caption, StatValue, EmptyText } from '@/components/ui/typography';
 import { Card } from '@/components/ui/card';

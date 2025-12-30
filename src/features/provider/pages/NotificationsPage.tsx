@@ -5,7 +5,7 @@ import {
   useMarkAsRead, 
   useMarkAllAsRead,
   type Notification 
-} from '../dashboard/hooks/useNotifications';
+} from '../hooks/useNotifications';
 import { 
   Calendar, 
   MessageSquare, 

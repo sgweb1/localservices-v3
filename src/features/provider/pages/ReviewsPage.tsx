@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { useReviews } from '../dashboard/hooks/useReviews';
+import { useReviews } from '../hooks/useReviews';
 import { Star, TrendingUp, MessageCircle, Filter, ThumbsUp, Award } from 'lucide-react';
 import { PageTitle, Text, Caption, StatValue, EmptyText } from '@/components/ui/typography';
 import { Card } from '@/components/ui/card';

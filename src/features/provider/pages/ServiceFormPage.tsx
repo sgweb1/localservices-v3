@@ -7,7 +7,7 @@ import 'leaflet/dist/leaflet.css';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
-import { useService, type ServiceDetail } from '../dashboard/hooks/useService';
+import { useService, type ServiceDetail } from '../hooks/useService';
 import { useCategories } from '@/hooks/useCategories';
 import { useLocations } from '@/hooks/useLocations';
 import { useConfirm } from '@/hooks/useConfirm';

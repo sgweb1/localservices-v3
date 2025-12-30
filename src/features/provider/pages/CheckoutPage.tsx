@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useSubscription } from '../dashboard/hooks/useSubscription';
+import { useSubscription, type SubscriptionResponse } from '../hooks/useSubscription';
 import { useCheckout } from '../subscription/hooks/useCheckout';
 import { PLAN_LIMITS, PlanType } from '../subscription/constants/planLimits';
 import { OrderSummary } from '../subscription/components/OrderSummary';
@@ -20,7 +20,7 @@ export const CheckoutPage: React.FC = () => {
   const { data: subData, isLoading: subLoading } = useSubscription();
   const checkoutMutation = useCheckout();
 
-  const currentPlan = subData?.data?.plan || 'free';
+  const currentPlan = ((subData as SubscriptionResponse | undefined)?.data?.plan ?? 'free') as PlanType;
   const selectedPlan = (planId || 'free') as PlanType;
 
   // Form state
