@@ -37,12 +37,17 @@ export async function fetchDashboardWidgets(options?: {
   }
 
   // Buduj URL z optional fields parameter
-  const url = new URL(`${API_BASE_URL}/api/v1/provider/dashboard/widgets`, window.location.origin);
+  const params = new URLSearchParams();
   if (options?.fields && options.fields.length > 0) {
-    url.searchParams.set('fields', options.fields.join(','));
+    params.set('fields', options.fields.join(','));
   }
 
-  const response = await fetch(url.toString(), {
+  const queryString = params.toString();
+  const fullUrl = queryString 
+    ? `/api/v1/provider/dashboard/widgets?${queryString}`
+    : `/api/v1/provider/dashboard/widgets`;
+
+  const response = await fetch(fullUrl, {
     method: 'GET',
     headers,
     credentials: 'include', // Sanctum session cookies
