@@ -27,25 +27,12 @@ class ChatApiService
         });
 
         // Filtruj ukryte/aktywne konwersacje
-        if ($showHidden) {
-            // Pokaż tylko ukryte
-            $query->where(function ($q) use ($userId) {
-                $q->where(function ($q2) use ($userId) {
-                    $q2->where('customer_id', $userId)->whereNotNull('hidden_by_customer_at');
-                })->orWhere(function ($q3) use ($userId) {
-                    $q3->where('provider_id', $userId)->whereNotNull('hidden_by_provider_at');
-                });
-            });
-        } else {
-            // Pokaż tylko aktywne (nieukryte)
-            $query->where(function ($q) use ($userId) {
-                $q->where(function ($q2) use ($userId) {
-                    $q2->where('customer_id', $userId)->whereNull('hidden_by_customer_at');
-                })->orWhere(function ($q3) use ($userId) {
-                    $q3->where('provider_id', $userId)->whereNull('hidden_by_provider_at');
-                });
-            });
-        }
+        // TODO: Jeśli kolumny hidden_by_*_at będą istnieć w bazie, użyj ich do filtrowania
+        // Na razie zwracamy wszystkie konwersacje dla użytkownika (bez archiwizacji)
+        // if ($showHidden) {
+        //     Pokaż tylko ukryte
+        //     $query->where(function ($q) use ($userId) {...});
+        // }
 
         // Sortowanie (ostatnie wiadomości na górze)
         $sortBy = $filters['sort_by'] ?? 'updated_at';
