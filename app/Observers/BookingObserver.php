@@ -92,7 +92,7 @@ class BookingObserver
                 \App\Events\NotificationToastEvent::dispatch(
                     userId: (int) $booking->provider_id,
                     title: 'Rezerwacja potwierdzona',
-                    message: $booking->service->name,
+                    message: (string) ($booking->service->name ?? ''),
                     type: 'info',
                     actionUrl: '/provider/bookings',
                     metadata: [
@@ -125,7 +125,7 @@ class BookingObserver
                     \App\Events\NotificationToastEvent::dispatch(
                         userId: (int) $booking->provider_id,
                         title: 'Rezerwacja anulowana',
-                        message: $booking->service->name,
+                        message: (string) ($booking->service->name ?? ''),
                         type: 'warning',
                         actionUrl: '/provider/bookings',
                         metadata: [
@@ -158,7 +158,7 @@ class BookingObserver
                     \App\Events\NotificationToastEvent::dispatch(
                         userId: (int) $booking->provider_id,
                         title: 'Rezerwacja ukończona',
-                        message: $booking->service->name,
+                        message: (string) ($booking->service->name ?? ''),
                         type: 'success',
                         actionUrl: '/provider/bookings',
                         metadata: [
