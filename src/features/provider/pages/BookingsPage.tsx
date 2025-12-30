@@ -4,7 +4,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/api/client';
 import { toast } from 'sonner';
 import { useConfirm } from '@/hooks/useConfirm';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { PageTitle, SectionTitle, Text, Caption, Badge, StatValue, EmptyText } from '@/components/ui/typography';
 import { Card, StatCard } from '@/components/ui/card';
 import { 
@@ -262,11 +265,12 @@ export const BookingsPage: React.FC = () => {
             </div>
 
             <div className="mt-8 space-y-4">
-              <a href="/provider/subscription" 
-                 className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-bold text-lg rounded-xl hover:from-teal-700 hover:to-cyan-700 transition-all shadow-lg hover:shadow-xl hover:scale-105">
-                <Sparkles className="w-6 h-6" />
-                Przejdź na plan Basic
-              </a>
+              <Link to="/provider/subscription">
+                <Button variant="primary" size="md" className="w-full sm:w-auto">
+                  <Sparkles className="w-5 h-5" />
+                  Przejdź na plan Basic
+                </Button>
+              </Link>
               <Caption muted>
                 Od <strong className="text-teal-600">49 zł/mies</strong> • Anuluj w każdej chwili
               </Caption>
@@ -295,10 +299,12 @@ export const BookingsPage: React.FC = () => {
               </Caption>
             </div>
             <div className="flex flex-col gap-3">
-              <a href="/provider/subscription" className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-teal-700 hover:to-cyan-700 transition-all shadow-lg hover:shadow-xl">
-                <Sparkles className="w-5 h-5" />
-                Pełny dostęp
-              </a>
+              <Link to="/provider/subscription">
+                <Button variant="primary" size="md">
+                  <Sparkles className="w-5 h-5" />
+                  Pełny dostęp
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -324,10 +330,12 @@ export const BookingsPage: React.FC = () => {
               </div>
             </div>
             <div className="flex flex-col gap-3">
-              <a href="/provider/subscription" className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-teal-700 hover:to-cyan-700 transition-all shadow-lg hover:shadow-xl">
-                <Sparkles className="w-5 h-5" />
-                Ulepsz do planu Basic
-              </a>
+              <Link to="/provider/subscription">
+                <Button variant="primary" size="md">
+                  <Sparkles className="w-5 h-5" />
+                  Ulepsz do planu Basic
+                </Button>
+              </Link>
               <Caption muted className="text-center">Od 49 zł/mies</Caption>
             </div>
           </div>
@@ -343,26 +351,21 @@ export const BookingsPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-600 mb-2">Status</label>
-                  <select 
-                    value={statusFilter} 
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 focus:border-cyan-400 focus:ring-0"
-                  >
+                  <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                     <option value="all">Wszystkie rezerwacje</option>
                     <option value="pending">Oczekujące</option>
                     <option value="confirmed">Potwierdzone</option>
                     <option value="completed">Ukończone</option>
                     <option value="cancelled">Anulowane</option>
-                  </select>
+                  </Select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-600 mb-2">Szukaj klienta</label>
-                  <input 
+                  <Input 
                     type="text" 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="np. Anna Kowalska" 
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-cyan-400 focus:ring-0"
+                    placeholder="np. Anna Kowalska"
                   />
                 </div>
               </div>
@@ -377,10 +380,12 @@ export const BookingsPage: React.FC = () => {
                 <h2 className="text-2xl font-semibold text-slate-900">Brak rezerwacji</h2>
                 <p className="mt-2 text-sm text-slate-500">Gdy tylko klienci zaczną bukować Twoje usługi, wszystkie zgłoszenia pojawią się w tym miejscu.</p>
                 <div className="mt-6 flex justify-center">
-                  <a href="/provider/services" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 px-6 py-3 text-sm font-semibold text-white shadow-lg">
-                    <Calendar className="w-5 h-5" />
-                    Przejdź do usług
-                  </a>
+                  <Link to="/provider/services">
+                    <Button variant="primary" size="md">
+                      <Calendar className="w-5 h-5" />
+                      Przejdź do usług
+                    </Button>
+                  </Link>
                 </div>
               </div>
             )}
@@ -409,9 +414,14 @@ export const BookingsPage: React.FC = () => {
                               : 'Szczegóły dostępne w planie Basic'
                             }
                           </p>
-                          <a href="/provider/subscription" className="inline-block mt-5 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-teal-500 to-cyan-600 rounded-full hover:shadow-lg transition">
-                            {showTrialInfo ? 'Ulepsz do Basic →' : 'Ulepsz plan →'}
-                          </a>
+                          <div className="mt-5 flex justify-center">
+                            <Link to="/provider/subscription">
+                              <Button variant="primary" size="sm">
+                                {showTrialInfo ? 'Ulepsz do Basic' : 'Ulepsz plan'}
+                                <ArrowRight className="w-4 h-4" />
+                              </Button>
+                            </Link>
+                          </div>
                         </div>
                       ) : (
                         // Pełna zawartość rezerwacji
@@ -510,25 +520,25 @@ export const BookingsPage: React.FC = () => {
                               <Button 
                                 onClick={() => handleAcceptBooking(booking.id)}
                                 variant="success"
-                                size="lg"
+                                size="sm"
                                 className="flex-1"
                               >
-                                <CheckCircle className="w-5 h-5" />
+                                <CheckCircle className="w-4 h-4" />
                                 Zaakceptuj
                               </Button>
                               <Button 
                                 onClick={() => handleRejectBooking(booking.id)}
                                 variant="danger"
-                                size="lg"
+                                size="sm"
                                 className="flex-1"
                               >
-                                <XCircle className="w-5 h-5" />
+                                <XCircle className="w-4 h-4" />
                                 Odrzuć
                               </Button>
                               <Button 
                                 onClick={() => handleDeleteBooking(booking.id)}
                                 variant="neutral"
-                                size="lg"
+                                size="sm"
                               >
                                 <EyeOff className="w-4 h-4" />
                                 Ukryj
@@ -541,16 +551,16 @@ export const BookingsPage: React.FC = () => {
                               <Button 
                                 onClick={() => handleCompleteBooking(booking.id)}
                                 variant="info"
-                                size="lg"
+                                size="sm"
                                 className="flex-1"
                               >
-                                <CheckCircle className="w-5 h-5" />
+                                <CheckCircle className="w-4 h-4" />
                                 Oznacz jako zrealizowane
                               </Button>
                               <Button 
                                 onClick={() => handleDeleteBooking(booking.id)}
                                 variant="neutral"
-                                size="lg"
+                                size="sm"
                               >
                                 <EyeOff className="w-4 h-4" />
                                 Ukryj
@@ -563,7 +573,7 @@ export const BookingsPage: React.FC = () => {
                               <Button 
                                 onClick={() => handleDeleteBooking(booking.id)}
                                 variant="neutral"
-                                size="lg"
+                                size="sm"
                               >
                                 <EyeOff className="w-4 h-4" />
                                 Ukryj
@@ -575,7 +585,7 @@ export const BookingsPage: React.FC = () => {
                               <Button 
                                 onClick={() => handleMarkCompleted(booking.id)}
                                 variant="warning"
-                                size="lg"
+                                size="sm"
                                 className="flex-1"
                               >
                                 <BadgeCheck className="w-4 h-4" />
@@ -607,13 +617,14 @@ export const BookingsPage: React.FC = () => {
                       Pokazano {pagination.from ?? 0} - {pagination.to ?? 0} z {pagination.total} rezerwacji
                     </div>
                     <div className="flex items-center gap-2">
-                      <button
+                      <Button
                         onClick={() => setCurrentPage(currentPage - 1)}
                         disabled={currentPage === 1}
-                        className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        variant="neutral"
+                        size="sm"
                       >
                         Poprzednia
-                      </button>
+                      </Button>
                       <div className="flex items-center gap-1">
                         {Array.from({ length: pagination.last_page }, (_, i) => i + 1)
                           .filter(page => {
@@ -632,27 +643,25 @@ export const BookingsPage: React.FC = () => {
                                 {showEllipsis && (
                                   <span className="px-2 text-slate-400">...</span>
                                 )}
-                                <button
+                                <Button
                                   onClick={() => setCurrentPage(page)}
-                                  className={`w-10 h-10 text-sm font-medium rounded-lg transition-colors ${
-                                    currentPage === page
-                                      ? 'bg-gradient-to-r from-cyan-500 to-teal-500 text-white'
-                                      : 'text-slate-700 hover:bg-slate-100'
-                                  }`}
+                                  variant={currentPage === page ? "primary" : "neutral"}
+                                  size="sm"
                                 >
                                   {page}
-                                </button>
+                                </Button>
                               </React.Fragment>
                             );
                           })}
                       </div>
-                      <button
+                      <Button
                         onClick={() => setCurrentPage(currentPage + 1)}
                         disabled={currentPage === pagination.last_page}
-                        className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        variant="neutral"
+                        size="sm"
                       >
                         Następna
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -668,10 +677,12 @@ export const BookingsPage: React.FC = () => {
                 <p className="text-base font-semibold text-slate-900">Widok kalendarza</p>
               </div>
               <p className="text-sm text-slate-500">Zobacz wszystkie rezerwacje w formie kalendarza. Łatwiej zauważysz konflikty i zaplanujesz czas.</p>
-              <a href="/provider/availability" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 px-4 py-2 text-sm font-semibold text-white shadow hover:shadow-lg transition-shadow">
-                Otwórz kalendarz
-                <ArrowRight className="w-4 h-4" />
-              </a>
+              <Link to="/provider/availability">
+                <Button variant="primary" size="sm">
+                  Otwórz kalendarz
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
             </div>
             
             <div className="glass-card p-6 space-y-4 rounded-2xl">
@@ -680,10 +691,10 @@ export const BookingsPage: React.FC = () => {
                 <p className="text-base font-semibold text-slate-900">Automatyczne follow-upy</p>
               </div>
               <p className="text-sm text-slate-500">Aktywuj powiadomienia SMS przed wizytą i przypomnienia o opinii po zakończeniu zlecenia.</p>
-              <a href="/provider/subscription" className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-600">
+              <Link to="/provider/subscription" className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-600 hover:text-cyan-700">
                 Skonfiguruj automatyzacje
                 <ArrowUpRight className="w-4 h-4" />
-              </a>
+              </Link>
             </div>
 
             <div className="glass-card p-6 space-y-4 rounded-2xl">
