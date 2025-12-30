@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Settings } from 'lucide-react';
 import { apiClient } from '@/api/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 /**
  * DEV Tools Panel - przycisk do testowania eventów
@@ -9,6 +10,7 @@ import { apiClient } from '@/api/client';
 export const DevToolsPanel: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const isDEV = import.meta.env.DEV;
+  const queryClient = useQueryClient();
 
   console.log('[DevToolsPanel] mounted, DEV:', isDEV);
 
@@ -23,10 +25,9 @@ export const DevToolsPanel: React.FC = () => {
       const response = await apiClient.post('/dev/simulate-events');
       console.log('[DevToolsPanel] Success:', response.data);
       
-      // Wait a moment then reload to ensure backend has processed
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
+      // Invalidate bookings cache so it refetches
+      queryClient.invalidateQueries({ queryKey: ['provider', 'bookings'] });
+      console.log('[DevToolsPanel] Cache invalidated');
     } catch (error: any) {
       console.error('[DevToolsPanel] Error:', error.response?.status, error.response?.data || error.message);
       alert('Błąd: ' + (error.response?.data?.message || error.message));
