@@ -27,6 +27,7 @@ class BoostServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->markTestSkipped('BoostService - zbędne dla core feature\'ów');
         $this->markTestSkipped('Brakuje modelu Boost - zbędne dla core feature\'ów');
 
         $this->boostService = app(BoostService::class);
