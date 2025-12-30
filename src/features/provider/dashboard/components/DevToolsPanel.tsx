@@ -14,7 +14,7 @@ export const DevToolsPanel: React.FC = () => {
 
   const handleSimulateEvents = async () => {
     try {
-      const response = await apiClient.post('/provider/dev/simulate-events');
+      const response = await apiClient.post('/dev/simulate-events');
       console.log('[DevToolsPanel] Events created:', response.data);
       // Odśwież stronę
       window.location.reload();
