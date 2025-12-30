@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://ls.test';
+import { apiClient } from '@/api/client';
 
 export interface ServiceDetail {
   id: number;
@@ -41,24 +40,8 @@ export interface ServiceDetail {
 }
 
 const fetchService = async (id: number): Promise<ServiceDetail> => {
-  const res = await fetch(`${API_BASE_URL}/api/v1/provider/services/${id}`, {
-    credentials: 'include',
-    headers: { Accept: 'application/json' },
-  });
-
-  if (!res.ok) {
-    if (import.meta.env.DEV && (res.status === 401 || res.status === 404 || res.status >= 500)) {
-      return {
-        id,
-        title: 'Mock usługi',
-        description: 'Opis mock',
-        status: 'active',
-      };
-    }
-    throw new Error(`HTTP ${res.status}`);
-  }
-
-  const payload = await res.json();
+  const response = await apiClient.get<{ data: any }>(`/provider/services/${id}`);
+  const payload = response.data;
   const s = payload.data ?? payload;
   return {
     id: s.id,

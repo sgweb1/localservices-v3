@@ -1,7 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getAuthToken } from '@/utils/apiHelpers';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://ls.test';
+import { apiClient } from '@/api/client';
 
 export interface Service {
   id: number;
@@ -20,29 +18,8 @@ export interface ServicesResponse {
 }
 
 const fetchServices = async (): Promise<ServicesResponse> => {
-  const authToken = getAuthToken();
-  const headers: Record<string, string> = {
-    Accept: 'application/json',
-  };
-
-  if (authToken) {
-    headers.Authorization = `Bearer ${authToken}`;
-  }
-
-  const res = await fetch(`${API_BASE_URL}/api/v1/provider/services`, {
-    credentials: 'include',
-    headers,
-  });
-
-  if (!res.ok) {
-    // W DEV przy 401/404/5xx fallback do mock
-    if (import.meta.env.DEV && (res.status === 401 || res.status === 404 || res.status >= 500)) {
-      return MOCK_SUBPAGES.services;
-    }
-    throw new Error(`HTTP ${res.status}`);
-  }
-
-  const payload = await res.json();
+  const response = await apiClient.get<{ data: any[] }>('/provider/services');
+  const payload = response.data;
   // Backend zwraca kolekcję (data + meta). Mapujemy do frontowego kształtu.
   const services = Array.isArray(payload.data) ? payload.data : [];
   const mapped: Service[] = services.map((s: any) => ({

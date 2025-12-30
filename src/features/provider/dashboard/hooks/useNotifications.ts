@@ -1,24 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getAuthToken } from '@/utils/apiHelpers';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://ls.test';
-
-// Helper do pobierania CSRF tokenu z cookie
-const getCsrfToken = (): string => {
-  const name = 'XSRF-TOKEN';
-  let token = '';
-  if (document.cookie) {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      if (cookie.substring(0, name.length + 1) === (name + '=')) {
-        token = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  return token;
-};
+import { apiClient } from '@/api/client';
 
 export interface Notification {
   id: number;
@@ -55,106 +36,29 @@ export interface UnreadCountResponse {
 }
 
 const fetchNotifications = async (page = 1, unread = false): Promise<NotificationsResponse> => {
-  const params = new URLSearchParams({
+  const params: Record<string, string> = {
     page: String(page),
     per_page: '20',
-  });
+  };
   if (unread) {
-    params.append('unread', '1');
+    params.unread = '1';
   }
 
-  const authToken = getAuthToken();
-  const headers: Record<string, string> = { Accept: 'application/json' };
-  if (authToken) {
-    headers['Authorization'] = `Bearer ${authToken}`;
-  }
-
-  const res = await fetch(`${API_BASE_URL}/api/v1/notifications?${params}`, {
-    credentials: 'include',
-    headers,
-  });
-
-  if (!res.ok) {
-    // W DEV przy 401/404/5xx fallback do mock
-    if (import.meta.env.DEV && (res.status === 401 || res.status === 404 || res.status >= 500)) {
-      return {
-        data: MOCK_SUBPAGES.notifications.data,
-        meta: {
-          current_page: 1,
-          per_page: 20,
-          total: MOCK_SUBPAGES.notifications.data.length,
-          last_page: 1,
-        },
-      };
-    }
-    throw new Error(`HTTP ${res.status}`);
-  }
-
-  return res.json();
+  const response = await apiClient.get<NotificationsResponse>('/notifications', { params });
+  return response.data;
 };
 
 const fetchUnreadCount = async (): Promise<UnreadCountResponse> => {
-  const authToken = getAuthToken();
-  const headers: Record<string, string> = { Accept: 'application/json' };
-  if (authToken) {
-    headers['Authorization'] = `Bearer ${authToken}`;
-  }
-
-  const res = await fetch(`${API_BASE_URL}/api/v1/notifications/unread-count`, {
-    credentials: 'include',
-    headers,
-  });
-
-  if (!res.ok) {
-    if (import.meta.env.DEV && (res.status === 401 || res.status === 404 || res.status >= 500)) {
-      return { unread_count: MOCK_SUBPAGES.notifications.counts.unread };
-    }
-    throw new Error(`HTTP ${res.status}`);
-  }
-
-  return res.json();
+  const response = await apiClient.get<UnreadCountResponse>('/notifications/unread-count');
+  return response.data;
 };
 
 const markAsRead = async (id: number): Promise<void> => {
-  const authToken = getAuthToken();
-  const headers: Record<string, string> = {
-    Accept: 'application/json',
-    'X-XSRF-TOKEN': getCsrfToken(),
-  };
-  if (authToken) {
-    headers['Authorization'] = `Bearer ${authToken}`;
-  }
-
-  const res = await fetch(`${API_BASE_URL}/api/v1/notifications/${id}/read`, {
-    method: 'PUT',
-    credentials: 'include',
-    headers,
-  });
-
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status}`);
-  }
+  await apiClient.put(`/notifications/${id}/read`);
 };
 
 const markAllAsRead = async (): Promise<void> => {
-  const authToken = getAuthToken();
-  const headers: Record<string, string> = {
-    Accept: 'application/json',
-    'X-XSRF-TOKEN': getCsrfToken(),
-  };
-  if (authToken) {
-    headers['Authorization'] = `Bearer ${authToken}`;
-  }
-
-  const res = await fetch(`${API_BASE_URL}/api/v1/notifications/read-all`, {
-    method: 'PUT',
-    credentials: 'include',
-    headers,
-  });
-
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status}`);
-  }
+  await apiClient.put('/notifications/read-all');
 };
 
 export const useNotifications = (page = 1, unread = false) => {
