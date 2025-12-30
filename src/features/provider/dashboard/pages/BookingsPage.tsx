@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/api/client';
 import { toast } from 'sonner';
 import { useConfirm } from '@/hooks/useConfirm';
+import { DevToolsPanel } from '../components/DevToolsPanel';
 import { 
   Calendar, 
   Clock, 
@@ -576,6 +577,9 @@ export const BookingsPage: React.FC = () => {
 
       {/* Confirm Dialog */}
       {ConfirmDialog}
+
+      {/* DEV Tools */}
+      <DevToolsPanel />
     </div>
   );
 };
