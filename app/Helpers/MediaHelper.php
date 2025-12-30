@@ -8,20 +8,21 @@ namespace App\Helpers;
 class MediaHelper
 {
     /**
-    * Oblicz shard dla ID (co 100 rekordów)
-    * Równomierne rozłożenie 000,001,002... (floor(id/100))
+    * Oblicz shard dla ID (co 1000 rekordów - modulo 1000)
+    * Równomierne rozłożenie 000-999
     * 
     * Przykłady:
-    * - getShard(1) → "000"
-    * - getShard(123) → "001"
-    * - getShard(9999) → "099"
+    * - getShard(1) → "001"
+    * - getShard(123) → "123"
+    * - getShard(9999) → "999"
+    * - getShard(1000) → "000"
      * 
      * @param int $id User/Provider/Service/Review ID
      * @return string Trzycyfrowy shard (000-999)
      */
     public static function getShard(int $id): string
     {
-        return str_pad((string) intdiv($id, 100), 3, '0', STR_PAD_LEFT);
+        return str_pad((string) ($id % 1000), 3, '0', STR_PAD_LEFT);
     }
 
     /**

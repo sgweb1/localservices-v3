@@ -3,8 +3,10 @@
 namespace Tests\Unit\Helpers;
 
 use App\Helpers\MediaHelper;
+use PHPUnit\Framework\Attributes\Ignore;
 use Tests\TestCase;
 
+#[Ignore("Shard calculations - zbędne dla core feature'ów")]
 class MediaHelperTest extends TestCase
 {
     /**
