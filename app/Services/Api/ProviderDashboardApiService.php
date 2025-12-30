@@ -170,7 +170,7 @@ class ProviderDashboardApiService
      * @param User $provider
      * @return array{period: string, can_view_details: bool, requests: array, bookings: array}
      */
-    protected function preparePipelineBoard(User $provider): array
+    protected function preparePipeline(User $provider): array
     {
         $providerId = $provider->id;
         $since = now()->subDays(30);
@@ -345,7 +345,7 @@ class ProviderDashboardApiService
      * @param User $provider
      * @return array{response_minutes: int|null, completion_rate: float|null, repeat_customers: int|null, cancellation_rate: float|null, trust_score: int}
      */
-    protected function preparePerformanceSnapshot(User $provider): array
+    protected function preparePerformance(User $provider): array
     {
         $profile = $provider->providerProfile;
 
@@ -367,7 +367,7 @@ class ProviderDashboardApiService
      * @param User $provider
      * @return array{slots: array, can_view_details: bool, calendar_url: string}
      */
-    protected function prepareCalendarGlance(User $provider): array
+    protected function prepareCalendar(User $provider): array
     {
         $canViewDetails = $provider->hasFeature('instant_booking') && $provider->hasFeature('messaging');
 
@@ -391,7 +391,7 @@ class ProviderDashboardApiService
      * @param User $provider
      * @return array{requests: array, unread_notifications: int, messages_url: string}
      */
-    protected function prepareMessageCenter(User $provider): array
+    protected function prepareMessages(User $provider): array
     {
         $requests = BookingRequest::query()
             ->where('provider_id', $provider->id)
@@ -482,7 +482,7 @@ class ProviderDashboardApiService
      * @param User $provider
      * @return array{activities: array}
      */
-    protected function prepareLiveActivityFeed(User $provider): array
+    protected function prepareLiveActivity(User $provider): array
     {
         $activities = collect();
 
