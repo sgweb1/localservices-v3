@@ -1,6 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { isMockMode } from '@/utils/mockMode';
-import { MOCK_SUBPAGES } from '../mocks/subpages';
 import { PLAN_LIMITS } from '../../subscription/constants/planLimits';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://ls.test';
@@ -46,13 +44,7 @@ const fetchSubscription = async (): Promise<SubscriptionResponse> => {
 export const useSubscription = () => {
   return useQuery<SubscriptionResponse, Error>({
     queryKey: ['provider', 'subscription'],
-    queryFn: async () => {
-      // Wymuszenie mock przez ?mock=1
-      if (isMockMode()) {
-        return MOCK_SUBPAGES.subscription;
-      }
-      return fetchSubscription();
-    },
+    queryFn: fetchSubscription,
     staleTime: 60_000,
     refetchOnWindowFocus: false,
   });

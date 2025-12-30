@@ -1,6 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { isMockMode } from '@/utils/mockMode';
-import { MOCK_SUBPAGES } from '../mocks/subpages';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://ls.test';
 
@@ -71,10 +69,6 @@ export const useReviews = (rating: number | null, page = 1, unanswered = false) 
   return useQuery<ReviewsResponse, Error>({
     queryKey: ['provider', 'reviews', rating ?? 'all', page, unanswered ? 'unanswered' : 'all'],
     queryFn: async () => {
-      // Wymuszenie mock przez ?mock=1
-      if (isMockMode()) {
-        return MOCK_SUBPAGES.reviews;
-      }
       return fetchReviews({ rating, page, unanswered });
     },
     staleTime: 30_000,

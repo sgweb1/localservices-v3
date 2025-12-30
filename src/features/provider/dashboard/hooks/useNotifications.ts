@@ -1,6 +1,4 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { isMockMode } from '@/utils/mockMode';
-import { MOCK_SUBPAGES } from '../mocks/subpages';
 import { getAuthToken } from '@/utils/apiHelpers';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://ls.test';
@@ -162,21 +160,7 @@ const markAllAsRead = async (): Promise<void> => {
 export const useNotifications = (page = 1, unread = false) => {
   return useQuery<NotificationsResponse, Error>({
     queryKey: ['notifications', page, unread],
-    queryFn: async () => {
-      // Wymuszenie mock przez ?mock=1
-      if (isMockMode()) {
-        return {
-          data: MOCK_SUBPAGES.notifications.data,
-          meta: {
-            current_page: 1,
-            per_page: 20,
-            total: MOCK_SUBPAGES.notifications.data.length,
-            last_page: 1,
-          },
-        };
-      }
-      return fetchNotifications(page, unread);
-    },
+    queryFn: () => fetchNotifications(page, unread),
     staleTime: 30_000,
     refetchOnWindowFocus: true,
   });
@@ -185,12 +169,7 @@ export const useNotifications = (page = 1, unread = false) => {
 export const useUnreadCount = () => {
   return useQuery<UnreadCountResponse, Error>({
     queryKey: ['notifications', 'unread-count'],
-    queryFn: async () => {
-      if (isMockMode()) {
-        return { unread_count: MOCK_SUBPAGES.notifications.counts.unread };
-      }
-      return fetchUnreadCount();
-    },
+    queryFn: fetchUnreadCount,
     staleTime: 10_000,
     refetchInterval: 30_000,
     refetchOnWindowFocus: true,

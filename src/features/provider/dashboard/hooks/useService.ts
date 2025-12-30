@@ -1,6 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { isMockMode } from '@/utils/mockMode';
-import { MOCK_SUBPAGES } from '../mocks/subpages';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://ls.test';
 
@@ -106,18 +104,7 @@ const fetchService = async (id: number): Promise<ServiceDetail> => {
 export const useService = (id: number) => {
   return useQuery<ServiceDetail, Error>({
     queryKey: ['provider', 'service', id],
-    queryFn: async () => {
-      if (isMockMode()) {
-        const mock = MOCK_SUBPAGES.services.data[0];
-        return {
-          id,
-          title: mock?.name ?? 'Mock',
-          description: 'Opis mock',
-          status: 'active',
-        };
-      }
-      return fetchService(id);
-    },
+    queryFn: () => fetchService(id),
     enabled: Boolean(id),
     staleTime: 15_000,
   });

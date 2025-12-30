@@ -1,6 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { isMockMode } from '@/utils/mockMode';
-import { conversations as mockConversations } from '../mocks/subpages';
 
 export interface ConversationListItem {
   id: number;
@@ -18,10 +16,6 @@ export interface ConversationListResponse {
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 async function fetchConversations(): Promise<ConversationListResponse> {
-  if (isMockMode()) {
-    return { data: mockConversations };
-  }
-
   const res = await fetch(`${API_BASE_URL}/api/v1/provider/conversations`, {
     credentials: 'include',
     headers: { Accept: 'application/json' },
