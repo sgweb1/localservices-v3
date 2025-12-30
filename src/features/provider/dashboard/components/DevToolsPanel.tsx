@@ -23,11 +23,17 @@ export const DevToolsPanel: React.FC = () => {
       console.log('[DevToolsPanel] Creating events, token:', !!token);
       
       const response = await apiClient.post('/dev/simulate-events');
-      console.log('[DevToolsPanel] Success:', response.data);
+      console.log('[DevToolsPanel] Success, created:', response.data.summary);
       
-      // Invalidate bookings cache so it refetches
-      queryClient.invalidateQueries({ queryKey: ['provider', 'bookings'] });
-      console.log('[DevToolsPanel] Cache invalidated');
+      // Invalidate both possible query keys for bookings
+      await queryClient.invalidateQueries({ queryKey: ['provider', 'bookings'] });
+      await queryClient.invalidateQueries({ queryKey: ['bookings', 'my'] });
+      
+      // Also refetch immediately
+      queryClient.refetchQueries({ queryKey: ['provider', 'bookings'] });
+      queryClient.refetchQueries({ queryKey: ['bookings', 'my'] });
+      
+      console.log('[DevToolsPanel] Cache invalidated and refetching');
     } catch (error: any) {
       console.error('[DevToolsPanel] Error:', error.response?.status, error.response?.data || error.message);
       alert('Błąd: ' + (error.response?.data?.message || error.message));
