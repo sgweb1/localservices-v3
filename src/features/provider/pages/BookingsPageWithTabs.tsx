@@ -41,6 +41,17 @@ export const BookingsPageWithTabs: React.FC = () => {
     return timeString.substring(0, 5); // HH:MM
   };
 
+  const formatServiceAddress = (value: any) => {
+    if (!value) return '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'object') {
+      const { street, postalCode, city } = value as { street?: string; postalCode?: string; city?: string };
+      const cityLine = [postalCode, city].filter(Boolean).join(' ').trim();
+      return [street, cityLine].filter(Boolean).join(', ');
+    }
+    return '';
+  };
+
   // Customer (nie provider) - pokazuj tylko moje rezerwacje bez zakładek
   if (user?.user_type !== 'provider') {
     return (
@@ -152,10 +163,10 @@ const CustomerBookingsContent: React.FC<CustomerBookingsContentProps> = ({
               <p className="text-sm text-slate-600 mt-1">
                 Provider: {booking.provider?.name || 'Nieznany'}
               </p>
-              {booking.service_address && (
+              {formatServiceAddress(booking.service_address || (booking as any).serviceAddress) && (
                 <div className="mt-2 flex items-start gap-2 text-xs text-slate-500">
                   <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span>{booking.service_address}</span>
+                  <span>{formatServiceAddress(booking.service_address || (booking as any).serviceAddress)}</span>
                 </div>
               )}
             </div>
