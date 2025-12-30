@@ -101,7 +101,6 @@ class DevEventController extends Controller
                         'Wsparcie w chemii - weekend by się przydał.',
                         'Lekcja próbna z programowania.',
                     ]),
-                    'is_test_data' => true,
                 ]);
 
                 $created['bookings'][] = [
