@@ -355,10 +355,13 @@ PROVIDER_LOGO_MAX_SIZE=5120
 
 ### Code Standards
 
+⚠️ **OBOWIĄZKOWE**: Przeczytaj [.cursorrules](.cursorrules) na początku każdej sesji pracy!
+
 - **PHP**: PSR-12, Laravel conventions
 - **TypeScript**: ESLint + Prettier
 - **Commits**: Polish, format `type: Opis zmiany`
 - **Tests**: Feature + Unit coverage 90%+
+- **AI Assistance**: Wszystkie konwencje w [.cursorrules](.cursorrules)
 
 ### Zasady Projektowe
 
