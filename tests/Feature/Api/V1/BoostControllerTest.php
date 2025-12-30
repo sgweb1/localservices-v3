@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Api\V1;
 
-use App\Models\Boost;
 use App\Models\PlatformInvoice;
 use App\Models\User;
 use App\Services\BoostService;
