@@ -17,32 +17,48 @@ class DevEventController extends Controller
 {
     public function simulateEvents(Request $request): JsonResponse
     {
+        // Zabezpieczenie: tylko w dev/local
         if (!app()->environment(['local', 'development'])) {
             abort(403, 'Endpoint dostępny tylko w trybie dev');
         }
 
+        // Pobierz user z auth (session lub guard)
         $user = auth('sanctum')->user() ?? auth()->user();
         
-        \Log::info('[DevEventController] simulateEvents called', ['user_id' => $user?->id]);
+        \Log::info('[DevEventController] simulateEvents called', [
+            'user_id' => $user?->id,
+            'user_type' => $user?->user_type,
+        ]);
 
         if (!$user || $user->user_type !== UserType::Provider) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+            \Log::warning('[DevEventController] Unauthorized request');
+            return response()->json([
+                'success' => false,
+                'message' => 'Musisz być zalogowany jako provider',
+            ], 401);
         }
 
-        $created = ['bookings' => [], 'reviews' => []];
+        $created = [
+            'bookings' => [],
+            'reviews' => [],
+        ];
 
         try {
+            // Pobierz services i customers
             $services = Service::where('provider_id', $user->id)->limit(10)->pluck('id')->toArray();
             $customers = User::where('user_type', UserType::Customer)->limit(10)->pluck('id')->toArray();
 
-            \Log::info('[DevEventController] Data', ['services' => count($services), 'customers' => count($customers)]);
+            \Log::info('[DevEventController] Data check', [
+                'services' => count($services),
+                'customers' => count($customers),
+            ]);
 
-            // Create bookings without events
+            // Utwórz 3 bookings
             if (!empty($services) && !empty($customers)) {
                 Booking::withoutEvents(function () use ($services, $customers, $user, &$created) {
                     for ($i = 0; $i < 3; $i++) {
                         try {
-                            $booking = Booking::create([
+                            $booking = Booking::forceCreate([
                                 'uuid' => Str::uuid(),
                                 'booking_number' => 'BK-' . now()->format('Ymd') . '-' . strtoupper(Str::random(6)),
                                 'customer_id' => Arr::random($customers),
@@ -88,7 +104,7 @@ class DevEventController extends Controller
                 });
             }
 
-            // Create reviews if completed bookings exist
+            // Utwórz 2 reviews
             $completedBookings = Booking::where('provider_id', $user->id)
                 ->where('status', 'completed')
                 ->limit(5)
@@ -108,20 +124,29 @@ class DevEventController extends Controller
                                 'Świetne podejście do ucznia! Polecam.',
                                 'Profesjonalne przygotowanie lekcji. Widać efekty.',
                                 'Bardzo pomocny nauczyciel. Córka poprawiła oceny.',
+                                'Doskonała komunikacja i dostosowanie materiałów do poziomu.',
+                                'Zajęcia ciekawe i merytoryczne. Na pewno wrócimy!',
                             ]),
                             'is_visible' => true,
                             'published_at' => now(),
                         ]);
 
-                        $created['reviews'][] = ['id' => $review->id, 'rating' => $review->rating];
+                        $created['reviews'][] = [
+                            'id' => $review->id,
+                            'rating' => $review->rating,
+                        ];
                     } catch (\Exception $e) {
-                        \Log::error('[DevEventController] Error review', ['error' => $e->getMessage()]);
+                        \Log::error('[DevEventController] Error creating review', ['error' => $e->getMessage()]);
                     }
                 }
             }
 
         } catch (\Exception $e) {
-            \Log::error('[DevEventController] Error', ['msg' => $e->getMessage()]);
+            \Log::error('[DevEventController] Top-level error', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
         }
 
         return response()->json([
