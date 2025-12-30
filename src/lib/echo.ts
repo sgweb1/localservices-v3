@@ -9,24 +9,13 @@ declare global {
   }
 }
 
-// Configure Pusher
+// Configure Pusher (disabled for MVP - WebSockets not available)
 window.Pusher = Pusher;
 
-// Determine WebSocket configuration based on environment
-const isDev = import.meta.env.DEV;
-const wsHost = isDev ? 'localhost' : window.location.hostname;
-const wsPort = isDev ? 8080 : (window.location.protocol === 'https:' ? 443 : 80);
-const wssPort = isDev ? 8080 : 443;
-
+// Use null broadcaster for MVP (polling instead of WebSockets)
+// Real-time features require Laravel Reverb or Pusher to be set up
 window.Echo = new (Echo as any)({
-  broadcaster: 'reverb',
-  key: 'local', // Laravel Reverb uses 'local' for development
-  wsHost,
-  wsPort,
-  wssPort,
-  forceTLS: window.location.protocol === 'https:',
-  encrypted: true,
-  enabledTransports: ['ws', 'wss'],
+  broadcaster: 'null', // Use null broadcaster - no real-time for MVP
 });
 
 export default window.Echo;
