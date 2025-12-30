@@ -42,7 +42,7 @@ class BookingObserver
             );
 
             // Broadcast do prywatnego kanału providera (Realtime dla dashboardu)
-            dispatch(new \App\Events\NotificationToastEvent(
+            broadcast(new \App\Events\NotificationToastEvent(
                 userId: (int) $booking->provider->id,
                 title: 'Nowa rezerwacja',
                 message: $booking->service->name . ' • ' . ($booking->customer->name ?? ''),
@@ -89,7 +89,7 @@ class BookingObserver
                 }
 
                 // Realtime dla providera – odśwież listę rezerwacji
-                dispatch(new \App\Events\NotificationToastEvent(
+                broadcast(new \App\Events\NotificationToastEvent(
                     userId: (int) $booking->provider_id,
                     title: 'Rezerwacja potwierdzona',
                     message: (string) ($booking->service->name ?? ''),
@@ -122,7 +122,7 @@ class BookingObserver
 
                 // Realtime – odśwież listę rezerwacji providera
                 if ($booking->provider_id) {
-                    dispatch(new \App\Events\NotificationToastEvent(
+                    broadcast(new \App\Events\NotificationToastEvent(
                         userId: (int) $booking->provider_id,
                         title: 'Rezerwacja anulowana',
                         message: (string) ($booking->service->name ?? ''),
@@ -155,7 +155,7 @@ class BookingObserver
 
                 // Realtime – odśwież listę rezerwacji providera
                 if ($booking->provider_id) {
-                    dispatch(new \App\Events\NotificationToastEvent(
+                    broadcast(new \App\Events\NotificationToastEvent(
                         userId: (int) $booking->provider_id,
                         title: 'Rezerwacja ukończona',
                         message: (string) ($booking->service->name ?? ''),
