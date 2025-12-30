@@ -37,8 +37,8 @@ export function useDashboardWidgets(): UseQueryResult<DashboardWidgets, Error> {
     staleTime: 60 * 1000, // 60 sekund
     // Refetch co 5 minut w tle (jeśli ktoś ma dashboard otwarty)
     refetchInterval: 5 * 60 * 1000, // 5 minut
-    // Refetch przy powrocie do okna
-    refetchOnWindowFocus: true,
+    // Nie refetch przy powrocie do okna (unikamy duplicate requestów)
+    refetchOnWindowFocus: false,
     // Nie refetch przy mount (używamy cache)
     refetchOnMount: false,
     // Retry 2x przy błędzie

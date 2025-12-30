@@ -34,7 +34,7 @@ const qc = new QueryClient({
       gcTime: 1000 * 60 * 5, // Garbage collect po 5 minutach (było: 5 minut)
       staleTime: 1000 * 60, // Cache jest fresh przez 60 sekund (było: 0)
       refetchOnWindowFocus: false, // Nie refetch przy focus (było: true)
-      refetchOnMount: 'stale', // Refetch tylko jeśli cache jest stale (było: true)
+      refetchOnMount: false, // Nie refetch przy mount (używamy prefetch + cache)
       retry: 2, // 2 ponowne próby na error (było: 3)
       refetchInterval: 1000 * 60 * 5, // Background refetch co 5 minut (było: false)
     },

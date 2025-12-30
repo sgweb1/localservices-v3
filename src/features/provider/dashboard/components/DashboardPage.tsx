@@ -1,20 +1,61 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Calendar, MessageSquare, ShieldCheck, Zap, Loader2, ArrowRight, Clock, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useDashboardWidgets } from '../hooks/useDashboardWidgets';
+import { useRecentBookings, useRecentMessages, useRecentReviews } from '../hooks/useDashboardData';
 import { PerformanceMetrics } from './PerformanceMetrics';
 import { RecentBookings } from './RecentBookings';
-import { RecentReviews } from './RecentReviews';
 import { RecentMessages } from './RecentMessages';
+import { apiGet } from '@/utils/apiHelpers';
 
 /**
  * Provider Dashboard - styl dopasowany do widoków Rezerwacje/Kalendarz
  * Bazuje na realnych danych z API (widgets + recents) i szklanych kartach z gradientami.
+ * 
+ * Optymalizacja: Prefetchuje wszystkie dane na wejściu DashboardPage
+ * aby uniknąć duplicate requestów z podkomponentów.
  */
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { data: widgets, isLoading: widgetsLoading } = useDashboardWidgets();
+
+  // Prefetch recent data aby uniknąć duplicate requestów z RecentBookings, RecentMessages, RecentReviews
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // Prefetch recent bookings
+    queryClient.prefetchQuery({
+      queryKey: ['dashboard', 'bookings', 5],
+      queryFn: async () => {
+        const response = await apiGet('/provider/dashboard/bookings?limit=5&sort=-created_at');
+        return response.json();
+      },
+      staleTime: 2 * 60 * 1000,
+    });
+
+    // Prefetch recent messages
+    queryClient.prefetchQuery({
+      queryKey: ['dashboard', 'messages', 5],
+      queryFn: async () => {
+        const response = await apiGet('/provider/dashboard/conversations?limit=5&sort=-updated_at');
+        return response.json();
+      },
+      staleTime: 1 * 60 * 1000,
+    });
+
+    // Prefetch recent reviews
+    queryClient.prefetchQuery({
+      queryKey: ['dashboard', 'reviews', 4],
+      queryFn: async () => {
+        const response = await apiGet('/provider/dashboard/reviews?limit=4&sort=-created_at');
+        return response.json();
+      },
+      staleTime: 15 * 60 * 1000,
+    });
+  }, [user?.id, queryClient]);
 
   const pipeline = widgets?.pipeline ?? widgets?.pipeline_board;
   const bookingsStats = pipeline?.bookings ?? { pending: 0, confirmed: 0, completed: 0 };
@@ -62,13 +103,6 @@ export const DashboardPage: React.FC = () => {
       accent: 'from-amber-400 to-orange-500',
       icon: Zap,
     },
-  ];
-
-  const quickLinks = [
-    { href: '/provider/bookings', label: 'Rezerwacje', icon: Calendar },
-    { href: '/provider/calendar', label: 'Kalendarz', icon: Clock },
-    { href: '/provider/messages', label: 'Wiadomości', icon: MessageSquare },
-    { href: '/provider/services', label: 'Usługi', icon: ShieldCheck },
   ];
 
   const firstName = user?.name?.split(' ')[0] ?? 'Providera';
@@ -181,44 +215,13 @@ export const DashboardPage: React.FC = () => {
             <Zap className="w-5 h-5 text-cyan-600" />
             <h2 className="text-xl font-bold">Wydajność</h2>
           </div>
-          <PerformanceMetrics />
+          <PerformanceMetrics data={performance} isLoading={widgetsLoading} />
         </div>
 
         {/* Rezerwacje + Wiadomości */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <RecentBookings />
           <RecentMessages />
-        </div>
-
-        {/* Recenzje */}
-        <RecentReviews />
-
-        {/* Szybkie przejścia */}
-        <div className="glass-card rounded-2xl p-5 border border-slate-200/70 bg-white/80">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-slate-900">Szybkie przejścia</h3>
-            <span className="text-xs text-slate-500">Dopasowane do workflow</span>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {quickLinks.map((link) => {
-              const Icon = link.icon;
-              return (
-                <Link
-                  key={link.href}
-                  to={link.href}
-                  className="group flex items-center justify-between gap-2 rounded-xl bg-gradient-to-br from-slate-50 to-white border border-slate-200 px-4 py-3 hover:border-cyan-400 hover:shadow-lg transition-all"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">{link.label}</p>
-                    <p className="text-[11px] text-slate-500 group-hover:text-cyan-600">Otwórz</p>
-                  </div>
-                  <div className="p-2 rounded-lg bg-slate-100 text-cyan-600 group-hover:bg-cyan-50">
-                    <Icon className="w-4 h-4" />
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
         </div>
       </div>
     </div>
