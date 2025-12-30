@@ -16,6 +16,11 @@ export const DevToolsPanel: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'settings' | 'events'>('settings');
   const queryClient = useQueryClient();
 
+  // Debug logging
+  React.useEffect(() => {
+    console.log('[DevToolsPanel] DEV mode:', import.meta.env.DEV);
+  }, []);
+
   // Mutacja do symulacji eventów
   const simulateEventsMutation = useMutation({
     mutationFn: async () => {
