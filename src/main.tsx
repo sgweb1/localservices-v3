@@ -13,6 +13,8 @@ import { BookingsPageWithTabs } from './features/provider/pages/BookingsPageWith
 import { MessagesPage } from './features/provider/pages/MessagesPage';
 import { ServicesPage as ProviderServicesPage } from './features/provider/pages/ServicesPage';
 import { SettingsPage } from './features/provider/pages/SettingsPage';
+import { BoostPurchase, SubscriptionPurchase, BoostList, SubscriptionList } from './features/provider/monetization/components';
+import { CheckoutSuccess, CheckoutCancel } from './features/provider/monetization/pages';
 import { CalendarPage } from './features/provider/calendar/CalendarPage';
 import { ProfilePage } from './features/provider/profile/ProfilePage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -24,7 +26,20 @@ import '../resources/css/app.css';
 const rootEl = document.getElementById('root');
 if (!rootEl) throw new Error('Root element not found');
 
-const qc = new QueryClient();
+// Konfiguracja QueryClient z lepszymi ustawieniami cache
+const qc = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Deduplikacja: jeśli inny komponent robi ten sam query w ciągu 30s, podziel cache
+      gcTime: 1000 * 60 * 5, // Garbage collect po 5 minutach (było: 5 minut)
+      staleTime: 1000 * 60, // Cache jest fresh przez 60 sekund (było: 0)
+      refetchOnWindowFocus: false, // Nie refetch przy focus (było: true)
+      refetchOnMount: 'stale', // Refetch tylko jeśli cache jest stale (było: true)
+      retry: 2, // 2 ponowne próby na error (było: 3)
+      refetchInterval: 1000 * 60 * 5, // Background refetch co 5 minut (było: false)
+    },
+  },
+});
 
 // Provider Dashboard Link (tylko dla providerów)
 const ProviderDashboardLink = () => {
@@ -142,6 +157,8 @@ const App = () => {
           <Route path="/szukaj" element={<ServicesPage />} />
           <Route path="/szukaj/:category" element={<ServicesPage />} />
           <Route path="/szukaj/:category/:city" element={<ServicesPage />} />
+          <Route path="/checkout/success" element={<CheckoutSuccess />} />
+          <Route path="/checkout/cancel" element={<CheckoutCancel />} />
           <Route path="/dev/login" element={<DevLoginPage />} />
           
           {/* Provider Routes - wymagają autoryzacji jako provider */}
@@ -158,6 +175,10 @@ const App = () => {
             <Route path="services" element={<ProviderServicesPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="monetization/boost" element={<BoostPurchase />} />
+            <Route path="monetization/subscription" element={<SubscriptionPurchase />} />
+            <Route path="monetization/boosts" element={<BoostList />} />
+            <Route path="monetization/subscriptions" element={<SubscriptionList />} />
           </Route>
         </Routes>
       </main>
@@ -169,7 +190,19 @@ const App = () => {
 };
 
 createRoot(rootEl).render(
-  <React.StrictMode>
+  // StrictMode tylko w dev do debugowania - wyłącz dla production performance
+  import.meta.env.DEV ? (
+    <React.StrictMode>
+      <BrowserRouter>
+        <QueryClientProvider client={qc}>
+          <AuthProvider>
+            <App />
+            <Toaster position="top-right" richColors closeButton />
+          </AuthProvider>
+        </QueryClientProvider>
+      </BrowserRouter>
+    </React.StrictMode>
+  ) : (
     <BrowserRouter>
       <QueryClientProvider client={qc}>
         <AuthProvider>
@@ -178,5 +211,5 @@ createRoot(rootEl).render(
         </AuthProvider>
       </QueryClientProvider>
     </BrowserRouter>
-  </React.StrictMode>
+  )
 );
