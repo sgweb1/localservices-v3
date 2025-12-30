@@ -55,9 +55,11 @@ export interface BookingListResponse {
 
 async function fetchBookings(page: number = 1, perPage: number = 15): Promise<BookingListResponse> {
   try {
+    console.log('[fetchBookings] Fetching page:', page, 'perPage:', perPage);
     const response = await apiClient.get('/provider/bookings', {
       params: { page, per_page: perPage }
     });
+    console.log('[fetchBookings] Response:', response.data);
     return response.data;
   } catch (error: any) {
     console.error('[useBookings] API Error:', error.response?.status, error);
@@ -66,6 +68,7 @@ async function fetchBookings(page: number = 1, perPage: number = 15): Promise<Bo
 }
 
 export function useBookings(page: number = 1, perPage: number = 15) {
+  console.log('[useBookings] Hook called with page:', page, 'perPage:', perPage);
   return useQuery({
     queryKey: ['provider','bookings', page, perPage],
     queryFn: () => fetchBookings(page, perPage),

@@ -48,6 +48,13 @@ export const BookingsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const { confirm, ConfirmDialog } = useConfirm();
   
+  // DEBUG
+  React.useEffect(() => {
+    console.log('[BookingsPage] currentPage changed:', currentPage);
+    console.log('[BookingsPage] useBookings response:', data);
+    console.log('[BookingsPage] pagination object:', data?.pagination);
+  }, [currentPage, data]);
+  
   const items = data?.data ?? [];
   const stats = data?.counts ?? {
     total: items.length,
@@ -621,7 +628,10 @@ export const BookingsPage: React.FC = () => {
                     {pagination.last_page > 1 && (
                     <div className="flex items-center gap-2">
                       <Button
-                        onClick={() => setCurrentPage(currentPage - 1)}
+                        onClick={() => {
+                          console.log('[Pagination] Previous clicked, currentPage:', currentPage);
+                          setCurrentPage(currentPage - 1);
+                        }}
                         disabled={currentPage === 1}
                         variant="neutral"
                         size="sm"
@@ -647,7 +657,10 @@ export const BookingsPage: React.FC = () => {
                                   <span className="px-2 text-slate-400">...</span>
                                 )}
                                 <Button
-                                  onClick={() => setCurrentPage(page)}
+                                  onClick={() => {
+                                    console.log('[Pagination] Page', page, 'clicked');
+                                    setCurrentPage(page);
+                                  }}
                                   variant={currentPage === page ? "primary" : "neutral"}
                                   size="sm"
                                 >
@@ -658,7 +671,10 @@ export const BookingsPage: React.FC = () => {
                           })}
                       </div>
                       <Button
-                        onClick={() => setCurrentPage(currentPage + 1)}
+                        onClick={() => {
+                          console.log('[Pagination] Next clicked, currentPage:', currentPage);
+                          setCurrentPage(currentPage + 1);
+                        }}
                         disabled={currentPage === pagination.last_page}
                         variant="neutral"
                         size="sm"
