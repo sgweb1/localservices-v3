@@ -42,7 +42,7 @@ import {
 export const BookingsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage] = useState(15);
-  const { data, isLoading, error } = useBookings();
+  const { data, isLoading, error } = useBookings(currentPage, perPage);
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
