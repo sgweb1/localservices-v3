@@ -8,6 +8,8 @@ use App\Http\Controllers\Api\V1\AnalyticsController;
 use App\Http\Controllers\Api\V1\ServiceController;
 use App\Http\Controllers\Api\V1\LocationController;
 use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\MonetizationController;
+use App\Http\Controllers\Api\V1\VisibilityController;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -15,6 +17,11 @@ use Illuminate\Support\Facades\Route;
  */
 
 Route::middleware(['api'])->group(function () {
+    // Monetyzacja i widoczność
+    Route::get('/monetization/flags', [MonetizationController::class, 'flags']);
+    Route::get('/visibility/preview', [VisibilityController::class, 'preview']);
+    Route::get('/visibility/providers/{city}', [VisibilityController::class, 'providers']);
+
     // Lokalizacje - publiczne
     Route::get('/locations', [LocationController::class, 'index']);
     Route::get('/locations/major-cities', [LocationController::class, 'majorCities']);
@@ -46,6 +53,7 @@ Route::middleware(['api'])->group(function () {
 
     // Akcje providera na rezerwacjach - wymaga autentykacji
     Route::middleware(['auth:sanctum'])->group(function () {
+        Route::get('/provider/bookings', [BookingController::class, 'providerIndex']);
         Route::post('/provider/bookings/{id}/accept', [BookingController::class, 'accept']);
         Route::post('/provider/bookings/{id}/decline', [BookingController::class, 'decline']);
         Route::post('/provider/bookings/{id}/send-quote', [BookingController::class, 'sendQuote']);

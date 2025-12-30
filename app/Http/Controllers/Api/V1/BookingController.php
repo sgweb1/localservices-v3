@@ -74,6 +74,39 @@ class BookingController extends Controller
     }
 
     /**
+     * GET /api/v1/provider/bookings
+     * Rezerwacje dla zalogowanego providera
+     */
+    public function providerIndex(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $validated = $request->validate([
+            'page' => 'integer|min:1',
+            'per_page' => 'integer|min:1|max:50',
+            'status' => 'string|in:confirmed,completed,cancelled,in_progress',
+            'sort_by' => 'string|in:booking_date,created_at,total_price',
+            'sort_order' => 'string|in:asc,desc',
+        ]);
+
+        $bookings = $this->service->getProviderBookings($user->id, $validated);
+
+        return response()->json([
+            'data' => BookingResource::collection($bookings),
+            'meta' => [
+                'current_page' => $bookings->currentPage(),
+                'per_page' => $bookings->perPage(),
+                'total' => $bookings->total(),
+                'last_page' => $bookings->lastPage(),
+            ],
+        ]);
+    }
+
+    /**
      * GET /api/v1/providers/{providerId}/bookings
      * Rezerwacje dla providera
      */

@@ -60,7 +60,7 @@ class BookingApiService
     /**
      * Pobierz rezerwacje dla providera
      */
-    public function getProviderBookings(int $providerId, array $filters = []): Paginator
+    public function getProviderBookings(int $providerId, array $filters = []): LengthAwarePaginator
     {
         $filters['provider_id'] = $providerId;
         return $this->list($filters);
@@ -69,7 +69,7 @@ class BookingApiService
     /**
      * Pobierz rezerwacje dla customera
      */
-    public function getCustomerBookings(int $customerId, array $filters = []): Paginator
+    public function getCustomerBookings(int $customerId, array $filters = []): LengthAwarePaginator
     {
         $filters['customer_id'] = $customerId;
         return $this->list($filters);
