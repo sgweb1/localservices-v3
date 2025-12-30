@@ -32,8 +32,6 @@ import {
  * szczegóły rezerwacji, akcje, sidebar, modal edycji, paginacja.
  */
 export const BookingsPage: React.FC = () => {
-  console.log('[BookingsPage] rendering...');
-  
   const { data, isLoading, error } = useBookings();
   const queryClient = useQueryClient();
   const { confirm, ConfirmDialog } = useConfirm();
@@ -421,7 +419,7 @@ export const BookingsPage: React.FC = () => {
                               </div>
                               <p className="text-sm font-medium text-slate-700 mt-1">{booking.serviceName}</p>
                               
-                              {booking.serviceAddress && (
+                              {booking.serviceAddress && typeof booking.serviceAddress === 'object' && (
                                 <div className="mt-2 flex items-start gap-2 text-xs text-slate-500">
                                   <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
                                   <span>

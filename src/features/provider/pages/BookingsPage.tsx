@@ -40,14 +40,9 @@ import {
  * szczegóły rezerwacji, akcje, sidebar, modal edycji, paginacja.
  */
 export const BookingsPage: React.FC = () => {
-  console.log('[BookingsPage] Rendering...');
-  
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage] = useState(15);
   const { data, isLoading, error } = useBookings();
-  
-  console.log('[BookingsPage] Data:', { data, isLoading, error });
-  
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');

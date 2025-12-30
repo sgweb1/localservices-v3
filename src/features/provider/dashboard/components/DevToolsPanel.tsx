@@ -12,8 +12,6 @@ export const DevToolsPanel: React.FC = () => {
   const isDEV = import.meta.env.DEV;
   const queryClient = useQueryClient();
 
-  console.log('[DevToolsPanel] mounted, DEV:', isDEV);
-
   const handleSimulateEvents = async () => {
     try {
       const token = localStorage.getItem('dev_mock_token') || 
