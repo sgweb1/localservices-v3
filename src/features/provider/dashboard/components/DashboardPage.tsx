@@ -1,61 +1,26 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Calendar, MessageSquare, ShieldCheck, Zap, Loader2, ArrowRight, Clock, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
 import { useDashboardWidgets } from '../hooks/useDashboardWidgets';
 import { useRecentBookings, useRecentMessages, useRecentReviews } from '../hooks/useDashboardData';
 import { PerformanceMetrics } from './PerformanceMetrics';
 import { RecentBookings } from './RecentBookings';
 import { RecentMessages } from './RecentMessages';
-import { apiGet } from '@/utils/apiHelpers';
 
 /**
  * Provider Dashboard - styl dopasowany do widoków Rezerwacje/Kalendarz
  * Bazuje na realnych danych z API (widgets + recents) i szklanych kartach z gradientami.
- * 
- * Optymalizacja: Prefetchuje wszystkie dane na wejściu DashboardPage
- * aby uniknąć duplicate requestów z podkomponentów.
  */
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
   const { data: widgets, isLoading: widgetsLoading } = useDashboardWidgets();
 
-  // Prefetch recent data aby uniknąć duplicate requestów z RecentBookings, RecentMessages, RecentReviews
-  useEffect(() => {
-    if (!user?.id) return;
-
-    // Prefetch recent bookings
-    queryClient.prefetchQuery({
-      queryKey: ['dashboard', 'bookings', 5],
-      queryFn: async () => {
-        const response = await apiGet('/provider/dashboard/bookings?limit=5&sort=-created_at');
-        return response.json();
-      },
-      staleTime: 2 * 60 * 1000,
-    });
-
-    // Prefetch recent messages
-    queryClient.prefetchQuery({
-      queryKey: ['dashboard', 'messages', 5],
-      queryFn: async () => {
-        const response = await apiGet('/provider/dashboard/conversations?limit=5&sort=-updated_at');
-        return response.json();
-      },
-      staleTime: 1 * 60 * 1000,
-    });
-
-    // Prefetch recent reviews
-    queryClient.prefetchQuery({
-      queryKey: ['dashboard', 'reviews', 4],
-      queryFn: async () => {
-        const response = await apiGet('/provider/dashboard/reviews?limit=4&sort=-created_at');
-        return response.json();
-      },
-      staleTime: 15 * 60 * 1000,
-    });
-  }, [user?.id, queryClient]);
+  // Inicjalizujemy wszystkie queries na TOP LEVEL aby React Query deduplikował automatycznie
+  // Gdy wszystkie mountują w tym samym rendera cycle, React Query robi JEDEN request dla każdego queryKey
+  useRecentBookings(5);
+  useRecentMessages(5);
+  useRecentReviews(4);
 
   const pipeline = widgets?.pipeline ?? widgets?.pipeline_board;
   const bookingsStats = pipeline?.bookings ?? { pending: 0, confirmed: 0, completed: 0 };
