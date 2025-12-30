@@ -33,6 +33,8 @@ import {
  * szczegóły rezerwacji, akcje, sidebar, modal edycji, paginacja.
  */
 export const BookingsPage: React.FC = () => {
+  console.log('[BookingsPage] rendering...');
+  
   const { data, isLoading, error } = useBookings();
   const queryClient = useQueryClient();
   const { confirm, ConfirmDialog } = useConfirm();

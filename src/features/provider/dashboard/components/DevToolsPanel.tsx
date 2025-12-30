@@ -11,15 +11,12 @@ import axios from 'axios';
  * Tylko w DEV mode
  */
 export const DevToolsPanel: React.FC = () => {
+  console.log('[DevToolsPanel] component mounted');
+  
   const [isOpen, setIsOpen] = useState(false);
   const [mockMode, setMockModeState] = useState(getMockMode());
   const [activeTab, setActiveTab] = useState<'settings' | 'events'>('settings');
   const queryClient = useQueryClient();
-
-  // Debug logging
-  React.useEffect(() => {
-    console.log('[DevToolsPanel] DEV mode:', import.meta.env.DEV);
-  }, []);
 
   // Mutacja do symulacji eventów
   const simulateEventsMutation = useMutation({
