@@ -48,13 +48,20 @@ class ChatApiService
         }
 
         // Sortowanie (ostatnie wiadomości na górze)
-        $sortBy = $filters['sort_by'] ?? 'last_message_at';
+        $sortBy = $filters['sort_by'] ?? 'updated_at';
         $sortOrderRaw = $filters['sort_order'] ?? 'desc';
         $sortOrder = in_array($sortOrderRaw, ['asc', 'desc']) ? $sortOrderRaw : 'desc';
+        
+        // Zapewnie że sortujemy po istniejącym polu
+        $allowedSortFields = ['updated_at', 'created_at', 'last_message_at'];
+        if (!in_array($sortBy, $allowedSortFields)) {
+            $sortBy = 'updated_at';
+        }
+        
         $query->orderBy($sortBy, $sortOrder);
 
-        // Eager load
-        $query->with(['customer', 'provider', 'lastMessage', 'messages']);
+        // Eager load (nie loaduj wszystkich messages - tylko lastMessage dla listy)
+        $query->with(['customer', 'provider', 'lastMessage']);
 
         return $query->paginate($perPage, ['*'], 'page', $page);
     }
@@ -182,7 +189,7 @@ class ChatApiService
                 : (int) $conversation->customer_id;
 
             // Wyślij do odbiorcy
-            \App\Events\NotificationToastEvent::dispatch(
+            event(new \App\Events\NotificationToastEvent(
                 userId: $recipientId,
                 title: 'Nowa wiadomość',
                 message: mb_substr($message->body ?? '', 0, 140),
@@ -194,10 +201,10 @@ class ChatApiService
                     'sender_id' => $message->sender_id,
                     'preview' => mb_substr($message->body ?? '', 0, 60),
                 ],
-            );
+            ));
 
             // Opcjonalnie: wyślij także do nadawcy (aby odświeżyć jego listy bez dodatkowego requestu)
-            \App\Events\NotificationToastEvent::dispatch(
+            event(new \App\Events\NotificationToastEvent(
                 userId: (int) $message->sender_id,
                 title: 'Wiadomość wysłana',
                 message: mb_substr($message->body ?? '', 0, 140),
@@ -209,7 +216,7 @@ class ChatApiService
                     'sender_id' => $message->sender_id,
                     'preview' => mb_substr($message->body ?? '', 0, 60),
                 ],
-            );
+            ));
         }
 
         return $message;
