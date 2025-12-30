@@ -73,7 +73,9 @@ class DevEventController extends Controller
                 for ($i = 0; $i < 3; $i++) {
                     $bookingDate = now()->addDays(rand(1, 14))->toDateString();
                     try {
-                        $booking = Booking::create([
+                        // Wyłącz observers żeby nie wysyłać notyfikacji
+                        Booking::withoutEvents(function () use (&$booking, $user, $services, $customers, $bookingDate) {
+                            $booking = Booking::create([
                             'uuid' => Str::uuid(),
                     'booking_number' => 'BK-' . now()->format('Ymd') . '-' . strtoupper(Str::random(6)),
                     'customer_id' => Arr::random($customers),
@@ -103,7 +105,8 @@ class DevEventController extends Controller
                         'Wsparcie w chemii - weekend by się przydał.',
                         'Lekcja próbna z programowania.',
                     ]),
-                        ]);
+                            ]);
+                        });
 
                         $created['bookings'][] = [
                             'id' => $booking->id,
