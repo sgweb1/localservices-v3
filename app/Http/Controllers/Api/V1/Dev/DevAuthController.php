@@ -25,9 +25,17 @@ class DevAuthController extends Controller
         if (!empty($validated['user_id'])) {
             $query->where('id', $validated['user_id']);
         } else {
-            $query->when($validated['role'] === 'provider', fn ($q) => $q->where('user_type', UserType::Provider))
-                  ->when($validated['role'] === 'customer', fn ($q) => $q->where('user_type', UserType::Customer))
-                  ->when($validated['role'] === 'admin', fn ($q) => $q->where('user_type', UserType::Admin));
+            // Map role to user_type, treating admin as provider for dev purposes
+            $roleMap = [
+                'provider' => UserType::Provider,
+                'customer' => UserType::Customer,
+                'admin' => UserType::Provider, // Admin doesn't exist in enum, use provider
+            ];
+            
+            $userType = $roleMap[$validated['role']] ?? null;
+            if ($userType) {
+                $query->where('user_type', $userType);
+            }
         }
 
         $user = $query->first();
