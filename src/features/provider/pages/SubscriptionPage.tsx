@@ -107,7 +107,7 @@ export const SubscriptionPage: React.FC = () => {
                 Funkcje w Twoim planie
               </SectionTitle>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {sub.features.map((f, i) => (
+                {sub.features.map((f: any, i: number) => (
                   <div key={i} className="flex items-center gap-3 p-3 bg-gradient-to-r from-cyan-50/50 to-teal-50/50 dark:from-cyan-900/10 dark:to-teal-900/10 rounded-xl border border-cyan-100 dark:border-cyan-800">
                     <Check className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                     <Text size="sm" className="text-slate-700 dark:text-slate-300">{f}</Text>

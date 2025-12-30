@@ -74,7 +74,7 @@ export const NotificationsPage: React.FC = () => {
   const items = data?.data ?? [];
   const unreadCount = unreadData?.unread_count ?? 0;
 
-  const filteredItems = items.filter(n => {
+  const filteredItems = items.filter((n: any) => {
     if (filter === 'unread' && n.read) return false;
     if (filter !== 'all' && filter !== 'unread') {
       if (!n.event_key.startsWith(`${filter}.`)) return false;
@@ -114,7 +114,7 @@ export const NotificationsPage: React.FC = () => {
     if (selectedIds.length === filteredItems.length) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(filteredItems.map(n => n.id));
+      setSelectedIds(filteredItems.map((n: any) => n.id));
     }
   };
 
@@ -138,9 +138,9 @@ export const NotificationsPage: React.FC = () => {
   const filterOptions = [
     { value: 'all', label: 'Wszystkie', count: items.length },
     { value: 'unread', label: 'Nieprzeczytane', count: unreadCount },
-    { value: 'booking', label: 'Rezerwacje', count: items.filter(n => n.event_key.startsWith('booking.')).length },
-    { value: 'message', label: 'Wiadomości', count: items.filter(n => n.event_key.startsWith('message.')).length },
-    { value: 'review', label: 'Opinie', count: items.filter(n => n.event_key.startsWith('review.')).length },
+    { value: 'booking', label: 'Rezerwacje', count: items.filter((n: any) => n.event_key.startsWith('booking.')).length },
+    { value: 'message', label: 'Wiadomości', count: items.filter((n: any) => n.event_key.startsWith('message.')).length },
+    { value: 'review', label: 'Opinie', count: items.filter((n: any) => n.event_key.startsWith('review.')).length },
   ];
 
   return (
@@ -277,7 +277,7 @@ export const NotificationsPage: React.FC = () => {
             </p>
           </div>
         )}
-        {!isLoading && filteredItems.map(n => {
+        {!isLoading && filteredItems.map((n: any) => {
           const Icon = getIcon(n.event_key);
           const isSelected = selectedIds.includes(n.id);
           const title = getNotificationTitle(n);

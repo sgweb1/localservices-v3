@@ -16,7 +16,7 @@ export const DashboardHero: React.FC = () => {
   const { user } = useAuth();
   const { data: widgets, isLoading } = useDashboardWidgets();
   
-  const stats = widgets?.stats ?? {
+  const stats = (widgets as any)?.stats ?? {
     upcoming_bookings: 0,
     active_services: 0,
     trust_score: 0,

@@ -94,7 +94,7 @@ export function AvatarUpload({ user, onSuccess }: AvatarUploadProps) {
       {/* Current avatar/logo */}
       <div className="flex items-center space-x-4">
         <img
-          src={user.avatar_url}
+          src={user.avatar_url || ''}
           alt={user.name}
           className="h-24 w-24 rounded-full object-cover"
         />

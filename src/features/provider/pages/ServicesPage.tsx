@@ -16,7 +16,7 @@ export const ServicesPage: React.FC = () => {
   const items = data?.data ?? [];
   const activeCount = data?.counts?.active ?? 0;
   const inactiveCount = data?.counts?.inactive ?? 0;
-  const totalViews = items.reduce((sum, s) => sum + (s.views ?? 0), 0);
+  const totalViews = items.reduce((sum: number, s: any) => sum + (s.views ?? 0), 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
@@ -59,7 +59,7 @@ export const ServicesPage: React.FC = () => {
             </div>
           )}
 
-          {!isLoading && items.map((service) => (
+          {!isLoading && items.map((service: any) => (
             <ServiceCard
               key={service.id}
               id={service.id}

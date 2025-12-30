@@ -187,19 +187,17 @@ export const ReviewsPage: React.FC = () => {
           {/* Filtry szybkie */}
           <div className="flex flex-wrap gap-2">
             <Button
-              variant={filterRating === null && !showUnanswered ? 'default' : 'outline'}
+              variant={filterRating === null && !showUnanswered ? 'primary' : 'info'}
               size="sm"
               onClick={() => { setFilterRating(null); setShowUnanswered(false); setPage(1); }}
-              className={filterRating === null && !showUnanswered ? 'bg-cyan-500 hover:bg-cyan-600' : ''}
             >
               <Filter className="w-4 h-4 mr-2" />
               Wszystkie ({totalReviews})
             </Button>
             <Button
-              variant={showUnanswered ? 'default' : 'outline'}
+              variant={showUnanswered ? 'warning' : 'info'}
               size="sm"
               onClick={() => { setShowUnanswered(!showUnanswered); setFilterRating(null); setPage(1); }}
-              className={showUnanswered ? 'bg-orange-500 hover:bg-orange-600' : ''}
             >
               <MessageCircle className="w-4 h-4 mr-2" />
               Bez odpowiedzi
@@ -210,10 +208,9 @@ export const ReviewsPage: React.FC = () => {
               return (
                 <Button
                   key={stars}
-                  variant={filterRating === stars ? 'default' : 'outline'}
+                  variant={filterRating === stars ? 'primary' : 'info'}
                   size="sm"
                   onClick={() => handleFilterChange(stars)}
-                  className={filterRating === stars ? 'bg-amber-500 hover:bg-amber-600' : ''}
                 >
                   <div className="flex items-center gap-1">
                     {Array.from({ length: stars }, (_, i) => (

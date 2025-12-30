@@ -29,9 +29,9 @@ export const DashboardPage: React.FC = () => {
   const performance = widgets?.performance ?? widgets?.performance_snapshot;
   const messageCenter = widgets?.messages ?? widgets?.message_center;
 
-  const trustScore = insights?.trust_score ?? performance?.trust_score ?? 0;
+  const trustScore = (insights as any)?.trust_score ?? (performance as any)?.trust_score ?? 0;
   const unreadMessages = messageCenter?.unread_notifications ?? messageCenter?.unread_count ?? 0;
-  const responseMinutes = performance?.response_minutes ?? null;
+  const responseMinutes = (performance as any)?.response_minutes ?? null;
 
   const heroStats = [
     { label: 'Oczekujące', value: bookingsStats.pending ?? 0, icon: Clock, accent: 'from-amber-400 to-orange-500' },
@@ -180,7 +180,7 @@ export const DashboardPage: React.FC = () => {
             <Zap className="w-5 h-5 text-cyan-600" />
             <h2 className="text-xl font-bold">Wydajność</h2>
           </div>
-          <PerformanceMetrics data={performance} isLoading={widgetsLoading} />
+          <PerformanceMetrics data={performance as any} isLoading={widgetsLoading} />
         </div>
 
         {/* Rezerwacje + Wiadomości */}

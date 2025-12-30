@@ -19,12 +19,12 @@ export const useDashboardMetrics = () => {
  * Hook do pobierania ostatnich rezerwacji
  */
 export const useRecentBookings = (limit = 5) => {
-  return useQuery<any[]>({
+  return useQuery<{ data: any[] }>({
     queryKey: ['dashboard', 'bookings', limit],
     queryFn: async () => {
       const response = await apiGet(`/provider/dashboard/bookings?limit=${limit}&sort=-created_at`);
       const data = await response.json();
-      return data?.data || [];
+      return { data: data?.data || [] };
     },
     // Używaj global defaults (60s staleTime, no refetchOnWindowFocus, refetchOnMount: false)
     // aby deduplikować requesty z innymi komponentami
@@ -35,12 +35,12 @@ export const useRecentBookings = (limit = 5) => {
  * Hook do pobierania ostatnich wiadomości
  */
 export const useRecentMessages = (limit = 5) => {
-  return useQuery<any[]>({
+  return useQuery<{ data: any[] }>({
     queryKey: ['dashboard', 'messages', limit],
     queryFn: async () => {
       const response = await apiGet(`/provider/dashboard/conversations?limit=${limit}&sort=-updated_at`);
       const data = await response.json();
-      return data?.data || [];
+      return { data: data?.data || [] };
     },
     // Używaj global defaults
   });
@@ -50,12 +50,12 @@ export const useRecentMessages = (limit = 5) => {
  * Hook do pobierania recenzji
  */
 export const useRecentReviews = (limit = 5) => {
-  return useQuery<any[]>({
+  return useQuery<{ data: any[] }>({
     queryKey: ['dashboard', 'reviews', limit],
     queryFn: async () => {
       const response = await apiGet(`/provider/dashboard/reviews?limit=${limit}&sort=-created_at`);
       const data = await response.json();
-      return data?.data || [];
+      return { data: data?.data || [] };
     },
     // Używaj global defaults
   });

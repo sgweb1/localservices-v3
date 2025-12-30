@@ -34,6 +34,7 @@ const ServiceFilter: React.FC<{
   const [isOpen, setIsOpen] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [locationId, setLocationId] = useState<string | number>('');
   const [search, setSearch] = useState('');
   const [minPrice, setMinPrice] = useState<string>('');
   const [maxPrice, setMaxPrice] = useState<string>('');
