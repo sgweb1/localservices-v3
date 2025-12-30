@@ -1,9 +1,6 @@
 <?php
 
 use App\Http\Controllers\Api\V1\CalendarController;
-use App\Http\Controllers\Api\V1\Dev\CalendarDevController;
-use App\Http\Controllers\Api\V1\Dev\DevEventController;
-use App\Http\Controllers\Api\V1\Dev\DevAuthController;
 use App\Http\Controllers\Api\V1\Provider\AvailabilityExceptionController;
 use App\Http\Controllers\Api\V1\Provider\SettingsController;
 use App\Http\Controllers\Api\V1\ProviderBookingController;
@@ -78,16 +75,3 @@ Route::middleware(['auth:sanctum'])->prefix('provider')->group(function () {
         Route::put('/subdomain', [SettingsController::class, 'updateSubdomain'])->name('api.provider.settings.subdomain');
     });
 });
-
-// DEV ONLY: Symulacja eventów (tylko w local/dev)
-if (app()->environment(['local', 'development'])) {
-    // Dla DEV endpoints nie używamy auth:sanctum - sprawdzamy session/token w controllerie
-    Route::prefix('dev')->group(function () {
-        Route::post('/quick-login', [DevAuthController::class, 'quickLogin'])->name('api.dev.quick-login');
-        Route::post('/simulate-events', [DevEventController::class, 'simulateEvents'])->name('api.dev.simulate-events');
-        
-        // Calendar DEV Tools
-        Route::post('/calendar/generate-bookings', [CalendarDevController::class, 'generateBookings'])->name('api.dev.calendar.generate-bookings');
-        Route::delete('/calendar/clear-test-bookings', [CalendarDevController::class, 'clearTestBookings'])->name('api.dev.calendar.clear-test-bookings');
-    });
-}

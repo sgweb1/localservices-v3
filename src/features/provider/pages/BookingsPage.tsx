@@ -49,7 +49,13 @@ export const BookingsPage: React.FC = () => {
   const { confirm, ConfirmDialog } = useConfirm();
   
   const items = data?.data ?? [];
-  const stats = data?.counts ?? { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0 };
+  const stats = data?.counts ?? {
+    total: items.length,
+    pending: items.filter((b) => b.status === 'pending').length,
+    confirmed: items.filter((b) => b.status === 'confirmed').length,
+    completed: items.filter((b) => b.status === 'completed').length,
+    cancelled: items.filter((b) => b.status === 'cancelled').length,
+  };
   const overdueCount = data?.overdueConfirmedCount ?? 0;
   const canManage = data?.canManage ?? false;
   const showUpsell = data?.showUpsell ?? false;

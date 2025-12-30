@@ -17,6 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware('web')
                 ->prefix('api/v1')
                 ->group(base_path('routes/api/v1/auth.php'));
+
+            // DEV routes - NO auth:sanctum (public access in dev/local only)
+            Route::middleware('api')
+                ->prefix('api/v1')
+                ->group(base_path('routes/api/v1/dev.php'));
             
             Route::middleware(['api', 'auth:sanctum'])
                 ->prefix('api/v1')
