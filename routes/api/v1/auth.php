@@ -18,7 +18,7 @@ Route::middleware('auth:web')->group(function () {
 });
 
 // Wymagają quick token (dev only)
-Route::middleware('quick_token_auth')->group(function () {
+Route::middleware(\App\Http\Middleware\QuickTokenAuth::class)->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
 });
 
