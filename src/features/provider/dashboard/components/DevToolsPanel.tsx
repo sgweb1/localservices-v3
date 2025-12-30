@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Settings } from 'lucide-react';
+import { apiClient } from '@/api/client';
 
 /**
  * DEV Tools Panel - przycisk do testowania eventów
@@ -13,12 +14,8 @@ export const DevToolsPanel: React.FC = () => {
 
   const handleSimulateEvents = async () => {
     try {
-      const response = await fetch('/api/v1/dev/simulate-events', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      const data = await response.json();
-      console.log('[DevToolsPanel] Events created:', data);
+      const response = await apiClient.post('/provider/dev/simulate-events');
+      console.log('[DevToolsPanel] Events created:', response.data);
       // Odśwież stronę
       window.location.reload();
     } catch (error) {
