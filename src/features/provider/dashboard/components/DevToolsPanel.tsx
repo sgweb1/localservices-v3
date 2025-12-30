@@ -7,13 +7,9 @@ import { Settings } from 'lucide-react';
  */
 export const DevToolsPanel: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const isDEV = import.meta.env.DEV;
 
-  console.log('[DevToolsPanel] mounted, DEV:', import.meta.env.DEV);
-
-  // Nie pokazuj w produkcji
-  if (!import.meta.env.DEV) {
-    return null;
-  }
+  console.log('[DevToolsPanel] mounted, DEV:', isDEV);
 
   const handleSimulateEvents = async () => {
     try {
@@ -29,6 +25,11 @@ export const DevToolsPanel: React.FC = () => {
       console.error('[DevToolsPanel] Error:', error);
     }
   };
+
+  // Nie renderuj w produkcji
+  if (!isDEV) {
+    return null;
+  }
 
   return (
     <>
