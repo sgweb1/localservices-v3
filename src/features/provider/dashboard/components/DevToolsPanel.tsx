@@ -14,12 +14,19 @@ export const DevToolsPanel: React.FC = () => {
 
   const handleSimulateEvents = async () => {
     try {
+      // Pobierz token z localStorage
+      const token = localStorage.getItem('dev_mock_token') || 
+                    localStorage.getItem('sanctum_token') ||
+                    localStorage.getItem('auth_token');
+      
+      console.log('[DevToolsPanel] Token available:', !!token);
+      
       const response = await apiClient.post('/dev/simulate-events');
       console.log('[DevToolsPanel] Events created:', response.data);
       // Odśwież stronę
       window.location.reload();
-    } catch (error) {
-      console.error('[DevToolsPanel] Error:', error);
+    } catch (error: any) {
+      console.error('[DevToolsPanel] Error:', error.response?.status, error.response?.data || error.message);
     }
   };
 

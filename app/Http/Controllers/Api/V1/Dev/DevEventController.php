@@ -40,9 +40,20 @@ class DevEventController extends Controller
             abort(403, 'Endpoint dostępny tylko w trybie dev');
         }
 
+        \Log::info('[DevEventController] simulateEvents called', [
+            'user_id' => $request->user()?->id,
+            'user_type' => $request->user()?->user_type,
+            'auth_header' => $request->header('Authorization') ? 'present' : 'missing',
+            'cookie_count' => count($request->cookies->all()),
+        ]);
+
         $user = $request->user();
 
         if (!$user || $user->user_type !== UserType::Provider) {
+            \Log::warning('[DevEventController] Unauthorized request', [
+                'has_user' => !!$user,
+                'user_type' => $user?->user_type,
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Musisz być zalogowany jako provider',
