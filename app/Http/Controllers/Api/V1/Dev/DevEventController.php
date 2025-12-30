@@ -40,14 +40,24 @@ class DevEventController extends Controller
             abort(403, 'Endpoint dostępny tylko w trybie dev');
         }
 
+        // Sprawdź autentykację ręcznie (bez middleware)
+        $user = null;
+        
+        // 1. Spróbuj pobrać z Sanctum bearer token
+        if ($request->bearerToken()) {
+            $user = \Laravel\Sanctum\PersonalAccessToken::findToken($request->bearerToken())?->tokenable;
+        }
+        
+        // 2. Spróbuj pobrać z session (jeśli not set z token)
+        if (!$user && $request->user()) {
+            $user = $request->user();
+        }
+        
         \Log::info('[DevEventController] simulateEvents called', [
-            'user_id' => $request->user()?->id,
-            'user_type' => $request->user()?->user_type,
-            'auth_header' => $request->header('Authorization') ? 'present' : 'missing',
-            'cookie_count' => count($request->cookies->all()),
+            'user_id' => $user?->id,
+            'user_type' => $user?->user_type,
+            'auth_method' => $request->bearerToken() ? 'bearer' : 'session',
         ]);
-
-        $user = $request->user();
 
         if (!$user || $user->user_type !== UserType::Provider) {
             \Log::warning('[DevEventController] Unauthorized request', [
@@ -57,7 +67,7 @@ class DevEventController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Musisz być zalogowany jako provider',
-            ], 403);
+            ], 401);
         }
 
         $created = [

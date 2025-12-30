@@ -80,7 +80,8 @@ Route::middleware(['auth:sanctum'])->prefix('provider')->group(function () {
 
 // DEV ONLY: Symulacja eventów (tylko w local/dev)
 if (app()->environment(['local', 'development'])) {
-    Route::middleware(['auth:sanctum'])->prefix('dev')->group(function () {
+    // Dla DEV endpoints nie używamy auth:sanctum - sprawdzamy session/token w controllerie
+    Route::prefix('dev')->group(function () {
         Route::post('/simulate-events', [DevEventController::class, 'simulateEvents'])->name('api.dev.simulate-events');
         
         // Calendar DEV Tools
