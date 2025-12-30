@@ -50,9 +50,12 @@ class ProviderBookingController extends Controller
         $annaBookingIds = Booking::where('provider_id', $user->id)->pluck('id')->toArray();
 
         // Pobierz bookings providera z paginacją (bez ukrytych)
+        // Pokazuj bookingi, które nie są ukryte; starsze rekordy mogą mieć null
         $query = Booking::with(['customer:id,name', 'service:id,title'])
             ->where('provider_id', $user->id)
-            ->where('hidden_by_provider', 0);
+            ->where(function ($q) {
+                $q->where('hidden_by_provider', 0)->orWhereNull('hidden_by_provider');
+            });
 
         // Filtrowanie po statusie jeśli podany
         if ($status) {
