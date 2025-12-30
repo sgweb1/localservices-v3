@@ -5,14 +5,13 @@ export interface User {
   name: string;
   email: string;
   role: 'customer' | 'provider' | 'admin';
-  password?: string; // DEV only - dla testowego logowania
 }
 
 export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   token: string | null;
-  login: (user: User) => void;
+  login: (user: User, authToken?: string) => void;
   logout: () => void;
 }
 
@@ -31,41 +30,56 @@ interface AuthProviderProps {
 }
 
 /**
- * Generuje mock Sanctum token dla dev środowiska
- * DEV ONLY - w produkcji token pochodzi z API /login endpoint
+ * Auth Provider
+ * 
+ * Zarządza stanem autentykacji użytkownika.
+ * Integracja z Sanctum API (ciasteczka) + optional quick-login token.
  */
-function generateMockToken(userId: number): string {
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(2, 15);
-  return `dev_mock_${userId}_${timestamp}_${random}`;
-}
-
-/**
- * Mock Users - DEV Only
-        // Test localStorage availability
-        const testKey = '__ls_test__';
-        localStorage.setItem(testKey, 'test');
-        localStorage.removeItem(testKey);
- * W produkcji integracja z Sanctum API (ciasteczka). Brak mocków.
-      } catch (e) {
-        console.error('[AuthContext] ⚠️ localStorage NIE jest dostępny! Prawdopodobnie problem z certyfikatem HTTPS.', e);
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('auth_token'));
+  const [token, setToken] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem('auth_token');
+    } catch {
+      return null;
+    }
+  });
 
   const login = (userData: User, authToken?: string) => {
     setUser(userData);
     if (authToken) {
       setToken(authToken);
-      localStorage.setItem('auth_token', authToken);
+      try {
+        localStorage.setItem('auth_token', authToken);
+      } catch (e) {
+        console.warn('Cannot save auth_token to localStorage:', e);
+      }
     }
   };
 
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem('auth_token');
+    try {
+      localStorage.removeItem('auth_token');
+    } catch (e) {
+      console.warn('Cannot remove auth_token from localStorage:', e);
+    }
   };
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        token,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
+
+export default AuthProvider;
