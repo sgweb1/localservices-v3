@@ -66,7 +66,14 @@ async function fetchBookings(page: number = 1, perPage: number = 15): Promise<Bo
     const response = await apiClient.get('/provider/bookings', {
       params: { page, per_page: perPage }
     });
-    console.log('[useBookings] API Response:', response.data);
+    console.log('[useBookings] API Response data count:', response.data.data?.length);
+    console.log('[useBookings] First 3 bookings:', response.data.data?.slice(0, 3).map((b: any) => ({ 
+      id: b.id, 
+      status: b.status, 
+      date: b.bookingDate,
+      customer: b.customerName 
+    })));
+    console.log('[useBookings] Full response:', response.data);
     return response.data;
   } catch (error: any) {
     console.error('[useBookings] API Error:', error.response?.status, error);
