@@ -18,6 +18,9 @@ export const DevToolsPanel: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'settings' | 'events'>('settings');
   const queryClient = useQueryClient();
 
+  const isDEV = import.meta.env.DEV;
+  console.log('[DevToolsPanel] DEV mode:', isDEV, 'NODE_ENV:', process.env.NODE_ENV);
+
   // Mutacja do symulacji eventów
   const simulateEventsMutation = useMutation({
     mutationFn: async () => {
@@ -38,7 +41,7 @@ export const DevToolsPanel: React.FC = () => {
   });
 
   if (!import.meta.env.DEV) {
-    console.log('[DevToolsPanel] DEV mode:', import.meta.env.DEV, 'NODE_ENV:', process.env.NODE_ENV);
+    console.log('[DevToolsPanel] DEV mode:', isDEV, 'NODE_ENV:', process.env.NODE_ENV);
     return null;
   }
 
