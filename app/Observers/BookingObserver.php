@@ -42,7 +42,7 @@ class BookingObserver
             );
 
             // Broadcast do prywatnego kanału providera (Realtime dla dashboardu)
-            \App\Events\NotificationToastEvent::dispatch(
+            dispatch(new \App\Events\NotificationToastEvent(
                 userId: (int) $booking->provider->id,
                 title: 'Nowa rezerwacja',
                 message: $booking->service->name . ' • ' . ($booking->customer->name ?? ''),
@@ -53,7 +53,7 @@ class BookingObserver
                     'booking_id' => $booking->id,
                     'provider_id' => $booking->provider_id,
                 ],
-            );
+            ));
         }
     }
 
@@ -89,7 +89,7 @@ class BookingObserver
                 }
 
                 // Realtime dla providera – odśwież listę rezerwacji
-                \App\Events\NotificationToastEvent::dispatch(
+                dispatch(new \App\Events\NotificationToastEvent(
                     userId: (int) $booking->provider_id,
                     title: 'Rezerwacja potwierdzona',
                     message: (string) ($booking->service->name ?? ''),
@@ -100,7 +100,7 @@ class BookingObserver
                         'booking_id' => $booking->id,
                         'status' => 'confirmed',
                     ],
-                );
+                ));
             }
 
             // Jeśli rezerwacja została anulowana lub odrzucona
@@ -122,7 +122,7 @@ class BookingObserver
 
                 // Realtime – odśwież listę rezerwacji providera
                 if ($booking->provider_id) {
-                    \App\Events\NotificationToastEvent::dispatch(
+                    dispatch(new \App\Events\NotificationToastEvent(
                         userId: (int) $booking->provider_id,
                         title: 'Rezerwacja anulowana',
                         message: (string) ($booking->service->name ?? ''),
@@ -133,7 +133,7 @@ class BookingObserver
                             'booking_id' => $booking->id,
                             'status' => (string) $newStatus,
                         ],
-                    );
+                    ));
                 }
             }
 
@@ -155,7 +155,7 @@ class BookingObserver
 
                 // Realtime – odśwież listę rezerwacji providera
                 if ($booking->provider_id) {
-                    \App\Events\NotificationToastEvent::dispatch(
+                    dispatch(new \App\Events\NotificationToastEvent(
                         userId: (int) $booking->provider_id,
                         title: 'Rezerwacja ukończona',
                         message: (string) ($booking->service->name ?? ''),
@@ -166,7 +166,7 @@ class BookingObserver
                             'booking_id' => $booking->id,
                             'status' => 'completed',
                         ],
-                    );
+                    ));
                 }
             }
         }
