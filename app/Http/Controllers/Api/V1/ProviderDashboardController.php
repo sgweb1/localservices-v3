@@ -24,6 +24,8 @@ class ProviderDashboardController extends Controller
      * Pobiera wszystkie widgety dashboardu providera
      * 
      * GET /api/v1/provider/dashboard/widgets
+     * Query params:
+     * - fields=pipeline,performance,insights,messages (opcjonalnie, default: wszystkie)
      * 
      * @param Request $request
      * @return JsonResponse
@@ -39,7 +41,15 @@ class ProviderDashboardController extends Controller
             ], 403);
         }
 
-        $widgets = $this->dashboardService->getDashboardWidgets($user);
+        // Optymalizacja: pobierz tylko żądane widgety (fields query param)
+        $requestedFields = $request->query('fields');
+        if ($requestedFields) {
+            $fields = array_filter(explode(',', $requestedFields));
+            $widgets = $this->dashboardService->getDashboardWidgets($user, $fields);
+        } else {
+            // Default: wszystkie widgety
+            $widgets = $this->dashboardService->getDashboardWidgets($user);
+        }
 
         return response()->json([
             'data' => $widgets,

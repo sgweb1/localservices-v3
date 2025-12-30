@@ -15,6 +15,9 @@ import { DashboardWidgets } from '../types';
 /**
  * Hook do pobierania widgetów dashboardu providera
  * 
+ * Optymalizacja: pobiera tylko widgety potrzebne dla dashboard page
+ * (pipeline, performance, insights, messages) aby zmniejszyć load time
+ * 
  * Cache: 60s (staleTime), zgodnie z LocalServices
  * Refetch: przy focus window, co 5 minut w tle
  */
@@ -22,7 +25,12 @@ export function useDashboardWidgets(): UseQueryResult<DashboardWidgets, Error> {
   return useQuery({
     queryKey: ['provider', 'dashboard', 'widgets'],
     queryFn: async () => {
-      const response = await ProviderDashboardClient.getWidgets();
+      // Optymalizacja: pobiera tylko widgety używane na stronie głównej dashboardu
+      // Pominięte: plan, addons, tasks, calendar, notifications, services, live_activity
+      // Efekt: zmniejsza load time poprzez pominięcie N+1 queries dla nieużywanych widgetów
+      const response = await ProviderDashboardClient.getWidgets({
+        fields: ['pipeline', 'performance', 'insights', 'messages']
+      });
       return response.data;
     },
     // Cache 60s jak w LocalServices

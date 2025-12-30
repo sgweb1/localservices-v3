@@ -20,10 +20,14 @@ class ProviderDashboardApiService
     /**
      * Pobiera wszystkie dane dla dashboardu providera
      * 
+     * Opcjonalnie można podać specific widgety do pobrania dla optymalizacji.
+     * Domyślnie pobiera wszystkie.
+     * 
      * @param User $provider Użytkownik typu provider
-     * @return array<string, mixed> Dane wszystkich widgetów
+     * @param array<int, string>|null $fields Opcjonalnie: array konkretnych widgetów do pobrania
+     * @return array<string, mixed> Dane żądanych widgetów
      */
-    public function getDashboardWidgets(User $provider): array
+    public function getDashboardWidgets(User $provider, ?array $fields = null): array
     {
         // Załaduj relacje potrzebne dla wszystkich widgetów
         $provider->load([
@@ -35,19 +39,24 @@ class ProviderDashboardApiService
             $query->with('subscriptionPlan');
         }]);
 
-        return [
-            'plan' => $this->preparePlanCard($provider),
-            'addons' => $this->prepareAddonsCarousel($provider),
-            'pipeline' => $this->preparePipelineBoard($provider),
-            'insights' => $this->prepareInsightsCard($provider),
-            'tasks' => $this->prepareTasksCard($provider),
-            'performance' => $this->preparePerformanceSnapshot($provider),
-            'calendar' => $this->prepareCalendarGlance($provider),
-            'messages' => $this->prepareMessageCenter($provider),
-            'notifications' => $this->prepareNotificationsCard($provider),
-            'services' => $this->prepareServicesCard($provider),
-            'live_activity' => $this->prepareLiveActivityFeed($provider),
-        ];
+        // Jeśli nie podano fields, zwrócj wszystkie widgety
+        if ($fields === null) {
+            $fields = [
+                'plan', 'addons', 'pipeline', 'insights', 'tasks', 'performance',
+                'calendar', 'messages', 'notifications', 'services', 'live_activity'
+            ];
+        }
+
+        $widgets = [];
+        foreach ($fields as $field) {
+            // Metoda prepare{Field} musi istnieć
+            $method = 'prepare' . str_replace('_', '', ucwords($field, '_'));
+            if (method_exists($this, $method)) {
+                $widgets[$field] = $this->$method($provider);
+            }
+        }
+
+        return $widgets;
     }
 
     /**

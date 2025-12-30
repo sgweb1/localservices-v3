@@ -12,12 +12,20 @@ const API_BASE_URL = import.meta.env.DEV
   : (import.meta.env.VITE_API_BASE_URL || '');
 
 /**
- * Pobiera wszystkie widgety dashboardu providera
+ * Pobiera widgety dashboardu providera
+ * 
+ * Opcjonalne parametry optymalizacyjne:
+ * - fields: array konkretnych widgetów do pobrania ('pipeline', 'performance', 'insights', 'messages')
  * 
  * Wymaga: auth:sanctum (cookies)
  * Cache: 60s (zarządzane przez React Query w hooku)
+ * 
+ * Optymalizacja: jeśli podasz fields, server zwróci tylko żądane widgety
+ * (pomija N+1 queries dla nieużywanych widgetów)
  */
-export async function fetchDashboardWidgets(): Promise<DashboardWidgetsResponse> {
+export async function fetchDashboardWidgets(options?: {
+  fields?: string[];
+}): Promise<DashboardWidgetsResponse> {
   const authToken = getAuthToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -28,7 +36,13 @@ export async function fetchDashboardWidgets(): Promise<DashboardWidgetsResponse>
     headers['Authorization'] = `Bearer ${authToken}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/provider/dashboard/widgets`, {
+  // Buduj URL z optional fields parameter
+  const url = new URL(`${API_BASE_URL}/api/v1/provider/dashboard/widgets`, window.location.origin);
+  if (options?.fields && options.fields.length > 0) {
+    url.searchParams.set('fields', options.fields.join(','));
+  }
+
+  const response = await fetch(url.toString(), {
     method: 'GET',
     headers,
     credentials: 'include', // Sanctum session cookies
