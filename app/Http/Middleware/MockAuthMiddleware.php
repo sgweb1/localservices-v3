@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Enums\UserType;
 
 /**
  * Middleware dla mock autoryzacji w dev środowisku
@@ -36,16 +37,19 @@ class MockAuthMiddleware
                 // Spróbuj znaleźć użytkownika - jeśli nie istnieje, stwórz mock user na lotu
                 $user = User::find($userId);
                 if (!$user) {
-                    // Dla dev - zaloguj generycznie
-                    // W rzeczywistym scenariuszu, użytkownik powinien istnieć
-                    $request->setUserResolver(function () use ($userId) {
-                        $user = new User();
-                        $user->id = $userId;
-                        $user->email = "mock_user_{$userId}@dev.local";
-                        $user->name = "Mock User {$userId}";
-                        return $user;
-                    });
+                    // Dla dev - ustaw użytkownika w pamięci z rolą PROVIDER
+                    $user = new User();
+                    $user->id = $userId;
+                    $user->email = "mock_user_{$userId}@dev.local";
+                    $user->name = "Mock User {$userId}";
+                    $user->user_type = UserType::Provider;
+                    auth()->setUser($user);
+                    $request->setUserResolver(fn () => $user);
                 } else {
+                    // Jeśli user istnieje, ale nie ma user_type, zakładamy PROVIDER w dev
+                    if (empty($user->user_type)) {
+                        $user->user_type = UserType::Provider;
+                    }
                     auth()->setUser($user);
                 }
             }
