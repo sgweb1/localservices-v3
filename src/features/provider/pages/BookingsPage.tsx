@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/api/client';
 import { toast } from 'sonner';
 import { useConfirm } from '@/hooks/useConfirm';
+import { DevToolsPanel } from '../dashboard/components/DevToolsPanel';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -720,6 +721,9 @@ export const BookingsPage: React.FC = () => {
 
       {/* Modal potwierdzenia usunięcia */}
       {ConfirmDialog}
+
+      {/* DEV Tools */}
+      <DevToolsPanel />
     </div>
   );
 };
