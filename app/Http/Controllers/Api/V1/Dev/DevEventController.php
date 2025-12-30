@@ -65,14 +65,16 @@ class DevEventController extends Controller
         ];
 
         // 1. Symuluj 3 nowe confirmed bookings
-        $services = Service::where('provider_id', $user->id)->pluck('id')->toArray();
-        $customers = User::where('user_type', UserType::Customer)->limit(10)->pluck('id')->toArray();
+        try {
+            $services = Service::where('provider_id', $user->id)->limit(10)->pluck('id')->toArray();
+            $customers = User::where('user_type', UserType::Customer)->limit(10)->pluck('id')->toArray();
 
-        if (!empty($services) && !empty($customers)) {
-            for ($i = 0; $i < 3; $i++) {
-                $bookingDate = now()->addDays(rand(1, 14))->toDateString();
-                $booking = Booking::create([
-                    'uuid' => Str::uuid(),
+            if (!empty($services) && !empty($customers)) {
+                for ($i = 0; $i < 3; $i++) {
+                    $bookingDate = now()->addDays(rand(1, 14))->toDateString();
+                    try {
+                        $booking = Booking::create([
+                            'uuid' => Str::uuid(),
                     'booking_number' => 'BK-' . now()->format('Ymd') . '-' . strtoupper(Str::random(6)),
                     'customer_id' => Arr::random($customers),
                     'provider_id' => $user->id,
@@ -101,16 +103,19 @@ class DevEventController extends Controller
                         'Wsparcie w chemii - weekend by się przydał.',
                         'Lekcja próbna z programowania.',
                     ]),
-                ]);
+                        ]);
 
-                $created['bookings'][] = [
-                    'id' => $booking->id,
-                    'booking_number' => $booking->booking_number,
-                    'booking_date' => $booking->booking_date,
-                    'created_at' => $booking->created_at->diffForHumans(),
-                ];
+                        $created['bookings'][] = [
+                            'id' => $booking->id,
+                            'booking_number' => $booking->booking_number,
+                            'booking_date' => $booking->booking_date,
+                            'created_at' => $booking->created_at->diffForHumans(),
+                        ];
+                    } catch (\Exception $e) {
+                        \Log::error('[DevEventController] Error creating booking', ['error' => $e->getMessage()]);
+                    }
+                }
             }
-        }
 
         // 2. Symuluj 2 nowe reviews dla już completed bookings
         $completedBookings = Booking::where('provider_id', $user->id)
@@ -144,6 +149,13 @@ class DevEventController extends Controller
                     'created_at' => $review->created_at->diffForHumans(),
                 ];
             }
+        }
+        } catch (\Exception $e) {
+            \Log::error('[DevEventController] Error creating bookings', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
         }
 
         return response()->json([
