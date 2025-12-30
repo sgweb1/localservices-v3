@@ -7,6 +7,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import '@/lib/echo';
 
+type RecentReview = {
+  id: string | number;
+  customer_name: string;
+  date: string;
+  rating: number;
+  comment: string;
+};
+
 /**
  * Ostatnie recenzje
  */
@@ -39,7 +47,7 @@ export const RecentReviews: React.FC = () => {
   }
 
   // Dane ze zhaká
-  const reviews = data?.data || [];
+  const reviews = (data?.data as RecentReview[]) || [];
 
   return (
     <div className="glass-card rounded-2xl overflow-hidden border border-slate-200/70 bg-white/80 shadow-sm">
@@ -56,12 +64,12 @@ export const RecentReviews: React.FC = () => {
       </div>
 
       <div className="divide-y divide-slate-100">
-        {reviews.length === 0 ? (
+        {!reviews || reviews.length === 0 ? (
           <div className="p-6 text-center text-slate-500">
             <p>Brak recenzji</p>
           </div>
         ) : (
-          reviews.map((review) => (
+          reviews.map((review: any) => (
             <div
               key={review.id}
               className="p-5 hover:bg-slate-50/70 transition-colors"

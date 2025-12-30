@@ -19,13 +19,15 @@ export const useDashboardMetrics = () => {
  * Hook do pobierania ostatnich rezerwacji
  */
 export const useRecentBookings = (limit = 5) => {
-  return useQuery({
+  return useQuery<any[]>({
     queryKey: ['dashboard', 'bookings', limit],
     queryFn: async () => {
       const response = await apiGet(`/provider/dashboard/bookings?limit=${limit}&sort=-created_at`);
-      return response.json();
+      const data = await response.json();
+      return data?.data || [];
     },
-    staleTime: 2 * 60 * 1000,
+    // Używaj global defaults (60s staleTime, no refetchOnWindowFocus, refetchOnMount: false)
+    // aby deduplikować requesty z innymi komponentami
   });
 };
 
@@ -33,27 +35,14 @@ export const useRecentBookings = (limit = 5) => {
  * Hook do pobierania ostatnich wiadomości
  */
 export const useRecentMessages = (limit = 5) => {
-  return useQuery({
+  return useQuery<any[]>({
     queryKey: ['dashboard', 'messages', limit],
     queryFn: async () => {
       const response = await apiGet(`/provider/dashboard/conversations?limit=${limit}&sort=-updated_at`);
-      return response.json();
+      const data = await response.json();
+      return data?.data || [];
     },
-    staleTime: 1 * 60 * 1000,
-  });
-};
-
-/**
- * Hook do pobierania wydajności providera (analytics)
- */
-export const useProviderPerformance = () => {
-  return useQuery({
-    queryKey: ['dashboard', 'performance'],
-    queryFn: async () => {
-      const response = await apiGet('/provider/dashboard/performance');
-      return response.json();
-    },
-    staleTime: 10 * 60 * 1000,
+    // Używaj global defaults
   });
 };
 
@@ -61,12 +50,27 @@ export const useProviderPerformance = () => {
  * Hook do pobierania recenzji
  */
 export const useRecentReviews = (limit = 5) => {
-  return useQuery({
+  return useQuery<any[]>({
     queryKey: ['dashboard', 'reviews', limit],
     queryFn: async () => {
       const response = await apiGet(`/provider/dashboard/reviews?limit=${limit}&sort=-created_at`);
-      return response.json();
+      const data = await response.json();
+      return data?.data || [];
     },
-    staleTime: 15 * 60 * 1000,
+    // Używaj global defaults
+  });
+};
+
+/**
+ * Hook do pobierania performance provider'a
+ */
+export const useProviderPerformance = () => {
+  return useQuery<any>({
+    queryKey: ['dashboard', 'performance'],
+    queryFn: async () => {
+      const response = await apiGet(`/provider/dashboard/performance`);
+      const data = await response.json();
+      return data;
+    },
   });
 };

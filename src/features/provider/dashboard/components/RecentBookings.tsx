@@ -7,6 +7,16 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import '@/lib/echo';
 
+type RecentBooking = {
+  id: string | number;
+  service: string;
+  customer_name: string;
+  status: string;
+  date: string;
+  time: string;
+  location: string;
+};
+
 /**
  * Ostatnie rezerwacje
  */
@@ -39,7 +49,7 @@ export const RecentBookings: React.FC = () => {
   }
 
   // Dane ze zhaká
-  const bookings = data?.data || [];
+  const bookings = (data?.data as RecentBooking[]) || [];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -78,12 +88,12 @@ export const RecentBookings: React.FC = () => {
       </div>
 
       <div className="divide-y divide-slate-100">
-        {bookings.length === 0 ? (
+        {!bookings || bookings.length === 0 ? (
           <div className="p-6 text-center text-slate-500">
             <p>Brak rezerwacji</p>
           </div>
         ) : (
-          bookings.map((booking) => (
+          bookings.map((booking: any) => (
             <div
               key={booking.id}
               className="p-5 hover:bg-slate-50/70 transition-colors"

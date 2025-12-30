@@ -7,6 +7,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import '@/lib/echo';
 
+type RecentConversation = {
+  id: string | number;
+  customer_name: string;
+  unread: number;
+  time: string;
+  last_message: string;
+};
+
 /**
  * Ostatnie wiadomości z rozmów
  */
@@ -48,7 +56,7 @@ export const RecentMessages: React.FC = () => {
   }
 
   // Dane ze zhaká
-  const conversations = data?.data || [];
+  const conversations = (data?.data as RecentConversation[]) || [];
 
   return (
     <div className="glass-card rounded-2xl overflow-hidden border border-slate-200/70 bg-white/80 shadow-sm">
@@ -63,12 +71,12 @@ export const RecentMessages: React.FC = () => {
       </div>
 
       <div className="divide-y divide-slate-100">
-        {conversations.length === 0 ? (
+        {!conversations || conversations.length === 0 ? (
           <div className="p-6 text-center text-slate-500">
             <p>Brak wiadomości</p>
           </div>
         ) : (
-          conversations.map((conv) => (
+          conversations.map((conv: any) => (
             <Link
               key={conv.id}
               to={`/provider/messages?conv=${conv.id}`}
