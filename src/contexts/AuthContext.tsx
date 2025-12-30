@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import axios from 'axios';
 
 export interface User {
   id: number;
@@ -13,6 +14,7 @@ export interface AuthContextType {
   token: string | null;
   login: (user: User, authToken?: string) => void;
   logout: () => void;
+  isInitialized: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,6 +46,45 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return null;
     }
   });
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Na inicjalizacji, spróbuj wczytać user data jeśli token istnieje
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        const storedToken = localStorage.getItem('auth_token');
+        if (storedToken) {
+          setToken(storedToken);
+          
+          // Fetch user data from API
+          const response = await axios.get('/api/v1/user', {
+            headers: {
+              'Authorization': `Bearer ${storedToken}`
+            }
+          });
+          
+          if (response.data?.user) {
+            const userData = response.data.user;
+            setUser({
+              id: userData.id,
+              name: userData.name,
+              email: userData.email,
+              role: userData.user_type || 'customer'
+            });
+          }
+        }
+      } catch (err) {
+        // Token invalid or user data cannot be fetched
+        localStorage.removeItem('auth_token');
+        setToken(null);
+        setUser(null);
+      } finally {
+        setIsInitialized(true);
+      }
+    };
+
+    initializeAuth();
+  }, []);
 
   const login = (userData: User, authToken?: string) => {
     setUser(userData);
@@ -75,6 +116,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         token,
         login,
         logout,
+        isInitialized,
       }}
     >
       {children}
