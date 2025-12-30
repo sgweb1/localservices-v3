@@ -23,10 +23,8 @@ class ApiClient {
     // Request interceptor - dodaj token
     this.client.interceptors.request.use(
       (config) => {
-        // Spróbuj pobrać token z localStorage (dev lub production)
-        const token = localStorage.getItem('dev_mock_token') || 
-                      localStorage.getItem('sanctum_token') ||
-                      localStorage.getItem('auth_token');
+        // Token opcjonalny (np. auth_token) – preferuj ciasteczko Sanctum
+        const token = localStorage.getItem('auth_token');
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -45,8 +43,6 @@ class ApiClient {
           // Uniknij pętli odświeżania na stronie logowania/demo
           if (!isAuthDemo && !isDevLogin) {
             localStorage.removeItem('auth_token');
-            localStorage.removeItem('dev_mock_token');
-            localStorage.removeItem('sanctum_token');
             window.location.href = '/dev/login';
           }
         }

@@ -16,12 +16,8 @@ export const getCsrfToken = (): string => {
  * Pobiera token Sanctum z localStorage (DEV lub session)
  */
 export const getAuthToken = (): string => {
-  // DEV: mock token w localStorage
-  if (import.meta.env.DEV) {
-    return localStorage.getItem('dev_mock_token') || '';
-  }
-  // PROD: Sanctum token w localStorage lub cookie
-  return localStorage.getItem('sanctum_token') || '';
+  // Preferuj token aplikacji jeśli istnieje; Sanctum używa ciasteczek
+  return localStorage.getItem('auth_token') || '';
 };
 
 /**

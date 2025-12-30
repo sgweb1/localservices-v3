@@ -14,12 +14,6 @@ export const DevToolsPanel: React.FC = () => {
 
   const handleSimulateEvents = async () => {
     try {
-      const token = localStorage.getItem('dev_mock_token') || 
-                    localStorage.getItem('sanctum_token') ||
-                    localStorage.getItem('auth_token');
-      
-      console.log('[DevToolsPanel] Creating events, token:', !!token);
-      
       const response = await apiClient.post('/dev/simulate-events');
       console.log('[DevToolsPanel] Success, created:', response.data.summary);
       
