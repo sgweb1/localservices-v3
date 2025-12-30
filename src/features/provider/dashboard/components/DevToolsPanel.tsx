@@ -38,6 +38,7 @@ export const DevToolsPanel: React.FC = () => {
   });
 
   if (!import.meta.env.DEV) {
+    console.log('[DevToolsPanel] DEV mode:', import.meta.env.DEV, 'NODE_ENV:', process.env.NODE_ENV);
     return null;
   }
 
