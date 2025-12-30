@@ -20,6 +20,11 @@ class MockAuthMiddleware
             return $next($request);
         }
 
+        // Jeśli nie chcemy mock auth (praca na realnych danych) – pomiń
+        if (!env('ALLOW_MOCK_AUTH', false)) {
+            return $next($request);
+        }
+
         $authHeader = $request->header('Authorization');
         if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
             return $next($request);

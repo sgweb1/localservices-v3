@@ -1,7 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { isMockMode } from '@/utils/mockMode';
 import { apiClient } from '@/api/client';
-import { MOCK_SUBPAGES } from '../mocks/subpages';
 
 export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'rejected';
 
@@ -56,11 +54,6 @@ export interface BookingListResponse {
 }
 
 async function fetchBookings(page: number = 1, perPage: number = 15): Promise<BookingListResponse> {
-  if (isMockMode()) {
-    console.log('[useBookings] Using MOCK MODE');
-    return MOCK_SUBPAGES.bookings;
-  }
-
   try {
     const response = await apiClient.get('/provider/bookings', {
       params: { page, per_page: perPage }
@@ -68,11 +61,6 @@ async function fetchBookings(page: number = 1, perPage: number = 15): Promise<Bo
     return response.data;
   } catch (error: any) {
     console.error('[useBookings] API Error:', error.response?.status, error);
-    // W DEV przy 401/404/5xx fallback do mock
-    if (import.meta.env.DEV && (error.response?.status === 401 || error.response?.status === 404 || error.response?.status >= 500)) {
-      console.log('[useBookings] Fallback to MOCK due to error');
-      return MOCK_SUBPAGES.bookings;
-    }
     throw error;
   }
 }
