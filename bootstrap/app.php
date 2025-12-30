@@ -30,6 +30,18 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->prefix('api/v1')
                 ->group(base_path('routes/api/v1/provider-services.php'));
 
+            Route::middleware(['api', 'auth:sanctum'])
+                ->prefix('api/v1')
+                ->group(base_path('routes/api/v1/boosts.php'));
+
+            // Public subscription endpoints (no auth required)
+            Route::prefix('api/v1')
+                ->group(base_path('routes/api/v1/subscriptions-public.php'));
+
+            Route::middleware(['api', 'auth:sanctum'])
+                ->prefix('api/v1')
+                ->group(base_path('routes/api/v1/subscriptions.php'));
+
             // Marketplace - public routes, NO AUTH - MUST BE LAST to override provider-services.php GET /providers/{providerId}/services
             Route::prefix('api/v1')
                 ->group(base_path('routes/api/v1/marketplace.php'));
@@ -46,11 +58,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // API bez przekierowania do login – zwracaj 401
                 $middleware->redirectTo(fn () => null);
         
-        // Mock auth dla dev środowiska (zanim auth:sanctum middleware)
-                $middleware->append(\App\Http\Middleware\MockAuthMiddleware::class);
-        
+        // Quick token auth for dev (real users without password)
+            $middleware->append(\App\Http\Middleware\QuickTokenAuth::class);
         // Update user presence on every API request
-                $middleware->append(\App\Http\Middleware\UpdateUserPresence::class);
+            $middleware->append(\App\Http\Middleware\UpdateUserPresence::class);
     })
             ->withExceptions(function (Exceptions $exceptions): void {
         // API powinno zawsze zwracać JSON (np. 401 zamiast redirect do 'login')
