@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Dev;
 
 use App\Enums\UserType;
 use App\Http\Controllers\Controller;
+use App\Models\Booking;
 use App\Models\BookingRequest;
 use App\Models\Review;
 use App\Models\Service;
@@ -49,49 +50,61 @@ class DevEventController extends Controller
         }
 
         $created = [
-            'booking_requests' => [],
+            'bookings' => [],
             'reviews' => [],
         ];
 
-        // 1. Symuluj 3 nowe booking requests
+        // 1. Symuluj 3 nowe confirmed bookings
         $services = Service::where('provider_id', $user->id)->pluck('id')->toArray();
-        $customers = User::where('user_type', UserType::Customer)->limit(5)->pluck('id')->toArray();
+        $customers = User::where('user_type', UserType::Customer)->limit(10)->pluck('id')->toArray();
 
         if (!empty($services) && !empty($customers)) {
             for ($i = 0; $i < 3; $i++) {
-                $request = BookingRequest::create([
-                    'provider_id' => $user->id,
+                $bookingDate = now()->addDays(rand(1, 14))->toDateString();
+                $booking = Booking::create([
+                    'uuid' => Str::uuid(),
+                    'booking_number' => 'BK-' . now()->format('Ymd') . '-' . strtoupper(Str::random(6)),
                     'customer_id' => Arr::random($customers),
+                    'provider_id' => $user->id,
                     'service_id' => Arr::random($services),
-                    'description' => Arr::random([
-                        'Potrzebuję pomocy z matematyką dla klasy 8. Termin: przyszły tydzień.',
-                        'Czy możesz pomóc mojemu synowi przygotować się do matury z angielskiego?',
-                        'Szukam korepetycji z fizyki. Pilne - egzamin za 2 tygodnie!',
-                        'Córka potrzebuje wsparcia w chemii. Czy masz dostępny termin w weekend?',
-                        'Chciałbym umówić się na lekcję próbną z programowania dla dziecka.',
+                    'booking_date' => $bookingDate,
+                    'start_time' => Arr::random(['08:00:00', '10:00:00', '14:00:00', '16:00:00', '18:00:00']),
+                    'end_time' => Arr::random(['09:00:00', '11:00:00', '15:00:00', '17:00:00', '19:00:00']),
+                    'duration_minutes' => 60,
+                    'service_address' => json_encode([
+                        'street' => Arr::random(['ul. Marszałkowska 15', 'ul. Grodzka 25', 'ul. Świdnicka 40']),
+                        'city' => Arr::random(['Warszawa', 'Kraków', 'Wrocław']),
+                        'postal_code' => '00-000',
                     ]),
-                    'service_address' => Arr::random([
-                        'Warszawa, ul. Marszałkowska 15',
-                        'Kraków, ul. Grodzka 25',
-                        'Wrocław, ul. Świdnicka 40',
-                        'Poznań, ul. Święty Marcin 30',
+                    'service_price' => Arr::random([100, 150, 200, 250]),
+                    'travel_fee' => rand(0, 50),
+                    'platform_fee' => rand(5, 20),
+                    'total_price' => rand(100, 300),
+                    'currency' => 'PLN',
+                    'payment_status' => 'pending',
+                    'status' => 'confirmed',
+                    'confirmed_at' => now(),
+                    'customer_notes' => Arr::random([
+                        'Potrzebuję pomocy z matematyką dla klasy 8.',
+                        'Przygotowanie do matury z angielskiego.',
+                        'Egzamin za 2 tygodnie - pilne!',
+                        'Wsparcie w chemii - weekend by się przydał.',
+                        'Lekcja próbna z programowania.',
                     ]),
-                    'status' => 'pending',
-                    'request_number' => 'RQ-' . now()->format('Ymd') . '-' . strtoupper(Str::random(6)),
-                    'created_at' => now()->subMinutes(rand(1, 30)),
+                    'is_test_data' => true,
                 ]);
 
-                $created['booking_requests'][] = [
-                    'id' => $request->id,
-                    'request_number' => $request->request_number,
-                    'created_at' => $request->created_at->diffForHumans(),
+                $created['bookings'][] = [
+                    'id' => $booking->id,
+                    'booking_number' => $booking->booking_number,
+                    'booking_date' => $booking->booking_date,
+                    'created_at' => $booking->created_at->diffForHumans(),
                 ];
             }
         }
 
-        // 2. Symuluj 2 nowe reviews
-        // Pobierz completed bookings dla tego providera
-        $completedBookings = \App\Models\Booking::where('provider_id', $user->id)
+        // 2. Symuluj 2 nowe reviews dla już completed bookings
+        $completedBookings = Booking::where('provider_id', $user->id)
             ->where('status', 'completed')
             ->pluck('id')
             ->toArray();
@@ -126,10 +139,10 @@ class DevEventController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Utworzono testowe wydarzenia',
+            'message' => 'Utworzono testowe rezerwacje',
             'created' => $created,
             'summary' => [
-                'booking_requests' => count($created['booking_requests']),
+                'bookings' => count($created['bookings']),
                 'reviews' => count($created['reviews']),
             ],
         ]);
