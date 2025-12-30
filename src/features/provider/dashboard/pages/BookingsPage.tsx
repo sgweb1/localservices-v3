@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useBookings } from '../hooks/useBookings';
+import { useBookings } from '../../hooks/useBookings';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/api/client';
 import { toast } from 'sonner';

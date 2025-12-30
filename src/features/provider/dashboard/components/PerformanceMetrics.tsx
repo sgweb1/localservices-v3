@@ -1,59 +1,74 @@
 import React from 'react';
-import { TrendingUp, TrendingDown, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
-import { useProviderPerformance } from '../hooks/useDashboardData';
-import { Loader2 } from 'lucide-react';
+import { Eye, Heart, Clock, Star } from 'lucide-react';
+import { PerformanceSnapshot } from '../types';
+import { useProviderPerformance } from '../../hooks/useDashboardData';
+
+interface PerformanceMetricsProps {
+  data?: PerformanceSnapshot;
+  isLoading?: boolean;
+}
 
 /**
  * Sekcja Performance Metrics - Wydajność providera
+ * Wyświetla: wyświetlenia, ulubione, czas odpowiedzi, ocenę
  */
-export const PerformanceMetrics: React.FC = () => {
-  const { data, isLoading, isError } = useProviderPerformance();
-
+export const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({ data, isLoading = false }) => {
   if (isLoading) {
     return (
-      <div className="glass-card rounded-2xl p-6 border border-slate-200/70 bg-white/80 shadow-sm flex items-center justify-center min-h-[200px]">
-        <Loader2 className="w-8 h-8 text-cyan-600 animate-spin" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="glass-card rounded-2xl p-5 border border-slate-200/70 bg-white/80 shadow-sm animate-pulse">
+            <div className="h-10 bg-slate-200 rounded mb-3" />
+            <div className="h-6 bg-slate-200 rounded w-3/4" />
+          </div>
+        ))}
       </div>
     );
   }
 
-  // Dane ze zhaká
-  const metrics = data?.data || {
-    response_time: 8.5,
-    completion_rate: 94,
-    cancellation_rate: 2.1,
-    customer_satisfaction: 4.7,
-    repeat_customer_rate: 67,
+  // Fallback do mock data jeśli brak
+  const metrics = data || {
+    views: 234,
+    favorited: 18,
+    avg_response_time: '2.5h',
+    rating: 4.7,
+    period_label: 'Ostatnie 7 dni',
+  };
+
+  // Formatery wartości z fallback'ami dla null/undefined
+  const formatValue = (value: any, defaultValue: string = '-', suffix: string = '') => {
+    if (value === null || value === undefined || value === '') return defaultValue;
+    return `${String(value)}${suffix}`;
   };
 
   const metricsList = [
     {
+      label: 'Wyświetlenia',
+      value: formatValue(metrics.views, '0'),
+      icon: Eye,
+      color: 'from-blue-400 to-cyan-500',
+      description: 'W ostatnim okresie',
+    },
+    {
+      label: 'Ulubione',
+      value: formatValue(metrics.favorited, '0'),
+      icon: Heart,
+      color: 'from-rose-400 to-pink-500',
+      description: 'Dodania do ulubionych',
+    },
+    {
       label: 'Czas odpowiedzi',
-      value: `${metrics.response_time} min`,
+      value: formatValue(metrics.avg_response_time, '-'),
       icon: Clock,
-      trend: 'positive',
-      target: '< 30 min',
+      color: 'from-amber-400 to-orange-500',
+      description: 'Średnia',
     },
     {
-      label: 'Wskaźnik ukończenia',
-      value: `${metrics.completion_rate}%`,
-      icon: CheckCircle2,
-      trend: 'positive',
-      target: '> 90%',
-    },
-    {
-      label: 'Wskaźnik anulowań',
-      value: `${metrics.cancellation_rate}%`,
-      icon: AlertCircle,
-      trend: 'negative',
-      target: '< 5%',
-    },
-    {
-      label: 'Zadowolenie klienta',
-      value: `${metrics.customer_satisfaction}/5`,
-      icon: TrendingUp,
-      trend: 'positive',
-      target: '> 4.5',
+      label: 'Ocena',
+      value: formatValue(metrics.rating, '-'),
+      icon: Star,
+      color: 'from-emerald-400 to-teal-500',
+      description: 'Na podstawie recenzji',
     },
   ];
 
@@ -61,9 +76,6 @@ export const PerformanceMetrics: React.FC = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {metricsList.map((metric) => {
         const Icon = metric.icon;
-        const TrendIcon = metric.trend === 'positive' ? TrendingUp : TrendingDown;
-        const trendColor = metric.trend === 'positive' ? 'text-emerald-600' : 'text-red-600';
-        const iconBg = metric.trend === 'positive' ? 'bg-gradient-to-br from-emerald-400 to-teal-500' : 'bg-gradient-to-br from-red-400 to-orange-500';
 
         return (
           <div
@@ -71,10 +83,9 @@ export const PerformanceMetrics: React.FC = () => {
             className="glass-card rounded-2xl p-5 border border-slate-200/70 bg-white/80 shadow-sm hover:shadow-md transition-all"
           >
             <div className="flex items-start justify-between mb-3">
-              <div className={`p-2 rounded-lg ${iconBg} text-white shadow-md`}>
+              <div className={`p-2 rounded-lg bg-gradient-to-br ${metric.color} text-white shadow-md`}>
                 <Icon className="w-5 h-5" />
               </div>
-              <TrendIcon className={`w-4 h-4 ${trendColor}`} />
             </div>
             <p className="text-slate-600 text-sm font-semibold mb-1">
               {metric.label}
@@ -83,7 +94,7 @@ export const PerformanceMetrics: React.FC = () => {
               {metric.value}
             </p>
             <p className="text-xs text-slate-500">
-              Cel: {metric.target}
+              {metric.description}
             </p>
           </div>
         );

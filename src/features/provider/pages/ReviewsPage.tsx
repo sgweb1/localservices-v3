@@ -5,7 +5,7 @@ import { PageTitle, Text, Caption, StatValue, EmptyText } from '@/components/ui/
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { apiPost } from '@/utils/apiHelpers';
+import { apiClient } from '@/api/client';
 
 /**
  * Reviews Page - dopracowana wersja z lepszym designem
@@ -67,26 +67,20 @@ export const ReviewsPage: React.FC = () => {
     }
 
     try {
-      const res = await apiPost(`/api/v1/provider/reviews/${id}/response`, {
+      await apiClient.post(`/api/v1/provider/reviews/${id}/response`, {
         response: payload,
       });
-
-      if (!res.ok) {
-        if (res.status === 409) {
-          toast.error('Już odpowiedziałeś na tę opinię');
-        } else {
-          const msg = `Błąd API (${res.status})`;
-          toast.error(msg);
-        }
-        return;
-      }
 
       toast.success('Odpowiedź zapisana');
       setReplyingTo(null);
       setReplyTexts((prev) => ({ ...prev, [id]: '' }));
       await refetch();
     } catch (e) {
-      toast.error('Błąd sieci');
+      if (e instanceof Error && e.message.includes('409')) {
+        toast.error('Już odpowiedziałeś na tę opinię');
+      } else {
+        toast.error('Błąd sieci');
+      }
     }
   };
 

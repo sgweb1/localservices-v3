@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Calendar, Home, Briefcase, ShieldCheck, TrendingUp, Sparkles, Zap } from 'lucide-react';
-import { useDashboardWidgets } from '../hooks/useDashboardWidgets';
+import { useDashboardWidgets } from '../../hooks/useDashboardWidgets';
 import { useAuth } from '@/contexts/AuthContext';
 
 /**

@@ -9,7 +9,7 @@
  */
 
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
-import { ProviderDashboardClient } from '@/api/v1/provider-dashboard';
+import { apiClient } from '@/api/client';
 import { DashboardWidgets } from '../types';
 
 /**
@@ -28,8 +28,10 @@ export function useDashboardWidgets(): UseQueryResult<DashboardWidgets, Error> {
       // Optymalizacja: pobiera tylko widgety używane na stronie głównej dashboardu
       // Pominięte: plan, addons, tasks, calendar, notifications, services, live_activity
       // Efekt: zmniejsza load time poprzez pominięcie N+1 queries dla nieużywanych widgetów
-      const response = await ProviderDashboardClient.getWidgets({
-        fields: ['pipeline', 'performance', 'insights', 'messages']
+      const response = await apiClient.get<DashboardWidgets>('/api/v1/provider/dashboard/widgets', {
+        params: {
+          fields: ['pipeline', 'performance', 'insights', 'messages'].join(',')
+        }
       });
       return response.data;
     },

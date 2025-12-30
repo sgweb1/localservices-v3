@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Calendar, MapPin, User, Clock, ChevronRight } from 'lucide-react';
-import { useRecentBookings } from '../hooks/useDashboardData';
+import { useRecentBookings } from '../../hooks/useDashboardData';
 import { Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';

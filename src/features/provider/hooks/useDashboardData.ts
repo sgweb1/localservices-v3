@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiGet } from '@/utils/apiHelpers';
+import { apiClient } from '@/api/client';
 
 /**
  * Hook do pobierania metryk dashboardu
@@ -8,8 +8,8 @@ export const useDashboardMetrics = () => {
   return useQuery({
     queryKey: ['dashboard', 'metrics'],
     queryFn: async () => {
-      const response = await apiGet('/provider/dashboard/metrics');
-      return response.json();
+      const response = await apiClient.get<any>('/provider/dashboard/metrics');
+      return response.data;
     },
     staleTime: 5 * 60 * 1000, // 5 minut
   });
@@ -22,9 +22,8 @@ export const useRecentBookings = (limit = 5) => {
   return useQuery<{ data: any[] }>({
     queryKey: ['dashboard', 'bookings', limit],
     queryFn: async () => {
-      const response = await apiGet(`/provider/dashboard/bookings?limit=${limit}&sort=-created_at`);
-      const data = await response.json();
-      return { data: data?.data || [] };
+      const response = await apiClient.get<{ data: any[] }>(`/provider/dashboard/bookings?limit=${limit}&sort=-created_at`);
+      return { data: response.data?.data || [] };
     },
     // Używaj global defaults (60s staleTime, no refetchOnWindowFocus, refetchOnMount: false)
     // aby deduplikować requesty z innymi komponentami
@@ -38,9 +37,8 @@ export const useRecentMessages = (limit = 5) => {
   return useQuery<{ data: any[] }>({
     queryKey: ['dashboard', 'messages', limit],
     queryFn: async () => {
-      const response = await apiGet(`/provider/dashboard/conversations?limit=${limit}&sort=-updated_at`);
-      const data = await response.json();
-      return { data: data?.data || [] };
+      const response = await apiClient.get<{ data: any[] }>(`/provider/dashboard/conversations?limit=${limit}&sort=-updated_at`);
+      return { data: response.data?.data || [] };
     },
     // Używaj global defaults
   });
@@ -53,9 +51,8 @@ export const useRecentReviews = (limit = 5) => {
   return useQuery<{ data: any[] }>({
     queryKey: ['dashboard', 'reviews', limit],
     queryFn: async () => {
-      const response = await apiGet(`/provider/dashboard/reviews?limit=${limit}&sort=-created_at`);
-      const data = await response.json();
-      return { data: data?.data || [] };
+      const response = await apiClient.get<{ data: any[] }>(`/provider/dashboard/reviews?limit=${limit}&sort=-created_at`);
+      return { data: response.data?.data || [] };
     },
     // Używaj global defaults
   });
@@ -68,9 +65,8 @@ export const useProviderPerformance = () => {
   return useQuery<any>({
     queryKey: ['dashboard', 'performance'],
     queryFn: async () => {
-      const response = await apiGet(`/provider/dashboard/performance`);
-      const data = await response.json();
-      return data;
+      const response = await apiClient.get<any>(`/provider/dashboard/performance`);
+      return response.data;
     },
   });
 };
