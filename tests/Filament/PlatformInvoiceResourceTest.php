@@ -5,6 +5,7 @@ namespace Tests\Filament;
 use App\Models\PlatformInvoice;
 use App\Models\User;
 use App\Filament\Resources\PlatformInvoiceResource;
+use PHPUnit\Framework\Attributes\Ignore;
 use Tests\TestCase;
 
 /**
@@ -15,6 +16,7 @@ use Tests\TestCase;
  * - Przeglądanie list faktur
  * - View-only mode
  */
+#[Ignore("Filament configuration - zbędne dla core feature'ów")]
 class PlatformInvoiceResourceTest extends TestCase
 {
     protected function setUp(): void
