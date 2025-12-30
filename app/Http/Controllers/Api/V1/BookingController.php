@@ -80,8 +80,14 @@ class BookingController extends Controller
     public function providerIndex(Request $request): JsonResponse
     {
         $user = $request->user();
-        
+        \Log::info('[providerIndex] start', [
+            'user_id' => $user?->id,
+            'auth_id' => auth()->id(),
+            'sanctum_user' => auth('sanctum')->id(),
+        ]);
+
         if (!$user) {
+            \Log::warning('[providerIndex] unauthorized');
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
@@ -94,6 +100,12 @@ class BookingController extends Controller
         ]);
 
         $bookings = $this->service->getProviderBookings($user->id, $validated);
+
+        \Log::info('[providerIndex] result', [
+            'user_id' => $user->id,
+            'total' => $bookings->total(),
+            'ids' => $bookings->pluck('id')->all(),
+        ]);
 
         return response()->json([
             'data' => BookingResource::collection($bookings),
