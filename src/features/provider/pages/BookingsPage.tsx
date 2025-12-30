@@ -613,11 +613,12 @@ export const BookingsPage: React.FC = () => {
                 )}
 
                 {/* Paginacja */}
-                {pagination && pagination.last_page > 1 && (
+                {pagination && (
                   <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 glass-card p-4 rounded-2xl">
                     <div className="text-sm text-slate-600">
                       Pokazano {pagination.from ?? 0} - {pagination.to ?? 0} z {pagination.total} rezerwacji
                     </div>
+                    {pagination.last_page > 1 && (
                     <div className="flex items-center gap-2">
                       <Button
                         onClick={() => setCurrentPage(currentPage - 1)}
@@ -665,6 +666,7 @@ export const BookingsPage: React.FC = () => {
                         Następna
                       </Button>
                     </div>
+                    )}
                   </div>
                 )}
               </div>
