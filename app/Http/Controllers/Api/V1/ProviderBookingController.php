@@ -45,11 +45,23 @@ class ProviderBookingController extends Controller
         $perPage = $request->input('per_page', 15);
         $page = $request->input('page', 1);
         $status = $request->input('status');
+        $hiddenFilter = $request->input('hidden', 'visible'); // 'visible', 'hidden', 'all'
 
-        // Pobierz bookings providera z paginacją (bez ukrytych)
+        // Pobierz bookings providera z paginacją
         $query = Booking::with(['customer:id,name', 'service:id,title'])
-            ->where('provider_id', $user->id)
-            ->where('hidden_by_provider', 0);
+            ->where('provider_id', $user->id);
+
+        // Filtrowanie po hidden status
+        // ZMIANA (2025-01-01): Dodano obsługę hidden_by_provider filter
+        // - visible: pokazuj tylko widoczne rezerwacje (domyślnie)
+        // - hidden: pokazuj tylko ukryte rezerwacje
+        // - all: pokazuj wszystkie niezależnie od hidden status
+        if ($hiddenFilter === 'hidden') {
+            $query->where('hidden_by_provider', 1);
+        } elseif ($hiddenFilter === 'visible') {
+            $query->where('hidden_by_provider', 0);
+        }
+        // Jeśli 'all' - nie filtruj po hidden_by_provider
 
         // Filtrowanie po statusie jeśli podany
         if ($status) {
@@ -585,6 +597,50 @@ class ProviderBookingController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Rezerwacja została ukryta w Twoim panelu',
+        ]);
+    }
+
+    /**
+     * Przywróć (unhide) ukrytą rezerwację
+     * POST /provider/bookings/{id}/restore
+     * 
+     * Ustawia hidden_by_provider na false, robiąc rezerwację widoczną znowu
+     * 
+     * @param Request $request
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function restore(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user || $user->user_type !== UserType::Provider) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Znajdź booking należący do tego providera (niezależnie od hidden status)
+        $booking = Booking::where('provider_id', $user->id)
+            ->where('id', $id)
+            ->first();
+
+        if (!$booking) {
+            return response()->json(['error' => 'Rezerwacja nie została znaleziona'], 404);
+        }
+
+        // Jeśli już visible, zwróć success (idempotent)
+        if (!$booking->hidden_by_provider) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Rezerwacja już była widoczna w Twoim panelu',
+            ]);
+        }
+
+        // Przywróć (unhide) rezerwację dla providera
+        $booking->update(['hidden_by_provider' => false]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Rezerwacja została przywrócona w Twoim panelu',
         ]);
     }
 }

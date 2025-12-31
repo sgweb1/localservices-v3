@@ -21,7 +21,7 @@ export const TabsListRadix = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      'inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 p-1 text-slate-700 dark:text-slate-300 w-full',
+      'inline-flex items-center justify-start gap-0 border-b border-slate-200 dark:border-slate-700 w-full',
       className
     )}
     {...props}
@@ -36,7 +36,7 @@ export const TabsTriggerRadix = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      'inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-white dark:ring-offset-slate-950 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-950 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-100 data-[state=active]:shadow-sm hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-800',
+      'inline-flex items-center justify-center gap-2 whitespace-nowrap px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400 transition-all relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950 disabled:pointer-events-none disabled:opacity-50 hover:text-slate-900 dark:hover:text-slate-100 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-transparent after:transition-all after:duration-300 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-100 data-[state=active]:after:bg-gradient-to-r data-[state=active]:after:from-cyan-500 data-[state=active]:after:to-blue-500',
       className
     )}
     {...props}

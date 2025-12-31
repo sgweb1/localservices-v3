@@ -61,21 +61,25 @@ import {
 export const BookingsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage] = useState(15);
-  const { data, isLoading, error } = useBookings(currentPage, perPage);
-  const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [hiddenFilter, setHiddenFilter] = useState<'visible' | 'hidden' | 'all'>('visible');
+  const { data, isLoading, error } = useBookings(currentPage, perPage, hiddenFilter);
+  const queryClient = useQueryClient();
   const { confirm, ConfirmDialog } = useConfirm();
   
   // DEBUG
   React.useEffect(() => {
     console.log('[BookingsPage] currentPage changed:', currentPage);
     console.log('[BookingsPage] useBookings response:', data);
-    console.log('[BookingsPage] pagination object:', data?.pagination);
+    console.log('[BookingsPage] data.data:', data?.data);
+    console.log('[BookingsPage] data.counts:', data?.counts);
+    console.log('[BookingsPage] data.meta:', data?.meta);
+    console.log('[BookingsPage] data.pagination:', data?.pagination);
   }, [currentPage, data]);
   
   const items = data?.data ?? [];
-  const totalCount = data?.counts?.total ?? 0;
+  const totalCount = data?.counts?.total ?? data?.meta?.total ?? data?.pagination?.total ?? items.length ?? 0;
   const stats = data?.counts ?? {
     total: totalCount,
     pending: items.filter((b) => b.status === 'pending').length,
@@ -84,7 +88,7 @@ export const BookingsPage: React.FC = () => {
     cancelled: items.filter((b) => b.status === 'cancelled').length,
   };
   const overdueCount = data?.overdueConfirmedCount ?? 0;
-  const canManage = data?.canManage ?? false;
+  const canManage = data?.canManage ?? true;
   const showUpsell = data?.showUpsell ?? false;
   const hasBookings = data?.hasBookings ?? (items.length > 0);
   const showTrialInfo = data?.showTrialInfo ?? false;
@@ -179,6 +183,25 @@ export const BookingsPage: React.FC = () => {
   });
 
   /**
+   * Przywróć (unhide) ukrytą rezerwację
+   * POST /provider/bookings/{id}/restore
+   * Przywraca ukrytą rezerwację - będzie widoczna w normalnej liście
+   * @mutationKey ['provider', 'bookings']
+   * 
+   * ZMIANA (2025-01-01): Dodano obsługę przywracania ukrytych rezerwacji
+   */
+  const restoreMutation = useMutation({
+    mutationFn: (bookingId: number) => apiClient.post(`/provider/bookings/${bookingId}/restore`),
+    onSuccess: (response) => {
+      toast.success(response.data.message || 'Rezerwacja została przywrócona w Twoim panelu');
+      queryClient.invalidateQueries({ queryKey: ['provider', 'bookings'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.error || 'Wystąpił błąd podczas przywracania rezerwacji');
+    },
+  });
+
+  /**
    * Pokaż dialog potwierdzenia i ukryj rezerwację
    * @param bookingId - ID rezerwacji do ukrycia
    */
@@ -192,6 +215,14 @@ export const BookingsPage: React.FC = () => {
     if (ok) {
       deleteMutation.mutate(bookingId);
     }
+  };
+
+  /**
+   * Przywróć ukrytą rezerwację bez potwierdzenia
+   * @param bookingId - ID rezerwacji do przywrócenia
+   */
+  const handleRestoreBooking = (bookingId: number) => {
+    restoreMutation.mutate(bookingId);
   };
 
   // Filtrowanie
@@ -437,7 +468,7 @@ export const BookingsPage: React.FC = () => {
           <div className="lg:col-span-8 space-y-6">
             {/* Filtry */}
             <div className="glass-card p-6 rounded-2xl">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-600 mb-2">Status</label>
                   <SelectRoot value={statusFilter} onValueChange={setStatusFilter}>
@@ -450,6 +481,22 @@ export const BookingsPage: React.FC = () => {
                       <SelectItem value="confirmed">Potwierdzone</SelectItem>
                       <SelectItem value="completed">Ukończone</SelectItem>
                       <SelectItem value="cancelled">Anulowane</SelectItem>
+                    </SelectContent>
+                  </SelectRoot>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-600 mb-2">Widoczność</label>
+                  <SelectRoot value={hiddenFilter} onValueChange={(val) => {
+                    setHiddenFilter(val as 'visible' | 'hidden' | 'all');
+                    setCurrentPage(1); // Reset do pierwszej strony
+                  }}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="visible">Widoczne</SelectItem>
+                      <SelectItem value="hidden">Ukryte</SelectItem>
+                      <SelectItem value="all">Wszystkie</SelectItem>
                     </SelectContent>
                   </SelectRoot>
                 </div>
@@ -596,7 +643,7 @@ export const BookingsPage: React.FC = () => {
                             <div>
                               <p className="text-xs uppercase tracking-wide text-slate-400">Wartość</p>
                               <p className="mt-1 font-semibold text-slate-900">
-                                {parseFloat(booking.totalPrice ?? booking.servicePrice ?? 0).toFixed(2)} zł
+                                {((booking.totalPrice ?? booking.servicePrice ?? 0) as number).toFixed(2)} zł
                               </p>
                             </div>
                           </div>
@@ -630,7 +677,7 @@ export const BookingsPage: React.FC = () => {
                                 Odrzuć
                               </Button>
                               {booking.isHidden ? (
-                                <Badge variant="secondary" className="self-center">
+                                <Badge variant="info" className="self-center">
                                   <EyeOff className="w-3 h-3 mr-1" />
                                   Ukryta
                                 </Badge>
@@ -659,10 +706,21 @@ export const BookingsPage: React.FC = () => {
                                 Oznacz jako zrealizowane
                               </Button>
                               {booking.isHidden ? (
-                                <Badge variant="secondary">
-                                  <EyeOff className="w-3 h-3 mr-1" />
-                                  Ukryta
-                                </Badge>
+                                hiddenFilter === 'hidden' ? (
+                                  <Button 
+                                    onClick={() => handleRestoreBooking(booking.id)}
+                                    variant="success"
+                                    size="sm"
+                                  >
+                                    <CheckCircle className="w-4 h-4" />
+                                    Przywróć
+                                  </Button>
+                                ) : (
+                                  <Badge variant="info">
+                                    <EyeOff className="w-3 h-3 mr-1" />
+                                    Ukryta
+                                  </Badge>
+                                )
                               ) : (
                                 <Button 
                                   onClick={() => handleDeleteBooking(booking.id)}
@@ -679,10 +737,21 @@ export const BookingsPage: React.FC = () => {
                           {(booking.status === 'completed' || booking.status === 'cancelled' || booking.status === 'rejected') && (
                             <div className="mt-6">
                               {booking.isHidden ? (
-                                <Badge variant="secondary">
-                                  <EyeOff className="w-3 h-3 mr-1" />
-                                  Ukryta
-                                </Badge>
+                                hiddenFilter === 'hidden' ? (
+                                  <Button 
+                                    onClick={() => handleRestoreBooking(booking.id)}
+                                    variant="success"
+                                    size="sm"
+                                  >
+                                    <CheckCircle className="w-4 h-4" />
+                                    Przywróć
+                                  </Button>
+                                ) : (
+                                  <Badge variant="info">
+                                    <EyeOff className="w-3 h-3 mr-1" />
+                                    Ukryta
+                                  </Badge>
+                                )
                               ) : (
                                 <Button 
                                   onClick={() => handleDeleteBooking(booking.id)}

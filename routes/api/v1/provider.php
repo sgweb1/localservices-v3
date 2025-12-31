@@ -45,6 +45,7 @@ Route::middleware(['auth:sanctum'])->prefix('provider')->group(function () {
     Route::patch('/bookings/{id}/confirm', [\App\Http\Controllers\Api\V1\BookingController::class, 'confirm'])->name('api.provider.bookings.confirm');
     Route::patch('/bookings/{id}/reject-booking', [\App\Http\Controllers\Api\V1\BookingController::class, 'reject'])->name('api.provider.bookings.reject-booking');
     Route::delete('/bookings/{id}', [ProviderBookingController::class, 'destroy'])->name('api.provider.bookings.destroy');
+    Route::post('/bookings/{id}/restore', [ProviderBookingController::class, 'restore'])->name('api.provider.bookings.restore');
     
     // Calendar & Availability
     Route::get('/calendar', [CalendarController::class, 'index'])->name('api.provider.calendar.index');

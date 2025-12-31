@@ -514,13 +514,97 @@ Rozwiązuje: [feature request]"
 
 ---
 
+## 🧪 TESTY I DOKUMENTACJA - PO KAŻDEJ ZMIANIE LOGIKI
+
+### Zasada: Logika → Testy → Dokumentacja
+```
+Każdą zmianę kodu mającą wpływ na działanie systemu musimy:
+1. TESTOWAĆ - dodać/zaktualizować testy (unit, integration, e2e)
+2. DOKUMENTOWAĆ - zaktualizować komentarze JSDoc w kodzie
+3. DOKUMENTOWAĆ - zaktualizować docs/ jeśli dotyczy biznesowej logiki
+```
+
+### Po każdej zmianie logiki:
+```typescript
+// ✅ ZAWSZE dodaj/zaktualizuj komentarze
+
+/**
+ * Pobiera rezerwacje providera z filtrowaniem po statusie
+ * 
+ * ZMIANA (2025-01-01): Dodano obsługę trial mode - rezerwacje
+ * poza okresem trial wyświetlają się ze statusem 'blocked'
+ * 
+ * @param providerId - ID providera
+ * @param status - Status do filtrowania (optional)
+ * @returns Booking[] - tablica rezerwacji (bez blocked jeśli no trial)
+ * 
+ * @example
+ * const bookings = await getProviderBookings(123, 'confirmed');
+ * // Zwraca rezerwacje confirmed dla providera 123
+ * // Jeśli provider nie ma trial - rezerwacje spoza trial będą 'blocked'
+ */
+export async function getProviderBookings(providerId: number, status?: string) {
+  // Logic...
+}
+
+// ✅ ZAWSZE zaktualizuj testy
+describe('getProviderBookings', () => {
+  it('zwraca rezerwacje dla providera', async () => {
+    const bookings = await getProviderBookings(123);
+    expect(bookings).toHaveLength(5);
+  });
+  
+  // NOWY TEST - dla trial mode
+  it('oznacza rezerwacje spoza trial jako blocked', async () => {
+    const provider = { id: 123, trialDays: 7, createdAt: '2025-01-01' };
+    const bookings = await getProviderBookings(provider.id);
+    
+    const futureBooking = bookings.find(b => b.date > addDays(today, 7));
+    expect(futureBooking?.status).toBe('blocked');
+  });
+});
+```
+
+### Checklist dla każdego Pull Request
+```
+Logika zmieniona → Obowiązkowe:
+□ Unit test - testy dla samej funkcji
+□ Integration test - testy z API/DB
+□ JSDoc - dokumentacja w kodzie (czemu zmiana, co się zmieniło)
+□ docs/XYZ.md - aktualizacja dokumentacji biznesowej
+□ Komentarz w kodzie: "ZMIANA (data): co dokładnie się zmieniło"
+```
+
+### Typy zmian logiki wymagające testów+docs:
+```
+🔴 KRYTYCZNE (zawsze testing+docs):
+  - Zmiana statusów rezerwacji
+  - Zmiana logiki płatności/subskrypcji
+  - Zmiana autoryzacji/permissions
+  - Zmiana kalkulacji (ceny, Trust Score)
+  
+🟡 WAŻNE (zawsze docs, testy optional):
+  - Nowy endpoint API
+  - Nowy hook/util
+  - Zmiana struktury komponentu
+  
+🟢 MINOR (docs wymagane, testy optional):
+  - Zmiana textu/labeli
+  - Refactor kodu bez zmiany logiki
+  - CSS/styling updates
+```
+
+---
+
 ## ✅ CHECKLIST - PRZED COMMITEM
 
 - [ ] Kod używa tylko komponentów z `src/components/ui`
 - [ ] Brak hardkodowanych danych (wszystko z API)
 - [ ] Hook inicjalizowany w top-level (deduplication)
 - [ ] Odpowiednie stale/refetch values
-- [ ] Dokumentacja w kodzie (JSDoc comments)
+- [ ] ⭐ **Dokumentacja w kodzie** - JSDoc komentarze zaktualizowane
+- [ ] ⭐ **Testy** - dodane/zaktualizowane dla zmian logiki
+- [ ] ⭐ **docs/** - dokumentacja biznesowa zaktualizowana (jeśli zmiana logiki)
 - [ ] Admin panel ma dostęp do tej samej feature
 - [ ] Build się buduje bez nowych błędów
 - [ ] Commit message po polsku z szczegółami
