@@ -21,7 +21,39 @@ interface CreateExceptionData {
 }
 
 /**
- * Hook do pobierania listy wyjątków (bloków)
+ * Hook do pobierania listy wyjątków dostępności (urlopy, blokady dat)
+ * 
+ * **Typy wyjątków:**
+ * - Urlopy (vacation) - provider niedostępny przez okres (np. 7-14 dni)
+ * - Blokady (block) - pojedyncza data nieaktywna (święta, konserwacja)
+ * 
+ * **Zwraca:**
+ * - Lista wyjątków z datami start/end, powodem, statusem zatwierdzenia
+ * 
+ * **Zastosowanie:**
+ * - Wyświetlanie kalendarza urlopów
+ * - Blokowanie dat w kalendarzu rezerwacji
+ * - Informowanie klientów o niedostępności
+ * 
+ * **Cache Strategy:**
+ * - staleTime: 30s
+ * - Auto-invalidation po create/update/delete
+ * 
+ * **Przykład:**
+ * ```typescript
+ * const { data: exceptions } = useAvailabilityExceptions();
+ * 
+ * // Sprawdź czy data jest zablokowana
+ * const isBlocked = (date: Date) => {
+ *   return exceptions?.some(ex => {
+ *     const start = new Date(ex.start_date);
+ *     const end = new Date(ex.end_date);
+ *     return date >= start && date <= end;
+ *   });
+ * };
+ * ```
+ * 
+ * @returns UseQueryResult<AvailabilityException[]>
  */
 export const useAvailabilityExceptions = () => {
   return useQuery<AvailabilityException[]>({
@@ -35,7 +67,45 @@ export const useAvailabilityExceptions = () => {
 };
 
 /**
- * Hook do tworzenia nowego bloku
+ * Hook do tworzenia nowego wyjątku dostępności (urlop/blokada)
+ * 
+ * **Mutacja:** POST /provider/calendar/exceptions
+ * 
+ * **Typy wyjątków:**
+ * 1. **Urlop (vacation)**: Wielodniowy okres niedostępności
+ *    - Przykład: 7-14 dni urlopu
+ *    - reason: "Urlop letni"
+ * 
+ * 2. **Blokada (block)**: Pojedyncza data zablokowana
+ *    - Przykład: Święto, konserwacja sprzętu
+ *    - reason: "Święto państwowe", "Konserwacja"
+ * 
+ * **Automatyczne akcje po sukcesie:**
+ * - Invaliduje cache wyjątków (wymusza refetch)
+ * - Invaliduje cache kalendarza (aktualizuje widok)
+ * 
+ * **Przykład - urlop:**
+ * ```typescript
+ * const createException = useCreateException();
+ * 
+ * await createException.mutateAsync({
+ *   start_date: '2025-06-01',
+ *   end_date: '2025-06-14',
+ *   reason: 'Urlop letni',
+ *   description: 'Wyjazd na Mazury',
+ * });
+ * ```
+ * 
+ * **Przykład - blokada pojedynczej daty:**
+ * ```typescript
+ * await createException.mutateAsync({
+ *   start_date: '2025-05-01',
+ *   end_date: '2025-05-01',
+ *   reason: 'Święto państwowe',
+ * });
+ * ```
+ * 
+ * @returns UseMutationResult
  */
 export const useCreateException = () => {
   const queryClient = useQueryClient();
@@ -53,7 +123,39 @@ export const useCreateException = () => {
 };
 
 /**
- * Hook do usuwania bloku
+ * Hook do usuwania wyjątku dostępności
+ * 
+ * **Mutacja:** DELETE /provider/calendar/exceptions/{id}
+ * 
+ * **Kiedy używać:**
+ * - Odwołanie urlopu (np. zmiana planów)
+ * - Usunięcie błędnie wprowadzonej blokady
+ * - Przywrócenie dostępności na daną datę
+ * 
+ * **Automatyczne akcje:**
+ * - Invaliduje cache wyjątków
+ * - Invaliduje cache kalendarza (odblokuje daty)
+ * 
+ * **Przykład z potwierdzeniem:**
+ * ```typescript
+ * const deleteException = useDeleteException();
+ * const { confirm } = useConfirm();
+ * 
+ * const handleDelete = async (exceptionId: number) => {
+ *   const ok = await confirm({
+ *     title: 'Usuń urlop/blokadę',
+ *     message: 'Czy na pewno chcesz usunąć ten wyjątek?',
+ *     variant: 'danger',
+ *   });
+ *   
+ *   if (ok) {
+ *     await deleteException.mutateAsync(exceptionId);
+ *     toast.success('Wyjątek usunięty - daty odblokowane');
+ *   }
+ * };
+ * ```
+ * 
+ * @returns UseMutationResult
  */
 export const useDeleteException = () => {
   const queryClient = useQueryClient();
@@ -70,7 +172,44 @@ export const useDeleteException = () => {
 };
 
 /**
- * Hook do aktualizacji bloku
+ * Hook do aktualizacji istniejącego wyjątku dostępności
+ * 
+ * **Mutacja:** PUT /provider/calendar/exceptions/{id}
+ * 
+ * **Typowe przypadki użycia:**
+ * - Zmiana dat urlopu (np. skrócenie/wydłużenie)
+ * - Zmiana powodu (reason, description)
+ * - Korekta błędnie wprowadzonych dat
+ * 
+ * **Przykład - zmiana dat urlopu:**
+ * ```typescript
+ * const updateException = useUpdateException();
+ * 
+ * // Skróć urlop o 3 dni (z 14 do 11 dni)
+ * await updateException.mutateAsync({
+ *   id: 123,
+ *   data: {
+ *     start_date: '2025-06-01',
+ *     end_date: '2025-06-11', // Było: 2025-06-14
+ *     reason: 'Urlop letni (skrócony)',
+ *   },
+ * });
+ * ```
+ * 
+ * **Przykład - zmiana powodu:**
+ * ```typescript
+ * await updateException.mutateAsync({
+ *   id: 123,
+ *   data: {
+ *     start_date: '2025-05-01',
+ *     end_date: '2025-05-01',
+ *     reason: 'Konserwacja sprzętu',
+ *     description: 'Wymiana części w urządzeniu',
+ *   },
+ * });
+ * ```
+ * 
+ * @returns UseMutationResult
  */
 export const useUpdateException = () => {
   const queryClient = useQueryClient();
