@@ -73,6 +73,8 @@ class Booking extends Model
     {
         return [
             'booking_date' => 'date',
+            'service_address' => 'array',
+            'special_requirements' => 'array',
             'duration_minutes' => 'integer',
             'latitude' => 'decimal:8',
             'longitude' => 'decimal:8',
@@ -82,7 +84,6 @@ class Booking extends Model
             'platform_fee' => 'decimal:2',
             'total_price' => 'decimal:2',
             'cancellation_fee' => 'decimal:2',
-            'special_requirements' => 'array',
             'paid_at' => 'datetime',
             'cancelled_at' => 'datetime',
             'confirmed_at' => 'datetime',
@@ -95,6 +96,19 @@ class Booking extends Model
             'is_test_data' => 'boolean',
         ];
     }
+
+    /**
+     * Domyślne wartości dla wymaganych pól cenowych
+     */
+    protected $attributes = [
+        'service_price' => 0,
+        'travel_fee' => 0,
+        'platform_fee' => 0,
+        'total_price' => 0,
+        'currency' => 'PLN',
+        'hidden_by_provider' => false,
+        'hidden_by_customer' => false,
+    ];
 
     /**
      * Boot model - automatyczne generowanie UUID i booking_number

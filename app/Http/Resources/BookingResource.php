@@ -12,6 +12,8 @@ class BookingResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $formattedAddress = $this->formatServiceAddress();
+        
         return [
             'id' => $this->id,
             'uuid' => $this->uuid,
@@ -26,8 +28,9 @@ class BookingResource extends JsonResource
             'endTime' => $this->end_time,
             'duration_minutes' => $this->duration_minutes,
             'durationMinutes' => $this->duration_minutes,
-            'service_address' => $this->formatServiceAddress(),
-            'serviceAddress' => $this->formatServiceAddress(),
+            'service_address' => $formattedAddress,
+            'serviceAddress' => $formattedAddress,
+            'location' => $formattedAddress, // Dodaj location field dla backward compatibility
             'distance_km' => (float) $this->distance_km,
             'service_price' => (float) ($this->service_price ?? 0),
             'servicePrice' => (float) ($this->service_price ?? 0),
@@ -50,8 +53,6 @@ class BookingResource extends JsonResource
             'service' => new ServiceResource($this->whenLoaded('service')),
             'customer' => new UserBasicResource($this->whenLoaded('customer')),
             'provider' => new UserBasicResource($this->whenLoaded('provider')),
-            'created_at' => $this->created_at?->toIso8601String(),
-            'updated_at' => $this->updated_at?->toIso8601String(),
         ];
     }
 

@@ -7,8 +7,14 @@ import { useConfirm } from '@/hooks/useConfirm';
 import { DevToolsPanel } from '../dashboard/components/DevToolsPanel';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
+import { InputRadix } from '@/components/ui/input-radix';
+import {
+  SelectRoot,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select-radix';
 import { PageTitle, SectionTitle, Text, Caption, Badge, StatValue, EmptyText } from '@/components/ui/typography';
 import { Card, StatCard } from '@/components/ui/card';
 import { 
@@ -34,10 +40,23 @@ import {
 } from 'lucide-react';
 
 /**
- * Bookings Management Page - zgodny 1:1 z localservices
+ * Bookings Management Page - Provider Panel
  * 
- * Pełna funkcjonalność: alert przeterminowanych, subscription/trial, 
- * szczegóły rezerwacji, akcje, sidebar, modal edycji, paginacja.
+ * Zarządzanie rezerwacjami providera z pełną funkcjonalnością:
+ * - Lista rezerwacji z paginacją (15 na stronę)
+ * - Filtrowanie po statusie i wyszukiwanie
+ * - Akcje: accept, decline, complete, hide
+ * - Statystyki: total, pending, confirmed, completed, cancelled
+ * - Alert dla przeterminowanych rezerwacji
+ * - Subscription/trial info w headerze
+ * - Szczegóły rezerwacji w modalu
+ * 
+ * @component
+ * @example
+ * // W routerze
+ * <Route path="/provider/bookings" element={<BookingsPage />} />
+ * 
+ * @returns {React.ReactElement} Provider bookings dashboard
  */
 export const BookingsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -56,8 +75,9 @@ export const BookingsPage: React.FC = () => {
   }, [currentPage, data]);
   
   const items = data?.data ?? [];
+  const totalCount = data?.counts?.total ?? 0;
   const stats = data?.counts ?? {
-    total: items.length,
+    total: totalCount,
     pending: items.filter((b) => b.status === 'pending').length,
     confirmed: items.filter((b) => b.status === 'confirmed').length,
     completed: items.filter((b) => b.status === 'completed').length,
@@ -73,67 +93,95 @@ export const BookingsPage: React.FC = () => {
   const pagination = data?.pagination;
 
   // Mutations
+  /**
+   * Zaakceptuj rezerwację
+   * POST /provider/bookings/{id}/accept
+   * @mutationKey ['provider', 'bookings']
+   */
   const acceptMutation = useMutation({
     mutationFn: (bookingId: number) => apiClient.post(`/provider/bookings/${bookingId}/accept`),
     onSuccess: (response) => {
       toast.success(response.data.message || 'Rezerwacja została zaakceptowana');
       queryClient.invalidateQueries({ queryKey: ['provider', 'bookings'] });
-      queryClient.invalidateQueries({ queryKey: ['provider', 'dashboard', 'widgets'] });
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.error || 'Wystąpił błąd podczas akceptacji rezerwacji');
     },
   });
 
+  /**
+   * Odrzuć rezerwację
+   * POST /provider/bookings/{id}/decline
+   * @mutationKey ['provider', 'bookings']
+   */
   const rejectMutation = useMutation({
-    mutationFn: (bookingId: number) => apiClient.post(`/provider/bookings/${bookingId}/reject`),
+    mutationFn: (bookingId: number) => apiClient.post(`/provider/bookings/${bookingId}/decline`),
     onSuccess: (response) => {
       toast.success(response.data.message || 'Rezerwacja została odrzucona');
       queryClient.invalidateQueries({ queryKey: ['provider', 'bookings'] });
-      queryClient.invalidateQueries({ queryKey: ['provider', 'dashboard', 'widgets'] });
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.error || 'Wystąpił błąd podczas odrzucania rezerwacji');
     },
   });
 
+  /**
+   * Oznacz rezerwację jako ukończoną
+   * POST /provider/bookings/{id}/complete
+   * Zmienia status na 'completed' i ustawia timestamp completed_at
+   * @mutationKey ['provider', 'bookings']
+   */
   const completeMutation = useMutation({
     mutationFn: (bookingId: number) => apiClient.post(`/provider/bookings/${bookingId}/complete`),
     onSuccess: (response) => {
       toast.success(response.data.message || 'Rezerwacja została oznaczona jako ukończona');
       queryClient.invalidateQueries({ queryKey: ['provider', 'bookings'] });
-      queryClient.invalidateQueries({ queryKey: ['provider', 'dashboard', 'widgets'] });
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.error || 'Wystąpił błąd podczas oznaczania rezerwacji jako ukończona');
     },
   });
 
+  /**
+   * Oznacz wszystkie przeterminowane rezerwacje (status=confirmed) jako ukończone
+   * POST /provider/bookings/complete-overdue
+   * Używane do szybkiego zamknięcia starych rezerwacji
+   * @mutationKey ['provider', 'bookings']
+   */
   const completeOverdueMutation = useMutation({
     mutationFn: () => apiClient.post('/provider/bookings/complete-overdue'),
     onSuccess: (response) => {
       const count = response.data.count || 0;
       toast.success(`Oznaczono ${count} rezerwacji jako ukończone`);
       queryClient.invalidateQueries({ queryKey: ['provider', 'bookings'] });
-      queryClient.invalidateQueries({ queryKey: ['provider', 'dashboard', 'widgets'] });
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.error || 'Wystąpił błąd podczas oznaczania przeterminowanych rezerwacji');
     },
   });
 
+  /**
+   * Ukryj rezerwację w panelu providera
+   * DELETE /provider/bookings/{id}
+   * Rezerwacja znika z listy providera ale jest nadal widoczna dla klienta
+   * Można ukryć rezerwacje w każdym statusie
+   * @mutationKey ['provider', 'bookings']
+   */
   const deleteMutation = useMutation({
     mutationFn: (bookingId: number) => apiClient.delete(`/provider/bookings/${bookingId}`),
     onSuccess: (response) => {
       toast.success(response.data.message || 'Rezerwacja została ukryta w Twoim panelu');
       queryClient.invalidateQueries({ queryKey: ['provider', 'bookings'] });
-      queryClient.invalidateQueries({ queryKey: ['provider', 'dashboard', 'widgets'] });
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.error || 'Wystąpił błąd podczas ukrywania rezerwacji');
     },
   });
 
+  /**
+   * Pokaż dialog potwierdzenia i ukryj rezerwację
+   * @param bookingId - ID rezerwacji do ukrycia
+   */
   const handleDeleteBooking = async (bookingId: number) => {
     const ok = await confirm({
       title: 'Potwierdź ukrycie',
@@ -159,33 +207,60 @@ export const BookingsPage: React.FC = () => {
     );
   }
 
-  // Akcje na rezerwacjach
+  /**
+   * Zaakceptuj rezerwację
+   * @param bookingId - ID rezerwacji do zaakceptowania
+   */
   const handleAcceptBooking = (bookingId: number) => {
     acceptMutation.mutate(bookingId);
   };
 
+  /**
+   * Odrzuć rezerwację
+   * @param bookingId - ID rezerwacji do odrzucenia
+   */
   const handleRejectBooking = (bookingId: number) => {
     rejectMutation.mutate(bookingId);
   };
 
+  /**
+   * Oznacz rezerwację jako ukończoną
+   * @param bookingId - ID rezerwacji do oznaczenia
+   */
   const handleMarkCompleted = (bookingId: number) => {
     completeMutation.mutate(bookingId);
   };
 
+  /**
+   * Oznacz rezerwację jako ukończoną (alias)
+   * @param bookingId - ID rezerwacji
+   */
   const handleCompleteBooking = (bookingId: number) => {
     completeMutation.mutate(bookingId);
   };
 
+  /**
+   * Oznacz wszystkie przeterminowane rezerwacje jako ukończone
+   */
   const handleMarkAllOverdueCompleted = () => {
     completeOverdueMutation.mutate();
   };
 
+  /**
+   * Otwórz wiadomości z klientem
+   * @param customerId - ID klienta
+   * @todo Dodać navigację do czatu
+   */
   const handleOpenConversation = (customerId: number) => {
     console.log('Open conversation with customer:', customerId);
     // TODO: navigate do messages z customerId
   };
 
-  // Format date helper
+  /**
+   * Sformatuj datę na format polski
+   * @param dateString - Data w formacie ISO
+   * @returns Sformatowana data: DD-MM-YYYY
+   */
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('pl-PL', { 
@@ -195,7 +270,12 @@ export const BookingsPage: React.FC = () => {
     });
   };
 
-  // Format time helper  
+  // Format time helper
+  /**
+   * Sformatuj godzinę na format polski
+   * @param timeString - Godzina w formacie HH:MM:SS
+   * @returns Sformatowana godzina: HH:MM
+   */
   const formatTime = (timeString: string) => {
     if (!timeString) return '';
     return timeString.substring(0, 5); // HH:MM
@@ -360,17 +440,22 @@ export const BookingsPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-600 mb-2">Status</label>
-                  <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                    <option value="all">Wszystkie rezerwacje</option>
-                    <option value="pending">Oczekujące</option>
-                    <option value="confirmed">Potwierdzone</option>
-                    <option value="completed">Ukończone</option>
-                    <option value="cancelled">Anulowane</option>
-                  </Select>
+                  <SelectRoot value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Wszystkie rezerwacje</SelectItem>
+                      <SelectItem value="pending">Oczekujące</SelectItem>
+                      <SelectItem value="confirmed">Potwierdzone</SelectItem>
+                      <SelectItem value="completed">Ukończone</SelectItem>
+                      <SelectItem value="cancelled">Anulowane</SelectItem>
+                    </SelectContent>
+                  </SelectRoot>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-600 mb-2">Szukaj klienta</label>
-                  <Input 
+                  <InputRadix 
                     type="text" 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -544,14 +629,21 @@ export const BookingsPage: React.FC = () => {
                                 <XCircle className="w-4 h-4" />
                                 Odrzuć
                               </Button>
-                              <Button 
-                                onClick={() => handleDeleteBooking(booking.id)}
-                                variant="neutral"
-                                size="sm"
-                              >
-                                <EyeOff className="w-4 h-4" />
-                                Ukryj
-                              </Button>
+                              {booking.isHidden ? (
+                                <Badge variant="secondary" className="self-center">
+                                  <EyeOff className="w-3 h-3 mr-1" />
+                                  Ukryta
+                                </Badge>
+                              ) : (
+                                <Button 
+                                  onClick={() => handleDeleteBooking(booking.id)}
+                                  variant="neutral"
+                                  size="sm"
+                                >
+                                  <EyeOff className="w-4 h-4" />
+                                  Ukryj
+                                </Button>
+                              )}
                             </div>
                           )}
                           
@@ -566,27 +658,41 @@ export const BookingsPage: React.FC = () => {
                                 <CheckCircle className="w-4 h-4" />
                                 Oznacz jako zrealizowane
                               </Button>
-                              <Button 
-                                onClick={() => handleDeleteBooking(booking.id)}
-                                variant="neutral"
-                                size="sm"
-                              >
-                                <EyeOff className="w-4 h-4" />
-                                Ukryj
-                              </Button>
+                              {booking.isHidden ? (
+                                <Badge variant="secondary">
+                                  <EyeOff className="w-3 h-3 mr-1" />
+                                  Ukryta
+                                </Badge>
+                              ) : (
+                                <Button 
+                                  onClick={() => handleDeleteBooking(booking.id)}
+                                  variant="neutral"
+                                  size="sm"
+                                >
+                                  <EyeOff className="w-4 h-4" />
+                                  Ukryj
+                                </Button>
+                              )}
                             </div>
                           )}
                           
                           {(booking.status === 'completed' || booking.status === 'cancelled' || booking.status === 'rejected') && (
                             <div className="mt-6">
-                              <Button 
-                                onClick={() => handleDeleteBooking(booking.id)}
-                                variant="neutral"
-                                size="sm"
-                              >
-                                <EyeOff className="w-4 h-4" />
-                                Ukryj
-                              </Button>
+                              {booking.isHidden ? (
+                                <Badge variant="secondary">
+                                  <EyeOff className="w-3 h-3 mr-1" />
+                                  Ukryta
+                                </Badge>
+                              ) : (
+                                <Button 
+                                  onClick={() => handleDeleteBooking(booking.id)}
+                                  variant="neutral"
+                                  size="sm"
+                                >
+                                  <EyeOff className="w-4 h-4" />
+                                  Ukryj
+                                </Button>
+                              )}
                             </div>
                           )}
                           {isConfirmedOverdue && (
@@ -618,73 +724,40 @@ export const BookingsPage: React.FC = () => {
                     </p>
                   </div>
                 )}
+              </div>
+            )}
 
-                {/* Paginacja */}
-                {pagination && (
-                  <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 glass-card p-4 rounded-2xl">
-                    <div className="text-sm text-slate-600">
-                      Pokazano {pagination.from ?? 0} - {pagination.to ?? 0} z {pagination.total} rezerwacji
-                    </div>
-                    {pagination.last_page > 1 && (
-                    <div className="flex items-center gap-2">
-                      <Button
-                        onClick={() => {
-                          console.log('[Pagination] Previous clicked, currentPage:', currentPage);
-                          setCurrentPage(currentPage - 1);
-                        }}
-                        disabled={currentPage === 1}
-                        variant="neutral"
-                        size="sm"
-                      >
-                        Poprzednia
-                      </Button>
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: pagination.last_page }, (_, i) => i + 1)
-                          .filter(page => {
-                            // Pokaż pierwsze 2, ostatnie 2 i strony wokół obecnej
-                            return page === 1 || 
-                                   page === 2 || 
-                                   page === pagination.last_page - 1 || 
-                                   page === pagination.last_page ||
-                                   (page >= currentPage - 1 && page <= currentPage + 1);
-                          })
-                          .map((page, idx, arr) => {
-                            const prevPage = arr[idx - 1];
-                            const showEllipsis = prevPage && page - prevPage > 1;
-                            return (
-                              <React.Fragment key={page}>
-                                {showEllipsis && (
-                                  <span className="px-2 text-slate-400">...</span>
-                                )}
-                                <Button
-                                  onClick={() => {
-                                    console.log('[Pagination] Page', page, 'clicked');
-                                    setCurrentPage(page);
-                                  }}
-                                  variant={currentPage === page ? "primary" : "neutral"}
-                                  size="sm"
-                                >
-                                  {page}
-                                </Button>
-                              </React.Fragment>
-                            );
-                          })}
-                      </div>
-                      <Button
-                        onClick={() => {
-                          console.log('[Pagination] Next clicked, currentPage:', currentPage);
-                          setCurrentPage(currentPage + 1);
-                        }}
-                        disabled={currentPage === pagination.last_page}
-                        variant="neutral"
-                        size="sm"
-                      >
-                        Następna
-                      </Button>
-                    </div>
-                    )}
-                  </div>
-                )}
+            {/* Paginacja - prosty paginator */}
+            {items.length > 0 && Math.ceil(totalCount / perPage) > 1 && (
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-slate-50 p-2 sm:p-3 rounded-lg">
+                <div className="text-xs text-slate-500 text-center sm:text-left">
+                  Str. {currentPage}/{Math.ceil(totalCount / perPage)}
+                </div>
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1">
+                  <Button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1} variant="neutral" size="sm" className="text-xs px-2">
+                    &lt;
+                  </Button>
+                  {Array.from({ length: Math.ceil(totalCount / perPage) }, (_, i) => i + 1)
+                    .filter(page => {
+                      const lastPage = Math.ceil(totalCount / perPage);
+                      return page === 1 || page === 2 || page === lastPage - 1 || page === lastPage || (page >= currentPage - 1 && page <= currentPage + 1);
+                    })
+                    .map((page, idx, arr) => {
+                      const prevPage = arr[idx - 1];
+                      const showEllipsis = prevPage && page - prevPage > 1;
+                      return (
+                        <React.Fragment key={page}>
+                          {showEllipsis && <span className="px-0.5 text-slate-400 text-xs">...</span>}
+                          <Button onClick={() => setCurrentPage(page)} variant={currentPage === page ? "primary" : "neutral"} size="sm" className="text-xs px-2">
+                            {page}
+                          </Button>
+                        </React.Fragment>
+                      );
+                    })}
+                  <Button onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === Math.ceil(totalCount / perPage)} variant="neutral" size="sm" className="text-xs px-2">
+                    &gt;
+                  </Button>
+                </div>
               </div>
             )}
           </div>

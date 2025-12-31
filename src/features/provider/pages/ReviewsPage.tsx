@@ -8,9 +8,19 @@ import { toast } from 'sonner';
 import { apiClient } from '@/api/client';
 
 /**
- * Reviews Page - dopracowana wersja z lepszym designem
+ * Reviews Management Page
  * 
- * Średnia rating, statystyki, trendy, filtry, lista opinii z możliwością odpowiedzi.
+ * Zarządzanie opiniami i recenzjami od klientów:
+ * - Statystyki: średnia rating, rozkład gwiazdek
+ * - Trendy: liczba opinii w czasie
+ * - Filtrowanie po liczbie gwiazdek (1-5)
+ * - Opcja wyświetlania tylko bez odpowiedzi
+ * - Lista opinii z możliwością udzielenia odpowiedzi
+ * - Zaznaczanie opinii jako pomocne (helpful)
+ * - Paginacja
+ * 
+ * @component
+ * @returns {React.ReactElement} Reviews dashboard with stats and review list
  */
 export const ReviewsPage: React.FC = () => {
   const [filterRating, setFilterRating] = useState<number | null>(null);
@@ -67,7 +77,7 @@ export const ReviewsPage: React.FC = () => {
     }
 
     try {
-      await apiClient.post(`/api/v1/provider/reviews/${id}/response`, {
+      await apiClient.post(`/provider/reviews/${id}/response`, {
         response: payload,
       });
 

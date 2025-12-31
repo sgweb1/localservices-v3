@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TabsRadix, TabsListRadix, TabsTriggerRadix, TabsContentRadix } from '@/components/ui/tabs-radix';
 import { PageTitle } from '@/components/ui/typography';
 import { getBookings } from '@/api/v1/bookingApi';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { User, Briefcase, Calendar, MapPin, CheckCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import BookingsPage from './BookingsPage';
 
 /**
@@ -15,9 +16,9 @@ import BookingsPage from './BookingsPage';
  * 2. "Moje rezerwacje" - rezerwacje gdzie jest klientem (customer_id)
  */
 export const BookingsPageWithTabs: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isLoadingUser } = useAuth();
 
-  // Moje rezerwacje (jako customer)
+  // ZAWSZE wywoływaj useQuery - nawet jeśli user się ładuje
   const { data: myBookingsData, isLoading: isLoadingMyBookings } = useQuery({
     queryKey: ['bookings', 'my', user?.id],
     queryFn: () => getBookings({ customer_id: user?.id }),
@@ -25,6 +26,19 @@ export const BookingsPageWithTabs: React.FC = () => {
   });
 
   const myBookings = myBookingsData?.data || [];
+
+  // Czekaj aż user się załaduje
+  if (isLoadingUser || !user) {
+    return (
+      <div className="space-y-6">
+        <PageTitle gradient>Ładowanie...</PageTitle>
+        <div className="glass-card p-12 rounded-2xl text-center">
+          <div className="animate-spin mx-auto w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full" />
+          <p className="mt-4 text-slate-600">Ładowanie rezerwacji...</p>
+        </div>
+      </div>
+    );
+  }
 
   //  Format helpers
   const formatDate = (dateString: string) => {
@@ -72,33 +86,33 @@ export const BookingsPageWithTabs: React.FC = () => {
     <div className="space-y-6">
       <PageTitle gradient>Rezerwacje</PageTitle>
 
-      <Tabs defaultValue="incoming" className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="incoming" className="flex items-center gap-2">
+      <TabsRadix defaultValue="incoming" className="w-full">
+        <TabsListRadix className="grid w-full max-w-md grid-cols-2">
+          <TabsTriggerRadix value="incoming" className="flex items-center gap-2">
             <Briefcase className="w-4 h-4" />
             Zlecenia
-          </TabsTrigger>
-          <TabsTrigger value="my" className="flex items-center gap-2">
+          </TabsTriggerRadix>
+          <TabsTriggerRadix value="my" className="flex items-center gap-2">
             <User className="w-4 h-4" />
             Moje rezerwacje ({myBookings.length})
-          </TabsTrigger>
-        </TabsList>
+          </TabsTriggerRadix>
+        </TabsListRadix>
 
         {/* Zakładka: Zlecenia (jako provider) */}
-        <TabsContent value="incoming" className="mt-6">
+        <TabsContentRadix value="incoming" className="mt-6">
           <BookingsPage />
-        </TabsContent>
+        </TabsContentRadix>
 
         {/* Zakładka: Moje rezerwacje (jako customer) */}
-        <TabsContent value="my" className="mt-6">
+        <TabsContentRadix value="my" className="mt-6">
           <CustomerBookingsContent
             bookings={myBookings}
             isLoading={isLoadingMyBookings}
             formatDate={formatDate}
             formatTime={formatTime}
           />
-        </TabsContent>
-      </Tabs>
+        </TabsContentRadix>
+      </TabsRadix>
     </div>
   );
 };
@@ -119,6 +133,22 @@ const CustomerBookingsContent: React.FC<CustomerBookingsContentProps> = ({
   formatDate,
   formatTime,
 }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const perPage = 15;
+  
+  // Paginacja - bierz z długości bookings
+  const totalPages = Math.ceil(bookings.length / perPage);
+  const startIndex = (currentPage - 1) * perPage;
+  const endIndex = startIndex + perPage;
+  const paginatedBookings = bookings.slice(startIndex, endIndex);
+
+  // Resetuj do strony 1 jeśli bookings się zmienią
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [bookings.length, currentPage, totalPages]);
+
   if (isLoading) {
     return (
       <div className="glass-card p-12 rounded-2xl text-center">
@@ -153,7 +183,7 @@ const CustomerBookingsContent: React.FC<CustomerBookingsContentProps> = ({
 
   return (
     <div className="space-y-4">
-      {bookings.map((booking) => (
+      {paginatedBookings.map((booking) => (
         <div key={booking.id} className="glass-card p-6 rounded-2xl hover:shadow-lg transition-shadow">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex-1">
@@ -237,6 +267,58 @@ const CustomerBookingsContent: React.FC<CustomerBookingsContentProps> = ({
           )}
         </div>
       ))}
+
+      {/* Paginacja */}
+      {bookings.length > perPage && (
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-slate-50 p-2 sm:p-3 rounded-lg">
+          <div className="text-xs text-slate-500 text-center sm:text-left">
+            Str. {currentPage}/{totalPages}
+          </div>
+          {totalPages > 1 && (
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1">
+              <Button
+                onClick={() => setCurrentPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                variant="neutral"
+                size="sm"
+                className="text-xs px-2"
+              >
+                &lt;
+              </Button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(page => {
+                  return page === 1 || page === 2 || page === totalPages - 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1);
+                })
+                .map((page, idx, arr) => {
+                  const prevPage = arr[idx - 1];
+                  const showEllipsis = prevPage && page - prevPage > 1;
+                  return (
+                    <React.Fragment key={page}>
+                      {showEllipsis && <span className="px-0.5 text-slate-400 text-xs">...</span>}
+                      <Button
+                        onClick={() => setCurrentPage(page)}
+                        variant={currentPage === page ? "primary" : "neutral"}
+                        size="sm"
+                        className="text-xs px-2"
+                      >
+                        {page}
+                      </Button>
+                    </React.Fragment>
+                  );
+                })}
+              <Button
+                onClick={() => setCurrentPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                variant="neutral"
+                size="sm"
+                className="text-xs px-2"
+              >
+                &gt;
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

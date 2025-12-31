@@ -17,7 +17,7 @@ class GenericNotificationMail extends Mailable implements ShouldQueue
      * Uniwersalny email do powiadomień
      */
     public function __construct(
-        public string $subject,
+        public string $emailSubject,
         public string $body,
         public ?string $actionUrl = null,
         public ?string $actionLabel = 'Przejdź',
@@ -26,7 +26,7 @@ class GenericNotificationMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: $this->subject,
+            subject: $this->emailSubject,
         );
     }
 

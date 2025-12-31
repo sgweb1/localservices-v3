@@ -11,6 +11,7 @@ use App\Services\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Provider Bookings Controller
@@ -45,17 +46,10 @@ class ProviderBookingController extends Controller
         $page = $request->input('page', 1);
         $status = $request->input('status');
 
-        // DEBUG: pokaż wszystkie booking IDs w bazie
-        $allBookingIds = Booking::pluck('id')->toArray();
-        $annaBookingIds = Booking::where('provider_id', $user->id)->pluck('id')->toArray();
-
         // Pobierz bookings providera z paginacją (bez ukrytych)
-        // Pokazuj bookingi, które nie są ukryte; starsze rekordy mogą mieć null
         $query = Booking::with(['customer:id,name', 'service:id,title'])
             ->where('provider_id', $user->id)
-            ->where(function ($q) {
-                $q->where('hidden_by_provider', 0)->orWhereNull('hidden_by_provider');
-            });
+            ->where('hidden_by_provider', 0);
 
         // Filtrowanie po statusie jeśli podany
         if ($status) {
@@ -69,6 +63,20 @@ class ProviderBookingController extends Controller
 
         // Przygotuj dane
         $data = $bookingsPaginated->getCollection()->map(function ($booking) {
+            $serviceAddress = $booking->service_address;
+            
+            // Jeśli address jest array, użyj go; w przeciwnym wypadku spróbuj sparsować
+            if (is_array($serviceAddress)) {
+                $addressData = [
+                    'street' => $serviceAddress['street'] ?? null,
+                    'postal_code' => $serviceAddress['postal_code'] ?? null,
+                    'city' => $serviceAddress['city'] ?? null,
+                ];
+            } else {
+                // Fallback jeśli jest string
+                $addressData = ['street' => $serviceAddress];
+            }
+            
             return [
                 'id' => $booking->id,
                 'customerName' => $booking->customer?->name ?? 'Klient',
@@ -79,15 +87,14 @@ class ProviderBookingController extends Controller
                 'startTime' => $booking->start_time,
                 'endTime' => $booking->end_time,
                 'durationMinutes' => $booking->duration_minutes,
-                'serviceAddress' => [
-                    'street' => $booking->service_address ?? null,
-                ],
+                'serviceAddress' => $addressData,
                 'customerNotes' => $booking->notes,
                 'servicePrice' => (float) $booking->service_price,
                 'totalPrice' => (float) $booking->total_price,
                 'paymentStatus' => $booking->payment_status,
                 'status' => $booking->status,
                 'canAccess' => true,
+                'isHidden' => (bool) $booking->hidden_by_provider,
             ];
         });
 
@@ -129,10 +136,6 @@ class ProviderBookingController extends Controller
                 'from' => $bookingsPaginated->firstItem(),
                 'to' => $bookingsPaginated->lastItem(),
             ],
-            // DEBUG
-            'debug_all_booking_ids' => $allBookingIds,
-            'debug_anna_booking_ids' => $annaBookingIds,
-            'debug_user_id' => $user->id,
         ]);
     }
 
@@ -173,46 +176,62 @@ class ProviderBookingController extends Controller
      */
     public function accept(Request $request, int $id): JsonResponse
     {
-        $user = $request->user();
+        try {
+            $user = $request->user();
 
-        if (!$user || $user->user_type !== UserType::Provider) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+            if (!$user || $user->user_type !== UserType::Provider) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
 
-        $booking = Booking::where('provider_id', $user->id)
-            ->where('id', $id)
-            ->first();
+            $booking = Booking::where('provider_id', $user->id)
+                ->where('id', $id)
+                ->first();
 
-        if (!$booking) {
-            return response()->json(['error' => 'Rezerwacja nie została znaleziona'], 404);
-        }
+            if (!$booking) {
+                return response()->json(['error' => 'Rezerwacja nie została znaleziona'], 404);
+            }
 
-        if ($booking->status !== 'pending') {
-            return response()->json(['error' => 'Booking is not pending'], 400);
-        }
+            if ($booking->status !== 'pending') {
+                return response()->json(['error' => 'Booking is not pending'], 400);
+            }
 
-        $booking->update(['status' => 'confirmed']);
+            $booking->update(['status' => 'confirmed']);
 
-        // Wyślij powiadomienie do customera
-        if ($booking->customer) {
-            $this->notificationService->send(
-                'booking.confirmed',
-                $booking->customer,
-                'customer',
-                [
-                    'customer_name' => $booking->customer->name,
-                    'provider_name' => $user->name,
-                    'service_name' => $booking->service->title ?? 'Usługa',
-                    'booking_date' => Carbon::parse($booking->booking_date)->format('d.m.Y'),
-                    'booking_time' => substr($booking->start_time ?? '00:00:00', 0, 5),
-                    'booking_id' => $booking->id,
+            // Wyślij powiadomienie do customera
+            if ($booking->customer) {
+                try {
+                    $this->notificationService->send(
+                        'booking.confirmed',
+                        $booking->customer,
+                        'customer',
+                        [
+                            'customer_name' => $booking->customer->name,
+                            'provider_name' => $user->name,
+                            'service_name' => optional($booking->service)->title ?? 'Usługa',
+                            'booking_date' => Carbon::parse($booking->booking_date)->format('d.m.Y'),
+                            'booking_time' => substr($booking->start_time ?? '00:00:00', 0, 5),
+                            'booking_id' => $booking->id,
+                        ]
+                    );
+                } catch (\Exception $e) {
+                    // Log notification error but don't fail the response
+                    \Log::warning('Notification error in booking accept: ' . $e->getMessage());
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Rezerwacja została zaakceptowana',
+                'data' => [
+                    'id' => $booking->id,
+                    'status' => $booking->status,
+                    'booking_number' => $booking->booking_number,
                 ]
-            );
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('Accept booking error: ' . $e->getMessage(), ['booking_id' => $id, 'trace' => $e->getTraceAsString()]);
+            return response()->json(['error' => 'Wewnętrzny błąd serwera'], 500);
         }
-
-        return response()->json([
-            'data' => new BookingResource($booking->fresh(['service', 'customer', 'provider'])),
-        ], 200);
     }
 
     /**
@@ -276,66 +295,81 @@ class ProviderBookingController extends Controller
      */
     public function complete(Request $request, int $id): JsonResponse
     {
-        $user = $request->user();
+        try {
+            $user = $request->user();
 
-        if (!$user || $user->user_type !== UserType::Provider) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+            if (!$user || $user->user_type !== UserType::Provider) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
 
-        $booking = Booking::where('provider_id', $user->id)
-            ->where('id', $id)
-            ->first();
+            $booking = Booking::where('provider_id', $user->id)
+                ->where('id', $id)
+                ->first();
 
-        if (!$booking) {
-            return response()->json(['error' => 'Rezerwacja nie została znaleziona'], 404);
-        }
+            if (!$booking) {
+                return response()->json(['error' => 'Rezerwacja nie została znaleziona'], 404);
+            }
 
-        // Validate status - booking must be in progress to complete
-        if ($booking->status !== BookingStatus::IN_PROGRESS->value) {
+            // Validate status - booking must be confirmed or in_progress to complete
+            if (!in_array($booking->status, [BookingStatus::CONFIRMED->value, BookingStatus::IN_PROGRESS->value])) {
+                return response()->json([
+                    'error' => 'Można zakończyć tylko potwierdzone lub w trakcie realizacji rezerwacje',
+                    'current_status' => $booking->status
+                ], 422);
+            }
+
+            // Validate request data - but make it optional
+            $validated = $request->validate([
+                'notes' => 'nullable|string|max:1000',
+                'final_price' => 'nullable|numeric|min:0',
+            ]) ?? [];
+
+            $updateData = ['status' => BookingStatus::COMPLETED->value, 'completed_at' => now()];
+            
+            if (!empty($validated['final_price'])) {
+                $updateData['total_price'] = $validated['final_price'];
+            }
+            
+            if (!empty($validated['notes'])) {
+                $updateData['provider_notes'] = $validated['notes'];
+            }
+
+            $booking->update($updateData);
+
+            // Wyślij powiadomienie do customera (prośba o opinię)
+            if ($booking->customer) {
+                try {
+                    $this->notificationService->send(
+                        'booking.completed',
+                        $booking->customer,
+                        'customer',
+                        [
+                            'customer_name' => $booking->customer->name,
+                            'provider_name' => $user->name,
+                            'service_name' => optional($booking->service)->title ?? 'Usługa',
+                            'booking_date' => Carbon::parse($booking->booking_date)->format('d.m.Y'),
+                            'booking_time' => substr($booking->start_time ?? '00:00:00', 0, 5),
+                            'booking_id' => $booking->id,
+                        ]
+                    );
+                } catch (\Exception $e) {
+                    \Log::warning('Notification error in booking complete: ' . $e->getMessage());
+                }
+            }
+
             return response()->json([
-                'error' => 'Można zakończyć tylko rezerwacje w trakcie realizacji',
-                'current_status' => $booking->status
-            ], 422);
-        }
-
-        // Validate request data
-        $validated = $request->validate([
-            'notes' => 'nullable|string|max:1000',
-            'final_price' => 'nullable|numeric|min:0',
-        ]);
-
-        $updateData = ['status' => BookingStatus::COMPLETED->value];
-        
-        if (!empty($validated['final_price'])) {
-            $updateData['total_price'] = $validated['final_price'];
-        }
-        
-        if (!empty($validated['notes'])) {
-            $updateData['provider_notes'] = $validated['notes'];
-        }
-
-        $booking->update($updateData);
-
-        // Wyślij powiadomienie do customera (prośba o opinię)
-        if ($booking->customer) {
-            $this->notificationService->send(
-                'booking.completed',
-                $booking->customer,
-                'customer',
-                [
-                    'customer_name' => $booking->customer->name,
-                    'provider_name' => $user->name,
-                    'service_name' => $booking->service->title ?? 'Usługa',
-                    'booking_date' => Carbon::parse($booking->booking_date)->format('d.m.Y'),
-                    'booking_time' => substr($booking->start_time ?? '00:00:00', 0, 5),
-                    'booking_id' => $booking->id,
+                'success' => true,
+                'message' => 'Rezerwacja została oznaczona jako ukończona',
+                'data' => [
+                    'id' => $booking->id,
+                    'status' => $booking->status,
+                    'booking_number' => $booking->booking_number,
                 ]
-            );
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('Complete booking error: ' . $e->getMessage(), ['booking_id' => $id, 'trace' => $e->getTraceAsString()]);
+            return response()->json(['error' => 'Wewnętrzny błąd serwera'], 500);
         }
-
-        return response()->json([
-            'data' => new BookingResource($booking->fresh(['service', 'customer', 'provider'])),
-        ], 200);
     }
 
     /**
@@ -528,17 +562,24 @@ class ProviderBookingController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        // Znajdź booking należący do tego providera
+        // Znajdź booking należący do tego providera (niezależnie od hidden status)
         $booking = Booking::where('provider_id', $user->id)
             ->where('id', $id)
-            ->where('hidden_by_provider', 0)
             ->first();
 
         if (!$booking) {
             return response()->json(['error' => 'Rezerwacja nie została znaleziona'], 404);
         }
 
-        // Ukryj tylko dla providera
+        // Jeśli już hidden, zwróć success (idempotent)
+        if ($booking->hidden_by_provider) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Rezerwacja już była ukryta w Twoim panelu',
+            ]);
+        }
+
+        // Ukryj dla providera
         $booking->update(['hidden_by_provider' => true]);
 
         return response()->json([

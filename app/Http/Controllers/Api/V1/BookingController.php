@@ -604,10 +604,10 @@ class BookingController extends Controller
             return response()->json(['error' => 'Brak uprawnień'], 403);
         }
         
-        // Sprawdź czy rezerwacja jest w statusie in_progress
-        if ($booking->status !== 'in_progress') {
+        // Sprawdź czy rezerwacja jest w statusie confirmed lub in_progress
+        if (!in_array($booking->status, ['confirmed', 'in_progress'])) {
             return response()->json([
-                'error' => 'Można ukończyć tylko usługi w trakcie realizacji',
+                'error' => 'Można ukończyć tylko potwierdzone lub w trakcie realizacji rezerwacje',
                 'current_status' => $booking->status
             ], 422);
         }

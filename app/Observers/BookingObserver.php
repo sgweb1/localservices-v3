@@ -207,7 +207,7 @@ class BookingObserver
 
             // Wyślij powiadomienie do providera o zajętym slocie
             if ($booking->provider) {
-                $this->notificationService->send(
+                $this->notifications->send(
                     'availability.slot_booked',
                     $booking->provider,
                     'provider',

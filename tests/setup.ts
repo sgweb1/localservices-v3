@@ -59,22 +59,24 @@ const localStorageMock = {
 // @ts-ignore
 global.localStorage = localStorageMock as any;
 
-// Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: vi.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
-});
+// Mock window.matchMedia - only in jsdom environment
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: vi.fn().mockImplementation(query => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  });
+}
 
-// Mock IntersectionObserver
+// Mock IntersectionObserver - only in jsdom environment
 class MockIntersectionObserver {
   constructor(_cb: any, _options?: any) {}
   observe() {}
@@ -82,15 +84,19 @@ class MockIntersectionObserver {
   disconnect() {}
   takeRecords() { return []; }
 }
-(window as any).IntersectionObserver = MockIntersectionObserver as any;
+if (typeof window !== 'undefined') {
+  (window as any).IntersectionObserver = MockIntersectionObserver as any;
+}
 (global as any).IntersectionObserver = MockIntersectionObserver as any;
 
-// Mock ResizeObserver (używany przez Radix UI)
+// Mock ResizeObserver - only in jsdom environment
 class MockResizeObserver {
   constructor(_cb?: any) {}
   observe() {}
   unobserve() {}
   disconnect() {}
 }
-(window as any).ResizeObserver = MockResizeObserver as any;
+if (typeof window !== 'undefined') {
+  (window as any).ResizeObserver = MockResizeObserver as any;
+}
 (global as any).ResizeObserver = MockResizeObserver as any;

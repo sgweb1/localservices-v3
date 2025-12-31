@@ -61,12 +61,15 @@ return Application::configure(basePath: dirname(__DIR__))
     )
             ->withMiddleware(function (Middleware $middleware): void {
         // API bez przekierowania do login – zwracaj 401
-                $middleware->redirectTo(fn () => null);
+        $middleware->redirectTo(fn () => null);
+        
+        // Force HTTPS for Vite dev server w dev mode
+        $middleware->append(\App\Http\Middleware\ForceViteHttpsMiddleware::class);
         
         // Quick token auth for dev (real users without password)
-            $middleware->append(\App\Http\Middleware\QuickTokenAuth::class);
+        $middleware->append(\App\Http\Middleware\QuickTokenAuth::class);
         // Update user presence on every API request
-            $middleware->append(\App\Http\Middleware\UpdateUserPresence::class);
+        $middleware->append(\App\Http\Middleware\UpdateUserPresence::class);
     })
             ->withExceptions(function (Exceptions $exceptions): void {
         // API powinno zawsze zwracać JSON (np. 401 zamiast redirect do 'login')

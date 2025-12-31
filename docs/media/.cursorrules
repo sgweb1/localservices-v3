@@ -1,0 +1,594 @@
+# Local Services Dashboard - Reguły Cursor AI
+
+## 🏗️ ARCHITEKTURA SYSTEMU
+
+### Stack Techniczny
+```
+BACKEND (Laravel 12 API)
+├── Routes: /routes/api.php
+├── Controllers: /app/Http/Controllers/
+├── Models: /app/Models/
+├── Observers: /app/Observers/ (event listeners)
+├── Services: /app/Services/ (business logic)
+└── Database: /database/migrations/
+
+FRONTEND (React 18 + TypeScript)
+├── Vite (dev server)
+├── @tanstack/react-query v5 (server state management)
+├── React Router v6 (routing)
+├── Tailwind CSS + custom components
+└── Broadcasting: null (WebSockets disabled MVP)
+
+STRUKTURA FOLDERU:
+src/
+├── components/ui/          ← Komponenty ogólne (zawsze używaj!)
+├── features/
+│   ├── provider/           ← Dashboard dostawcy usług
+│   │   ├── pages/          ← Pełne widoki (BookingsPage.tsx)
+│   │   ├── dashboard/      ← Dashboard widgets
+│   │   ├── subscription/   ← Płatności + subskrypcje
+│   │   └── monetization/   ← Boost + promocje
+│   ├── customer/           ← Panel klienta
+│   ├── admin/              ← Panel administracyjny
+│   └── shared/             ← Wspólny kod
+└── hooks/                  ← Custom React Hooks
+```
+
+### Query Deduplication (React Query)
+```typescript
+// PROBLEM: Komponenty mogą robić duplikaty requestów
+// ROZWIĄZANIE: Inicjalizuj ALL queries w TOP-LEVEL component
+
+// ✅ POPRAWNIE (DashboardPage.tsx)
+export function DashboardPage() {
+  // Wszystkie query startują w tym samym render cycle
+  useRecentBookings(5);      // React Query widzi queryKey
+  useRecentMessages(5);      // Jeśli inny component też to robi
+  useRecentReviews(4);       // → automatycznie deduplikuje do 1 requesta!
+  
+  return (
+    <>
+      <RecentBookings />    {/* Używa cache z top-level */}
+      <RecentMessages />    {/* Używa cache z top-level */}
+      <RecentReviews />     {/* Używa cache z top-level */}
+    </>
+  )
+}
+
+// ❌ ŹRÓDŁA DUPLIKATÓW:
+// - Inicjalizowanie query w child component (każdy komponuje own request)
+// - Różne staleTime wartości (komponent myśli że cache stale)
+// - Prefetch bez proper hydration
+```
+
+### Global Query Configuration
+```typescript
+// src/main.tsx
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000,          // Cache ważny 60s
+      refetchOnWindowFocus: false,   // Nie refetch na focus
+      refetchOnMount: false,         // Nie refetch na mount jeśli cache jest
+      retry: 2,                      // 2 retry attempts
+    }
+  }
+})
+```
+
+---
+
+## 📝 REGUŁY KOMUNIKACJI I PRACY
+
+### 1. JĘZYK: POLSKI
+- ✅ Wszystkie odpowiedzi po polsku
+- ✅ Nazwy zmiennych: `booking.status`, `handleAcceptBooking()`
+- ✅ Komentarze w kodzie: polskie wyjaśnienia
+- ✅ Commit messages: po polsku
+
+### 2. COMMITY - FORMAT
+```
+git commit -m "Krótki opis (7 słów max)
+
+- Szczegółowa lista zmian
+- Po jednym bullet punkcie
+- Czemu to robiliśmy (business reason)"
+
+Przykład:
+"Refactor BookingsPage UI: use standard components
+
+- Replace hardcoded HTML <a>, <select>, <input> with Button, Link, Select
+- Change button sizes from lg to sm for better UX
+- Use Link component instead of <a href> for proper routing
+- Remove custom Tailwind styling in favor of component defaults"
+```
+
+### 3. ROLA: MENTOR/NAUCZYCIEL
+Przy każdym znaczącym kodzie wyjaśnij:
+- **CO**: Co ten kod robi?
+- **JAK**: Jak to działa (szczególnie React/JS)?
+- **CZEMU**: Jaki problem rozwiązuje?
+
+Przykład:
+```typescript
+// Hook do pobierania rezerwacji
+export function useRecentBookings(limit: number) {
+  // useQuery - React Query hook do fetchu danych z backendu
+  // Automatycznie cachuje, deduplicuje, refetchu
+  return useQuery({
+    queryKey: ['bookings', limit],  // Unique key dla cache
+    queryFn: async () => {
+      const res = await api.get(`/api/v1/provider/dashboard/bookings?limit=${limit}`);
+      return res.data; // Zwraca { data: Booking[], meta: {...} }
+    },
+    staleTime: 60 * 1000, // Cache ważny 60 sekund
+  });
+}
+
+// CZEMU to działania: Zamiast każdego komponentu robić własny fetch (duplikaty),
+// React Query centralizuje requesty i dzieli response między komponenty
+```
+
+---
+
+## 🎨 UI KOMPONENTY - ZAWSZE Z `src/components/ui`
+
+### Dostępne komponenty
+```typescript
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { Link } from 'react-router-dom';
+import { Card, StatCard } from '@/components/ui/card';
+import { 
+  PageTitle, SectionTitle, Text, Caption, 
+  Badge, StatValue, EmptyText 
+} from '@/components/ui/typography';
+import { Alert, Dialog, Tabs } from '@/components/ui/';
+```
+
+### Użycie - Przykład
+```typescript
+// ❌ ŹLES: Hardkodowany HTML
+<a href="/provider/bookings" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-cyan-500...">
+  Otwórz rezerwacje
+</a>
+
+// ✅ POPRAWNIE: Komponent Button + Link
+<Link to="/provider/bookings">
+  <Button variant="primary" size="sm">
+    Otwórz rezerwacje
+  </Button>
+</Link>
+
+// Button variants: primary | success | danger | info | warning | neutral
+// Button sizes: sm | md | lg
+```
+
+### Dodawanie nowych komponentów
+Jeśli brakuje, stwórz w `src/components/ui/[component].tsx`:
+```typescript
+// src/components/ui/badge.tsx
+import { cva } from 'class-variance-authority';
+
+const badgeVariants = cva('px-2 py-1 rounded-full text-xs font-semibold', {
+  variants: {
+    variant: {
+      primary: 'bg-cyan-100 text-cyan-900',
+      success: 'bg-green-100 text-green-900',
+    }
+  }
+});
+
+export function Badge({ variant = 'primary', children }: BadgeProps) {
+  return <span className={badgeVariants({ variant })}>{children}</span>;
+}
+```
+
+---
+
+## 💾 BAZA DANYCH - BEZ HARDKODOWANIA
+
+### ❌ ŹLES - Hardkodowane dane
+```typescript
+const bookings = [
+  { id: 1, customer: 'Anna Kowalska', date: '2025-01-01', status: 'confirmed' },
+  { id: 2, customer: 'Jan Nowak', date: '2025-01-02', status: 'pending' },
+];
+```
+
+### ✅ POPRAWNIE - Query hook
+```typescript
+// src/features/provider/dashboard/hooks/useDashboardData.ts
+export function useRecentBookings(limit: number = 5) {
+  return useQuery({
+    queryKey: ['bookings', limit],
+    queryFn: async () => {
+      const response = await apiClient.get(
+        `/api/v1/provider/dashboard/bookings?limit=${limit}&sort=-created_at`
+      );
+      return response.data; // Pobiera z bazy!
+    }
+  });
+}
+
+// Użycie w komponencie:
+export function RecentBookings() {
+  const { data, isLoading } = useRecentBookings(5);
+  
+  if (isLoading) return <Skeleton />;
+  
+  return (
+    <div>
+      {data?.map(booking => (
+        <BookingCard key={booking.id} booking={booking} />
+      ))}
+    </div>
+  );
+}
+```
+
+---
+
+## 🧪 DEV MODE - TESTING TOOLS
+
+### Implementacja: Dev-Only Popup z akcjami
+
+```typescript
+// src/components/dev/DevTools.tsx
+import { useEffect, useState } from 'react';
+
+export function DevTools() {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  if (!import.meta.env.DEV) return null; // Tylko w dev mode!
+  
+  return (
+    <>
+      {/* Toggle button - bottom-right corner */}
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="fixed bottom-4 right-4 z-50 bg-cyan-600 text-white px-3 py-2 rounded-lg text-xs font-bold"
+      >
+        🛠️ DEV
+      </button>
+      
+      {isOpen && (
+        <DevToolsPanel />
+      )}
+    </>
+  );
+}
+
+// src/components/dev/DevToolsPanel.tsx
+function DevToolsPanel() {
+  const queryClient = useQueryClient();
+  
+  return (
+    <div className="fixed bottom-16 right-4 z-50 bg-slate-900 text-white rounded-lg p-4 w-80 max-h-96 overflow-y-auto">
+      <h3 className="font-bold mb-4">Dev Tools</h3>
+      
+      {/* Seed Data */}
+      <div className="space-y-2 border-b pb-4 mb-4">
+        <h4 className="text-sm font-semibold">📊 Seed Data</h4>
+        <Button 
+          size="sm" 
+          onClick={() => seedBookings()}
+          className="w-full"
+        >
+          Generuj 10 rezerwacji
+        </Button>
+        <Button 
+          size="sm" 
+          onClick={() => seedMessages()}
+          className="w-full"
+        >
+          Generuj 5 wiadomości
+        </Button>
+      </div>
+      
+      {/* Trigger Events */}
+      <div className="space-y-2 border-b pb-4 mb-4">
+        <h4 className="text-sm font-semibold">🔔 Symuluj Eventy</h4>
+        <Button 
+          size="sm" 
+          onClick={() => simulateNewBooking()}
+          className="w-full"
+        >
+          Nowa rezerwacja
+        </Button>
+        <Button 
+          size="sm" 
+          onClick={() => simulateMessage()}
+          className="w-full"
+        >
+          Nowa wiadomość
+        </Button>
+      </div>
+      
+      {/* Cache Management */}
+      <div className="space-y-2">
+        <h4 className="text-sm font-semibold">💾 Cache</h4>
+        <Button 
+          size="sm" 
+          variant="danger"
+          onClick={() => queryClient.clear()}
+          className="w-full"
+        >
+          Wyczyść cache
+        </Button>
+      </div>
+    </div>
+  );
+}
+```
+
+### Użycie w App.tsx
+```typescript
+export function App() {
+  return (
+    <>
+      <DevTools />  {/* Pojawia się tylko w dev mode */}
+      {/* reszta aplikacji */}
+    </>
+  );
+}
+```
+
+---
+
+## 📚 DOKUMENTACJA - KOD + DOCS
+
+### 1. W KODZIE
+```typescript
+/**
+ * Hook do pobierania ostatnich rezerwacji dostawcy
+ * 
+ * @param limit - Ile rezerwacji pobrać (domyślnie 5)
+ * @returns Object z polami:
+ *   - data: Booking[] - tablica rezerwacji z bazy
+ *   - isLoading: boolean - czy trwa fetch
+ *   - error: Error | null - błąd jeśli był
+ * 
+ * @example
+ * const { data: bookings, isLoading } = useRecentBookings(10);
+ * 
+ * @note
+ * Hook automatycznie deduplikuje requesty jeśli inicjalizowany
+ * w top-level component (np. DashboardPage)
+ */
+export function useRecentBookings(limit: number = 5) {
+  // ...
+}
+```
+
+### 2. W DOCS - Spójna struktura
+```
+docs/
+├── ARCHITECTURE.md       - Opis ogólny systemu
+├── FRONTEND_STANDARDS.md - Reguły React/TypeScript
+├── BEST_PRACTICES.md     - Wzorce i anti-patterns
+├── API_ENDPOINTS.md      - Opis endpointów
+├── DATABASE.md           - Schemat bazy danych
+└── DEV_TOOLS.md          - Narzędzia developerskie
+```
+
+---
+
+## 👨‍💼 ADMIN PANEL - KAŻDY ELEMENT MUSI SIĘ POJAWIĆ
+
+### Struktura
+```typescript
+// Każda feature musi mieć:
+// 1. Widok dostawcy: src/features/provider/pages/XyzPage.tsx
+// 2. Widok admina: src/features/admin/pages/XyzManagementPage.tsx
+// 3. Wspólny Hook: src/hooks/useXyz.ts
+
+// Przykład: BookingsPage
+src/features/provider/pages/BookingsPage.tsx
+  ↓ Data + actions (useRecentBookings, handleAcceptBooking)
+src/features/admin/pages/BookingsManagementPage.tsx
+  ↓ Wgląd do wszystkich rezerwacji, moderacja
+src/hooks/useBookings.ts
+  ↓ Wspólna logika fetchu/mutacji
+```
+
+### Admin Features
+```typescript
+// Admin powinien widzieć:
+// ✅ Wszystkie rezerwacje (nie tylko swoje)
+// ✅ Historię zmian statusów
+// ✅ Informacje o dostawcy
+// ✅ Opcje do edycji/usunięcia
+// ✅ Analytics (widoki, konwersje)
+
+// src/features/admin/pages/BookingsManagementPage.tsx
+export function BookingsManagementPage() {
+  const { data: allBookings } = useAllBookings(); // ALL bookings
+  const { data: providers } = useProviders();
+  
+  return (
+    <div>
+      <h1>Zarządzanie rezerwacjami</h1>
+      
+      {/* Filtry */}
+      <Select value={providerFilter} onChange={setProviderFilter}>
+        {providers?.map(p => <option value={p.id}>{p.name}</option>)}
+      </Select>
+      
+      {/* Tabela */}
+      <table>
+        {allBookings?.map(booking => (
+          <BookingAdminRow key={booking.id} booking={booking} />
+        ))}
+      </table>
+    </div>
+  );
+}
+```
+
+---
+
+## 🚀 WORKFLOW - JAK ZACZĄĆ NOWY FEATURE
+
+### 1. Backend
+```bash
+# Migration
+php artisan make:migration create_new_feature_table
+
+# Model
+php artisan make:model NewFeature
+
+# Controller
+php artisan make:controller Api/NewFeatureController
+
+# API Endpoint
+POST /api/v1/provider/new-feature
+```
+
+### 2. Frontend - Hook
+```typescript
+// src/hooks/useNewFeature.ts
+export function useNewFeature() {
+  return useQuery({
+    queryKey: ['newFeature'],
+    queryFn: async () => {
+      const res = await apiClient.get('/api/v1/provider/new-feature');
+      return res.data;
+    }
+  });
+}
+```
+
+### 3. Frontend - Provider Component
+```typescript
+// src/features/provider/pages/NewFeaturePage.tsx
+import { useNewFeature } from '@/hooks/useNewFeature';
+
+export function NewFeaturePage() {
+  const { data, isLoading } = useNewFeature();
+  
+  return (
+    <div>
+      <PageTitle>Nowa Funkcja</PageTitle>
+      {/* UI */}
+    </div>
+  );
+}
+```
+
+### 4. Frontend - Admin Component
+```typescript
+// src/features/admin/pages/NewFeatureManagementPage.tsx
+// Duplikuj logic Provider page ale z ALL data access
+```
+
+### 5. Dokumentacja
+```markdown
+# docs/NEW_FEATURE.md
+
+## Opis
+Co robi ta feature?
+
+## Backend
+- Endpoint: POST /api/v1/provider/new-feature
+- Response: NewFeatureResponse
+
+## Frontend
+- Hook: useNewFeature()
+- Pages: NewFeaturePage, NewFeatureManagementPage
+```
+
+### 6. Commit
+```bash
+git commit -m "Dodaj nową funkcję: XYZ
+
+- Stwórz migration, model, controller w Laravel
+- Dodaj useNewFeature hook z React Query
+- Stwórz NewFeaturePage dla dostawcy
+- Stwórz NewFeatureManagementPage dla admina
+- Dokumentacja w docs/NEW_FEATURE.md
+
+Rozwiązuje: [feature request]"
+```
+
+---
+
+## ✅ CHECKLIST - PRZED COMMITEM
+
+- [ ] Kod używa tylko komponentów z `src/components/ui`
+- [ ] Brak hardkodowanych danych (wszystko z API)
+- [ ] Hook inicjalizowany w top-level (deduplication)
+- [ ] Odpowiednie stale/refetch values
+- [ ] Dokumentacja w kodzie (JSDoc comments)
+- [ ] Admin panel ma dostęp do tej samej feature
+- [ ] Build się buduje bez nowych błędów
+- [ ] Commit message po polsku z szczegółami
+- [ ] Dev tools - dodane testy/seed data
+- [ ] docs/ARCHITECTURE.md zaktualizowana
+
+---
+
+## 🎓 NAUCZANIE - KRÓTKIE WYJAŚNIENIA REACTA
+
+### useQuery (React Query)
+```typescript
+// Fetch danych z backendu + cache management
+const { data, isLoading, error } = useQuery({
+  queryKey: ['bookings', id],    // Cache key - unique identifier
+  queryFn: async () => {          // Async function do fetchu
+    const res = await fetch(...);
+    return res.json();
+  }
+});
+
+// React Query automatycznie:
+// ✅ Cachuje response (staleTime: 60s)
+// ✅ Deduplikuje requesty (jeśli kilka components robi useQuery same queryKey)
+// ✅ Refetchu na window focus (jeśli refetchOnWindowFocus: true)
+// ✅ Retry failed requesty
+```
+
+### useMutation (React Query)
+```typescript
+// POST/PUT/DELETE operacje (změny w bazie)
+const { mutate, isPending } = useMutation({
+  mutationFn: async (data) => {
+    return await apiClient.post('/api/...', data);
+  },
+  onSuccess: (response) => {
+    // Invalidate query cache - wymusimy refetch
+    queryClient.invalidateQueries({ queryKey: ['bookings'] });
+  }
+});
+
+// Użycie
+<button onClick={() => mutate({ id: 1, status: 'confirmed' })}>
+  Zaakceptuj
+</button>
+```
+
+### useEffect
+```typescript
+// Efekty uboczne (fetch, subscriby, timery)
+useEffect(() => {
+  // Kod tutaj uruchamia się JEŚLI zmieniły się dependencies
+  const fetchData = async () => {
+    const data = await fetch(...);
+  };
+  fetchData();
+}, [dependency]); // Jeśli dependency się zmieni - uruchom effect ponownie
+
+// Unikaj effectów - używaj useQuery zamiast tego!
+```
+
+---
+
+## 📞 KONTAKT/PYTANIA
+
+Jeśli coś nie jest jasne:
+1. Zapytaj - wyjaśnię detali
+2. Pokaż przykład co chcesz zrobić
+3. Razem naprawimy/wyjaśnimy
+
+Celem jest nauczanie przez robienie! 🚀

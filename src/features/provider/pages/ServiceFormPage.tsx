@@ -99,6 +99,31 @@ const mapServiceToForm = (service: ServiceDetail, locations: Location[]) => {
   };
 };
 
+/**
+ * Service Form Page - Create/Edit Services
+ * 
+ * Kompletny formularz do tworzenia i edytowania usług providera:
+ * 
+ * Sekcje:
+ * - Informacje podstawowe (tytuł, opis, kategoria)
+ * - Ceny (typ: hourly, fixed, quote z zakresami)
+ * - Rezerwacja (instant booking, min notice, max advance)
+ * - Lokalizacja (mapa, dystans podróży, opłata za dojazd)
+ * - Zawartość usługi (co jest wliczone, wymagania, narzędzia)
+ * - Zdjęcia (drag & drop, ustawianie głównego, alt text)
+ * - SEO (meta title, description)
+ * - Status (active/paused)
+ * 
+ * Features:
+ * - Drag & drop zdjęć
+ * - Mapa interaktywna do wyboru lokalizacji
+ * - Validacja cen (logika zmiany przy zmianie typu)
+ * - Auto-save na blur
+ * - Potwierdzenie przed usunięciem
+ * 
+ * @component
+ * @returns {React.ReactElement} Service form with full editing capabilities
+ */
 const ServiceFormPage: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
   const serviceId = id ? Number(id) : null;

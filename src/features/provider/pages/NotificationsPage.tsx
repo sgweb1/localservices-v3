@@ -54,9 +54,23 @@ const getNotificationMessage = (notification: Notification): string => {
 };
 
 /**
- * Notifications Page - zgodny z localservices
+ * Notifications Management Page
  * 
- * Timeline powiadomień z typami, akcjami, mark as read.
+ * Timeline powiadomień z możliwościami:
+ * - Filtrowanie po typie: booking, message, review, payment
+ * - Oznaczanie jako przeczytane (jedno/wszystkie)
+ * - Wyszukiwanie
+ * - Usuwanie powiadomień
+ * - Licznik nieprzeczytanych
+ * 
+ * Event types:
+ * - booking.* - powiadomienia o rezerwacjach
+ * - message.* - nowe wiadomości
+ * - review.* - opinie klientów
+ * - payment.* - płatności
+ * 
+ * @component
+ * @returns {React.ReactElement} Notifications timeline with filters and actions
  */
 export const NotificationsPage: React.FC = () => {
   const [page] = useState(1);

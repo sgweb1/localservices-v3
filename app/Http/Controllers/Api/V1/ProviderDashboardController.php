@@ -69,19 +69,19 @@ class ProviderDashboardController extends Controller
         $user = $request->user();
         $limit = (int) $request->query('limit', 5);
 
-        $bookings = $user->provider_bookings()
-            ->with(['customer:id,name,avatar', 'service:id,name'])
+        $bookings = $user->bookingsAsProvider()
+            ->with(['customer:id,name,avatar', 'service:id,title'])
             ->latest('created_at')
             ->limit($limit)
             ->get()
             ->map(fn ($booking) => [
                 'id' => $booking->id,
                 'customer_name' => $booking->customer->name,
-                'service' => $booking->service->name,
-                'date' => $booking->scheduled_at->format('Y-m-d'),
-                'time' => $booking->scheduled_at->format('H:i'),
-                'status' => $booking->status->value,
-                'location' => $booking->location,
+                'service' => $booking->service->title,
+                'date' => $booking->booking_date->format('Y-m-d'),
+                'time' => $booking->start_time,
+                'status' => $booking->status,
+                'location' => $this->formatLocationAddress($booking->service_address),
             ]);
 
         return response()->json(['data' => $bookings]);
@@ -144,7 +144,7 @@ class ProviderDashboardController extends Controller
         $user = $request->user();
         $limit = (int) $request->query('limit', 4);
 
-        $reviews = \App\Models\Review::where('provider_id', $user->id)
+        $reviews = \App\Models\Review::where('reviewed_id', $user->id)
             ->with('reviewer:id,name,avatar')
             ->latest('created_at')
             ->limit($limit)
@@ -171,15 +171,66 @@ class ProviderDashboardController extends Controller
     public function performance(Request $request): JsonResponse
     {
         $user = $request->user();
-        $profile = $user->providerProfile;
+        
+        // Zbierz metryki wydajności z dostępnych danych
+        $totalViews = $user->serviceListings()->sum('views_count') ?? 0;
+        
+        // Czas odpowiedzi i ocena
+        $avgResponseTime = $user->providerProfile?->response_time_hours ?? 0;
+        $avgRating = $user->reviewsReceived()
+            ->whereNotNull('rating')
+            ->avg('rating') ?? null;
 
         $data = [
-            'response_time' => $profile->response_time_hours ?? 0,
-            'completion_rate' => $profile->completion_rate ?? 0,
-            'cancellation_rate' => $profile->cancellation_rate ?? 0,
-            'customer_satisfaction' => $profile->average_rating ?? 0,
+            'views' => (int)$totalViews,
+            'favorited' => 0, // TODO: Zaimplementować tracking ulubionych usług
+            'avg_response_time' => $this->formatResponseTime($avgResponseTime),
+            'rating' => $avgRating ? round($avgRating, 1) : null,
+            'period_label' => 'Ostatnie 30 dni',
         ];
 
         return response()->json(['data' => $data]);
+    }
+
+    /**
+     * Formatuje czas odpowiedzi na czytelny tekst
+     */
+    private function formatResponseTime(mixed $hours): string
+    {
+        $hours = (float)$hours; // Konwertuj na float
+        
+        if ($hours === 0.0 || $hours === 0) {
+            return '< 1h';
+        }
+        
+        if ($hours < 1) {
+            return (int)($hours * 60) . ' min';
+        }
+        
+        if ($hours < 24) {
+            return (int)$hours . 'h';
+        }
+        
+        return round($hours / 24, 1) . ' dni';
+    }
+
+    /**
+     * Formatuje adres usługi do standardowego formatu
+     */
+    private function formatLocationAddress(mixed $address): ?array
+    {
+        if (!$address) {
+            return null;
+        }
+
+        $decoded = is_string($address)
+            ? json_decode($address, true)
+            : $address;
+
+        return [
+            'street' => $decoded['street'] ?? null,
+            'city' => $decoded['city'] ?? null,
+            'postal_code' => $decoded['postal_code'] ?? $decoded['postalCode'] ?? null,
+        ];
     }
 }

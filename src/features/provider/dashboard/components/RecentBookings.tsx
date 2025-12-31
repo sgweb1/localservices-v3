@@ -14,7 +14,11 @@ type RecentBooking = {
   status: string;
   date: string;
   time: string;
-  location: string;
+  location: {
+    street: string;
+    city: string;
+    postal_code: string;
+  };
 };
 
 /**
@@ -122,7 +126,7 @@ export const RecentBookings: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin size={14} className="text-teal-600" />
-                  {booking.location}
+                  {booking.location?.city || 'Bez lokalizacji'}
                 </div>
               </div>
             </div>

@@ -24,11 +24,11 @@ class ChannelDispatcher
         }
 
         try {
-            $subject = $this->interpolator->interpolate($template->email_subject, $variables);
+            $emailSubject = $this->interpolator->interpolate($template->email_subject, $variables);
             $body = $this->interpolator->interpolate($template->email_body, $variables);
             $actionUrl = $this->interpolator->interpolate($template->email_action_url ?? '', $variables);
             Mail::to($user->email)->send(
-                new GenericNotificationMail($subject, $body, $actionUrl ?: null)
+                new GenericNotificationMail($emailSubject, $body, $actionUrl ?: null)
             );
 
             return true;

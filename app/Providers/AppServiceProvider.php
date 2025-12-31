@@ -40,5 +40,15 @@ class AppServiceProvider extends ServiceProvider
         Message::observe(MessageObserver::class);
         
         // Eventy są rejestrowane w EventServiceProvider
+        
+        // Force HTTPS w dev mode dla Vite
+        if (config('app.env') === 'local' && file_exists(public_path('hot'))) {
+            $hotContent = file_get_contents(public_path('hot'));
+            // Replace HTTP z HTTPS w hot file
+            if (strpos($hotContent, 'http://') === 0 && strpos(config('app.url'), 'https://') === 0) {
+                $httpsContent = str_replace('http://', 'https://', $hotContent);
+                file_put_contents(public_path('hot'), $httpsContent);
+            }
+        }
     }
 }

@@ -7,10 +7,23 @@ import { Button } from '@/components/ui/button';
 import { PLAN_LIMITS, LIMITS_COMPARISON } from '../subscription/constants/planLimits';
 
 /**
- * Subscription Page - zgodny z localservices
+ * Subscription Management Page
  * 
- * Aktualny plan + limity + porównanie planów + upgrade CTA.
- * Treści marketingowe spójne z resztą panelu providera.
+ * Zarządzanie subskrypcją i planem providera:
+ * - Wyświetlanie aktualnego planu i jego limitów
+ * - Porównanie dostępnych planów
+ * - Informacje o zaletach każdego planu
+ * - CTA do upgrade/downgrade
+ * - Informacje o naliczaniu opłat
+ * 
+ * Dostępne plany:
+ * - free: Do 5 usług, 5 zdjęć
+ * - basic: Do 25 usług, 50 zdjęć
+ * - pro: Nieograniczone usługi, zaawansowana analityka
+ * - premium: Wszystkie funkcje + priorytet i dedykowany manager
+ * 
+ * @component
+ * @returns {React.ReactElement} Subscription dashboard with plan comparison
  */
 export const SubscriptionPage: React.FC = () => {
   const { data, isLoading, error } = useSubscription();

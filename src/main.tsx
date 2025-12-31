@@ -22,6 +22,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { Footer } from './components/Footer';
 import { useToastNotifications } from './hooks/useToastNotifications';
 import '../resources/css/app.css';
+import './styles/select.css';
 
 const rootEl = document.getElementById('root');
 if (!rootEl) throw new Error('Root element not found');

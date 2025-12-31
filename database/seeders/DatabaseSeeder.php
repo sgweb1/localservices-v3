@@ -31,6 +31,9 @@ class DatabaseSeeder extends Seeder
             PaymentSeeder::class,
             InvoiceSeeder::class,
             AnalyticsSeeder::class,
+
+            // Test seeders dla dostawców
+            PlumberHydraulik1Seeder::class,
         ]);
     }
 }

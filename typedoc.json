@@ -1,0 +1,19 @@
+{
+  "entryPoints": [
+    "src/features/provider/pages/BookingsPage.tsx",
+    "src/features/provider/pages/NotificationsPage.tsx",
+    "src/features/provider/pages/ReviewsPage.tsx",
+    "src/features/provider/pages/SubscriptionPage.tsx",
+    "src/features/provider/pages/ServiceFormPage.tsx",
+    "src/features/provider/hooks/useBookings.ts"
+  ],
+  "out": "docs",
+  "theme": "default",
+  "readme": "README.md",
+  "includeVersion": true,
+  "categorizeByGroup": true,
+  "excludePrivate": true,
+  "sort": ["kind", "alphabetical"],
+  "hideGenerator": false,
+  "name": "LocalServices Provider Dashboard API"
+}
