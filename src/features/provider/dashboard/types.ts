@@ -175,6 +175,15 @@ export interface ServicesCard {
   services: ServiceItem[];  // top 6 by views_count
 }
 
+// ==================== DASHBOARD STATS (HERO) ====================
+
+export interface DashboardStats {
+  upcoming_bookings: number;   // Rezerwacje w najbliższych 7 dniach
+  active_services: number;     // Liczba aktywnych usług
+  trust_score: number;         // Trust Score (0-100)
+  verification_level: number;  // Poziom weryfikacji (0-3)
+}
+
 // ==================== DASHBOARD WIDGETS (ALL) ====================
 
 export interface DashboardWidgets {
@@ -202,6 +211,7 @@ export interface DashboardWidgets {
   notifications?: NotificationsCard;
   services?: ServicesCard;
   live_activity?: { activities: unknown[] };
+  stats?: DashboardStats;
 }
 
 // ==================== API RESPONSE ====================

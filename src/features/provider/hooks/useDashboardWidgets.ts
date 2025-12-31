@@ -30,7 +30,7 @@ export function useDashboardWidgets(): UseQueryResult<DashboardWidgets, Error> {
       // Efekt: zmniejsza load time poprzez pominięcie N+1 queries dla nieużywanych widgetów
       const response = await apiClient.get<DashboardWidgets>('/provider/dashboard/widgets', {
         params: {
-          fields: ['pipeline', 'performance', 'insights', 'messages'].join(',')
+          fields: ['pipeline', 'performance', 'insights', 'messages', 'stats'].join(',')
         }
       });
       return response.data;

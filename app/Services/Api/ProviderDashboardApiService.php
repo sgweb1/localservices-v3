@@ -43,7 +43,7 @@ class ProviderDashboardApiService
         if ($fields === null) {
             $fields = [
                 'plan', 'addons', 'pipeline', 'insights', 'tasks', 'performance',
-                'calendar', 'messages', 'notifications', 'services', 'live_activity'
+                'calendar', 'messages', 'notifications', 'services', 'live_activity', 'stats'
             ];
         }
 
@@ -359,6 +359,54 @@ class ProviderDashboardApiService
             'repeat_customers' => $profile?->repeat_customers,
             'cancellation_rate' => $profile?->cancellation_rate,
             'trust_score' => $profile?->trust_score ?? $provider->getTrustScore(),
+        ];
+    }
+
+    /**
+     * Widget: Stats (Dashboard Hero)
+     * 
+     * Podstawowe statystyki wyświetlane w hero section dashboardu:
+     * - upcoming_bookings: rezerwacje w najbliższych 7 dniach
+     * - active_services: liczba aktywnych usług providera
+     * - trust_score: Trust Score providera
+     * - verification_level: poziom weryfikacji (0-3)
+     * 
+     * @param User $provider
+     * @return array{upcoming_bookings: int, active_services: int, trust_score: int, verification_level: int}
+     */
+    protected function prepareStats(User $provider): array
+    {
+        $profile = $provider->providerProfile;
+        
+        // Nadchodzące rezerwacje (pending + confirmed) w najbliższych 7 dniach
+        $upcomingBookings = Booking::query()
+            ->where('provider_id', $provider->id)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->where('booking_date', '>=', now())
+            ->where('booking_date', '<=', now()->addDays(7))
+            ->count();
+
+        // Aktywne usługi (is_active = true)
+        $activeServices = $provider->serviceListings()
+            ->where('is_active', true)
+            ->count();
+
+        // Trust Score
+        $trustScore = $profile?->trust_score ?? $provider->getTrustScore();
+
+        // Poziom weryfikacji (0 = brak, 1 = email, 2 = email + phone, 3 = full)
+        // TODO: Zaimplementować logikę weryfikacji w LS2
+        $verificationLevel = 0;
+        if ($provider->email_verified_at) {
+            $verificationLevel = 1;
+        }
+        // W przyszłości dodać: phone_verified_at, identity_verified_at
+
+        return [
+            'upcoming_bookings' => $upcomingBookings,
+            'active_services' => $activeServices,
+            'trust_score' => $trustScore,
+            'verification_level' => $verificationLevel,
         ];
     }
 
