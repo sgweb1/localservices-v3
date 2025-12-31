@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Ban, Trash2, Edit2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -118,27 +118,19 @@ export const BlockModal: React.FC<BlockModalProps> = ({
           {/* Formularz dodawania */}
           <div className="space-y-6 pb-6 border-b border-slate-200">
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-normal text-slate-700 mb-1.5">
-                  📅 Data rozpoczęcia
-                </label>
-                <Input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                />
-              </div>
+              <DatePicker
+                label="📅 Data rozpoczęcia"
+                value={startDate}
+                onChange={(value) => setStartDate(value)}
+                placeholder="Wybierz datę"
+              />
 
-              <div>
-                <label className="block text-xs font-normal text-slate-700 mb-1.5">
-                  📅 Data zakończenia
-                </label>
-                <Input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                />
-              </div>
+              <DatePicker
+                label="📅 Data zakończenia"
+                value={endDate}
+                onChange={(value) => setEndDate(value)}
+                placeholder="Wybierz datę"
+              />
             </div>
 
             <div>

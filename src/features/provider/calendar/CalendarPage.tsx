@@ -730,7 +730,7 @@ export const CalendarPage: React.FC = () => {
 
           {/* Widok grid (kalendarz) */}
           {viewMode === 'grid' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-px bg-slate-200">
+          <div className="grid gap-px bg-slate-200" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
             {DAYS_OF_WEEK.map((day) => {
               const date = weekDates[day.value];
               const dateStr = date ? `${date.getDate()}.${String(date.getMonth() + 1).padStart(2, '0')}` : '';

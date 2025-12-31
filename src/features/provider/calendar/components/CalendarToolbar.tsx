@@ -19,7 +19,13 @@
 
 import React from 'react';
 import { LayoutGrid, List, Calendar, Sparkles } from 'lucide-react';
-import { Select } from '@/components/ui/select';
+import {
+  SelectRoot,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select-radix';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
@@ -82,15 +88,16 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
         </div>
 
         {/* Filter dropdown */}
-        <Select
-          value={filterMode}
-          onChange={(e) => setFilterMode(e.target.value as 'all' | 'active' | 'full')}
-          className="px-3 py-2 text-xs border-2 border-slate-200 rounded-lg bg-white focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all"
-        >
-          <option value="all">Wszystkie sloty</option>
-          <option value="active">Tylko aktywne</option>
-          <option value="full">Tylko pełne</option>
-        </Select>
+        <SelectRoot value={filterMode} onValueChange={(val) => setFilterMode(val as 'all' | 'active' | 'full')}>
+          <SelectTrigger className="px-3 py-2 text-xs border-2 border-slate-200 rounded-lg bg-white focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Wszystkie sloty</SelectItem>
+            <SelectItem value="active">Tylko aktywne</SelectItem>
+            <SelectItem value="full">Tylko pełne</SelectItem>
+          </SelectContent>
+        </SelectRoot>
 
         {/* Show bookings toggle */}
         <Button

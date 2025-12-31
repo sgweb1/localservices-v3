@@ -65,7 +65,7 @@ class CalendarController extends Controller
 
         $bookings = Booking::where('provider_id', $providerId)
             ->where('hidden_by_provider', false)
-            ->whereIn('status', ['pending', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show', 'rejected'])
+            ->whereIn('status', ['pending', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show'])
             ->whereBetween('booking_date', [$startDate, $endDate])
             ->with(['customer:id,name,email', 'service:id,title'])
             ->orderBy('booking_date')

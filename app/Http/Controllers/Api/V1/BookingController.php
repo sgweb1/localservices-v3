@@ -94,7 +94,7 @@ class BookingController extends Controller
         $validated = $request->validate([
             'page' => 'integer|min:1',
             'per_page' => 'integer|min:1|max:50',
-            'status' => 'string|in:pending,confirmed,completed,cancelled,rejected,in_progress',
+            'status' => 'string|in:pending,confirmed,completed,cancelled,in_progress',
             'hidden' => 'string|in:visible,hidden,all',
             'sort_by' => 'string|in:booking_date,created_at,total_price',
             'sort_order' => 'string|in:asc,desc',
@@ -128,7 +128,7 @@ class BookingController extends Controller
         $validated = $request->validate([
             'page' => 'integer|min:1',
             'per_page' => 'integer|min:1|max:50',
-            'status' => 'string|in:pending,confirmed,completed,cancelled,rejected,in_progress',
+            'status' => 'string|in:pending,confirmed,completed,cancelled,in_progress',
             'hidden' => 'string|in:visible,hidden,all',
             'sort_by' => 'string|in:booking_date,created_at,total_price',
             'sort_order' => 'string|in:asc,desc',
@@ -156,7 +156,7 @@ class BookingController extends Controller
         $validated = $request->validate([
             'page' => 'integer|min:1',
             'per_page' => 'integer|min:1|max:50',
-            'status' => 'string|in:pending,confirmed,completed,cancelled,rejected,in_progress',
+            'status' => 'string|in:pending,confirmed,completed,cancelled,in_progress',
             'sort_by' => 'string|in:booking_date,created_at,total_price',
             'sort_order' => 'string|in:asc,desc',
         ]);
@@ -348,7 +348,7 @@ class BookingController extends Controller
         
         // Odrzuć rezerwację
         $booking->update([
-            'status' => 'rejected',
+            'status' => 'cancelled',
             'cancelled_by' => $request->user()->id,
             'cancelled_at' => now(),
             'cancellation_reason' => $validated['reason'] ?? 'Odrzucone przez providera',
