@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Calendar, MessagesSquare, Briefcase, CreditCard, Settings, CalendarDays, User, Zap } from 'lucide-react';
+import { LayoutDashboard, Calendar, MessagesSquare, Briefcase, CreditCard, Settings, CalendarDays, User, Zap, FlaskConical } from 'lucide-react';
 import { useConversations } from '@/features/provider/hooks/useConversations';
 
 const navItems = [
@@ -14,6 +14,11 @@ const navItems = [
   { to: '/provider/monetization/subscription', label: 'Subskrypcja', icon: CreditCard },
   { to: '/provider/settings', label: 'Ustawienia', icon: Settings },
 ];
+
+// Dev items - tylko w dev mode
+const devItems = import.meta.env.DEV ? [
+  { to: '/provider/dev-simulator', label: 'Dev Simulator', icon: FlaskConical, devOnly: true },
+] : [];
 
 export const Sidebar: React.FC = () => {
   const { data: conversationsData } = useConversations(false);
@@ -46,6 +51,30 @@ export const Sidebar: React.FC = () => {
               )}
             </NavLink>
           ))}
+          
+          {/* Dev items - tylko w development mode */}
+          {devItems.length > 0 && (
+            <>
+              <div className="border-t border-gray-200 my-2" />
+              {devItems.map(({ to, label, icon: Icon }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) => `flex items-center gap-3 px-3 py-2 rounded-xl font-semibold transition-all ${
+                    isActive
+                      ? 'bg-gradient-to-r from-orange-600 to-red-600 text-white shadow'
+                      : 'text-orange-600 hover:bg-orange-50 border border-orange-200'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span className="text-sm flex-1">{label}</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold bg-orange-600 text-white">
+                    DEV
+                  </span>
+                </NavLink>
+              ))}
+            </>
+          )}
         </nav>
       </div>
     </aside>

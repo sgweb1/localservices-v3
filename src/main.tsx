@@ -14,11 +14,14 @@ import { ProviderLayout } from './features/provider/dashboard/components/Provide
 import { BookingsPageWithTabs } from './features/provider/pages/BookingsPageWithTabs';
 import { MessagesPage } from './features/provider/pages/MessagesPage';
 import { ServicesPage as ProviderServicesPage } from './features/provider/pages/ServicesPage';
+import ServiceFormPageV2 from './features/provider/pages/ServiceFormPageV2';
+import ServiceFormPage from './features/provider/pages/ServiceFormPage';
 import { SettingsPage } from './features/provider/pages/SettingsPage';
 import { BoostPurchase, SubscriptionPurchase, BoostList, SubscriptionList } from './features/provider/monetization/components';
 import { CheckoutSuccess, CheckoutCancel } from './features/provider/monetization/pages';
 import { CalendarPage } from './features/provider/calendar/CalendarPage';
 import { ProfilePage } from './features/provider/profile/ProfilePage';
+import { DevSimulatorPage } from './features/provider/pages/DevSimulatorPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Footer } from './components/Footer';
@@ -323,12 +326,16 @@ const App = () => {
             <Route path="calendar" element={<CalendarPage />} />
             <Route path="messages" element={<MessagesPage />} />
             <Route path="services" element={<ProviderServicesPage />} />
+            <Route path="services/create" element={<ServiceFormPage />} />
+            <Route path="services/edit/:id" element={<ServiceFormPageV2 />} />
+            <Route path="services/edit-legacy/:id" element={<ServiceFormPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="monetization/boost" element={<BoostPurchase />} />
             <Route path="monetization/subscription" element={<SubscriptionPurchase />} />
             <Route path="monetization/boosts" element={<BoostList />} />
             <Route path="monetization/subscriptions" element={<SubscriptionList />} />
+            <Route path="dev-simulator" element={<DevSimulatorPage />} />
           </Route>
         </Routes>
       </main>

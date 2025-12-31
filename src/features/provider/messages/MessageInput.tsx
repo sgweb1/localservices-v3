@@ -65,34 +65,35 @@ export const MessageInput: React.FC<MessageInputProps> = ({ onSend, isLoading })
   };
 
   return (
-    <div className="px-6 py-4 bg-white border-t border-slate-200">
+    <div className="px-3 sm:px-6 py-3 sm:py-4 bg-white border-t border-slate-200">
       {/* Attachments preview */}
       {attachments.length > 0 && (
         <div className="mb-3 flex flex-wrap gap-2">
           {attachments.map((file, index) => (
             <div
               key={index}
-              className="relative group bg-slate-100 rounded-lg p-2 pr-8 flex items-center gap-2"
+              className="relative group bg-slate-100 rounded-lg p-2 pr-8 flex items-center gap-2 max-w-full"
             >
               {file.type.startsWith('image/') ? (
                 <>
-                  <ImageIcon className="w-5 h-5 text-slate-600" />
+                  <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 flex-shrink-0" />
                   <img
                     src={URL.createObjectURL(file)}
                     alt={file.name}
-                    className="w-12 h-12 object-cover rounded"
+                    className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded flex-shrink-0"
                   />
                 </>
               ) : (
-                <ImageIcon className="w-5 h-5 text-slate-600" />
+                <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 flex-shrink-0" />
               )}
-              <div className="text-sm">
-                <p className="font-medium text-slate-900 truncate max-w-[150px]">{file.name}</p>
+              <div className="text-sm min-w-0 flex-1">
+                <p className="font-medium text-slate-900 truncate">{file.name}</p>
                 <p className="text-xs text-slate-500">{(file.size / 1024).toFixed(1)} KB</p>
               </div>
               <button
                 onClick={() => removeAttachment(index)}
-                className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors flex-shrink-0"
+                aria-label="Usu\u0144 za\u0142\u0105cznik"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -101,7 +102,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ onSend, isLoading })
         </div>
       )}
 
-      <div className="flex items-end gap-2">
+      <div className="flex items-end gap-1 sm:gap-2">
         {/* File upload */}
         <input
           ref={fileInputRef}
@@ -113,20 +114,22 @@ export const MessageInput: React.FC<MessageInputProps> = ({ onSend, isLoading })
         />
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600"
+          className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600 flex-shrink-0 touch-manipulation"
           disabled={isLoading}
+          aria-label="Dodaj za\u0142\u0105cznik"
         >
-          <Paperclip className="w-5 h-5" />
+          <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
 
         {/* Emoji picker */}
-        <div className="relative">
+        <div className="relative flex-shrink-0">
           <button
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600"
+            className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600 touch-manipulation"
             disabled={isLoading}
+            aria-label="Dodaj emoji"
           >
-            <Smile className="w-5 h-5" />
+            <Smile className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
           
           {showEmojiPicker && (
@@ -142,9 +145,9 @@ export const MessageInput: React.FC<MessageInputProps> = ({ onSend, isLoading })
           value={message}
           onChange={handleTextareaChange}
           onKeyDown={handleKeyDown}
-          placeholder="Napisz wiadomość..."
+          placeholder="Napisz wiadomo\u015b\u0107..."
           disabled={isLoading}
-          className="flex-1 px-4 py-2 bg-slate-100 border-0 rounded-full resize-none focus:ring-2 focus:ring-cyan-500 focus:bg-white transition-all text-sm max-h-[150px]"
+          className="flex-1 px-3 sm:px-4 py-2 bg-slate-100 border-0 rounded-full resize-none focus:ring-2 focus:ring-cyan-500 focus:bg-white transition-all text-sm max-h-[150px] min-w-0"
           rows={1}
         />
 
@@ -152,12 +155,13 @@ export const MessageInput: React.FC<MessageInputProps> = ({ onSend, isLoading })
         <button
           onClick={handleSend}
           disabled={isLoading || (!message.trim() && attachments.length === 0)}
-          className="p-2.5 bg-gradient-to-br from-cyan-500 to-teal-500 text-white rounded-full hover:shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="p-2 sm:p-2.5 bg-gradient-to-br from-cyan-500 to-teal-500 text-white rounded-full hover:shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex-shrink-0 touch-manipulation"
+          aria-label="Wy\u015blij wiadomo\u015b\u0107"
         >
           {isLoading ? (
-            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : (
-            <Send className="w-5 h-5" />
+            <Send className="w-4 h-4 sm:w-5 sm:h-5" />
           )}
         </button>
       </div>

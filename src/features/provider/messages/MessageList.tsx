@@ -58,12 +58,12 @@ export const MessageList: React.FC<MessageListProps> = ({
     <div
       ref={scrollRef}
       onScroll={handleScroll}
-      className="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-4 bg-slate-50"
+      className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4 bg-slate-50"
     >
       {/* Load more indicator */}
       {isFetchingNextPage && (
         <div className="text-center py-2">
-          <div className="inline-block w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+          <div className="inline-block w-5 h-5 sm:w-6 sm:h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
         </div>
       )}
 
@@ -80,19 +80,19 @@ export const MessageList: React.FC<MessageListProps> = ({
           <div key={message.id} className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
             {/* Avatar (only for other user's messages) */}
             {!isOwnMessage && (
-              <div className={`w-8 h-8 mr-2 ${showAvatar ? '' : 'invisible'}`}>
+              <div className={`w-6 h-6 sm:w-8 sm:h-8 mr-1.5 sm:mr-2 flex-shrink-0 ${showAvatar ? '' : 'invisible'}`}>
                 {showAvatar && (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center text-white text-xs font-semibold">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center text-white text-xs font-semibold">
                     {message.sender?.name.charAt(0).toUpperCase()}
                   </div>
                 )}
               </div>
             )}
 
-            <div className={`max-w-[70%] ${isOwnMessage ? 'items-end' : 'items-start'} flex flex-col`}>
+            <div className={`max-w-[85%] sm:max-w-[75%] md:max-w-[70%] ${isOwnMessage ? 'items-end' : 'items-start'} flex flex-col`}>
               {/* Timestamp */}
               {showTimestamp && (
-                <div className="text-xs text-slate-500 mb-2 px-3">
+                <div className="text-xs text-slate-500 mb-1.5 sm:mb-2 px-2 sm:px-3">
                   {format(new Date(message.created_at), 'HH:mm', { locale: pl })}
                 </div>
               )}

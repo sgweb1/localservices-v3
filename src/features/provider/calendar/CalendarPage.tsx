@@ -4,15 +4,23 @@ import { toast } from 'sonner';
 import { apiClient } from '@/api/client';
 import { useConfirm } from '@/hooks/useConfirm';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { CalendarDevTools } from './CalendarDevTools';
 import { BlockModal } from './BlockModal';
-import { Select } from '@/components/ui/select';
+import {
+  SelectRoot,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select-radix';
 import { TimePicker } from '@/components/ui/time-picker';
 import { DayMultiSelect } from '@/components/ui/day-multi-select';
 import { BulkActionsBar } from '@/components/ui/bulk-actions-bar';
 import { SkeletonLoader } from '@/components/ui/skeleton-loader';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { CalendarHeader } from './components/CalendarHeader';
 import { 
   useCalendar, 
   useGlobalCalendarStats,
@@ -524,61 +532,27 @@ export const CalendarPage: React.FC = () => {
   return (
     <div className="space-y-4 md:space-y-6 pb-24 md:pb-6 max-w-[990px]">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-4 md:p-0">
-        <div>
-          <h1 className="text-xl md:text-2xl font-semibold text-slate-900">Kalendarz Dostępności</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            {stats.total} {stats.total === 1 ? 'slot' : 'slotów'} • {data?.bookings.length || 0} {data?.bookings.length === 1 ? 'rezerwacja' : 'rezerwacji'}
-          </p>
-        </div>
-        
-        {/* Desktop actions */}
-        <div className="hidden md:flex items-center gap-2">
-          <Button
-            onClick={() => setSelectionMode(!selectionMode)}
-            variant={selectionMode ? "primary" : "neutral"}
-            size="sm"
-            className="text-xs"
-          >
-            <CheckSquare className="w-3.5 h-3.5" />
-            {selectionMode ? 'Anuluj zaznaczanie' : 'Zaznacz'}
-          </Button>
+      <CalendarHeader
+        totalSlots={stats.total}
+        totalBookings={data?.bookings.length || 0}
+        selectionMode={selectionMode}
+        onToggleSelection={() => setSelectionMode(!selectionMode)}
+        onAddSlot={() => {
+          const today = new Date();
+          const currentDayOfWeek = today.getDay() === 0 ? 7 : today.getDay();
           
-          <Button
-            onClick={() => {
-              // Ustaw domyślny dzień na poniedziałek wybranego tygodnia
-              const mondayDate = weekDates[1];
-              const today = new Date();
-              const currentDayOfWeek = today.getDay() === 0 ? 7 : today.getDay();
-              
-              setNewSlot({
-                day_of_week: currentWeekOffset === 0 ? currentDayOfWeek : 1,
-                start_time: '09:00',
-                end_time: '17:00',
-                max_bookings: 1,
-              });
-              setIsRecurring(false);
-              setSelectedDays([]);
-              setShowAddModal(true);
-            }}
-            variant="primary"
-            size="sm"
-            className="text-xs"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Dodaj dostępność</span>
-          </Button>
-          <Button
-            onClick={() => setShowBlockModal(true)}
-            variant="danger"
-            size="sm"
-            className="text-xs"
-          >
-            <Ban className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Urlopy/Bloki</span>
-          </Button>
-        </div>
-      </div>
+          setNewSlot({
+            day_of_week: currentWeekOffset === 0 ? currentDayOfWeek : 1,
+            start_time: '09:00',
+            end_time: '17:00',
+            max_bookings: 1,
+          });
+          setIsRecurring(false);
+          setSelectedDays([]);
+          setShowAddModal(true);
+        }}
+        onManageBlocks={() => setShowBlockModal(true)}
+      />
 
       {/* Stats cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 px-4 md:px-0">
@@ -653,43 +627,60 @@ export const CalendarPage: React.FC = () => {
           </div>
 
           {/* Filter */}
-          <Select
-            value={filterMode}
-            onChange={(e) => setFilterMode(e.target.value as any)}
-            className="px-3 py-2 text-xs border-2 border-slate-200 rounded-lg bg-white focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all"
-          >
-            <option value="all">Wszystkie sloty</option>
-            <option value="active">Tylko aktywne</option>
-            <option value="full">Tylko pełne</option>
-          </Select>
+          <SelectRoot value={filterMode} onValueChange={(val) => setFilterMode(val as 'all' | 'active' | 'full')}>
+            <SelectTrigger className="px-3 py-2 text-xs border-2 border-slate-200 rounded-lg bg-white focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Wszystkie sloty</SelectItem>
+              <SelectItem value="active">Tylko aktywne</SelectItem>
+              <SelectItem value="full">Tylko pełne</SelectItem>
+            </SelectContent>
+          </SelectRoot>
           
           {/* Przycisk pokazywania rezerwacji */}
-          <Button
-            onClick={() => setShowBookings(!showBookings)}
-            variant={showBookings ? "primary" : "neutral"}
-            size="sm"
-            className="text-xs"
-          >
-            <Calendar className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Rezerwacje</span>
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={() => setShowBookings(!showBookings)}
+                  variant={showBookings ? "primary" : "neutral"}
+                  size="sm"
+                  className="text-xs"
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Rezerwacje</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="sm:hidden">
+                <p>{showBookings ? 'Ukryj rezerwacje' : 'Pokaż rezerwacje'}</p>
+              </TooltipContent>
+            </Tooltip>
           
-          <Button
-            onClick={() => {
-              if (!selectionMode) {
-                toast.info('Włącz tryb zaznaczania, aby użyć szablonów');
-                return;
-              }
-              handleCopyTemplate();
-            }}
-            disabled={!selectionMode}
-            variant="neutral"
-            size="sm"
-            className="text-xs"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Szablon</span>
-          </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={() => {
+                    if (!selectionMode) {
+                      toast.info('Włącz tryb zaznaczania, aby użyć szablonów');
+                      return;
+                    }
+                    handleCopyTemplate();
+                  }}
+                  disabled={!selectionMode}
+                  variant="neutral"
+                  size="sm"
+                  className="text-xs"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Szablon</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="sm:hidden">
+                <p>Użyj szablonu</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
 
@@ -1152,15 +1143,6 @@ export const CalendarPage: React.FC = () => {
       )}
 
       {/* Floating Action Button (Mobile) */}
-      <Button
-        onClick={() => setShowAddModal(true)}
-        variant="primary"
-        size="icon"
-        className="md:hidden fixed bottom-6 right-6 w-14 h-14 shadow-2xl hover:scale-110 active:scale-95 transition-transform z-40 rounded-full"
-      >
-        <Plus className="w-6 h-6" />
-      </Button>
-
       {/* Bulk Actions Bar */}
       {selectionMode && (
         <BulkActionsBar

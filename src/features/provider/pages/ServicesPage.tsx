@@ -4,6 +4,9 @@ import { Briefcase, Plus, Sparkles, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/PageHeader';
 import { ServiceCard } from '../components/ServiceCard';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 
 /**
  * Services Page - spójny z Dashboard, Calendar, Bookings

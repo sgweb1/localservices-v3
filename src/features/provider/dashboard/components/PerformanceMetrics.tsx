@@ -1,4 +1,7 @@
 import React from 'react';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Text, StatValue } from '@/components/ui/typography';
 import { Eye, Heart, Clock, Star } from 'lucide-react';
 import { PerformanceSnapshot } from '../types';
 import { useProviderPerformance } from '../../hooks/useDashboardData';

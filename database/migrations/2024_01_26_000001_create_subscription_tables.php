@@ -38,7 +38,8 @@ return new class extends Migration
             $table->foreignId('subscription_plan_id')->constrained('subscription_plans')->restrictOnDelete();
             $table->enum('billing_period', ['monthly', 'yearly'])->default('monthly');
             $table->enum('status', ['active', 'paused', 'cancelled', 'past_due'])->default('active');
-            $table->dateTime('started_at');
+            $table->dateTime('starts_at'); // Data rozpoczęcia
+            $table->dateTime('started_at'); // Alias dla starts_at (kompatybilność)
             $table->dateTime('ends_at');
             $table->dateTime('renews_at');
             $table->dateTime('cancelled_at')->nullable();

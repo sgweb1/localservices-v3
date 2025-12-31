@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { PageTitle } from '@/components/ui/typography';
 import { getSettings } from '@/api/v1/settingsApi';
 import { Building2, Bell, Shield } from 'lucide-react';
@@ -57,23 +58,46 @@ export const SettingsPage: React.FC = () => {
       <PageTitle gradient>Ustawienia</PageTitle>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 max-w-2xl">
-          <TabsTrigger value="business" className="flex items-center gap-2">
-            <Building2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Profil biznesu</span>
-            <span className="sm:hidden">Profil</span>
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2">
-            <Bell className="w-4 h-4" />
-            <span className="hidden sm:inline">Powiadomienia</span>
-            <span className="sm:hidden">Notyfikacje</span>
-          </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center gap-2">
-            <Shield className="w-4 h-4" />
-            <span className="hidden sm:inline">Bezpieczeństwo</span>
-            <span className="sm:hidden">Hasło</span>
-          </TabsTrigger>
-        </TabsList>
+        <TooltipProvider>
+          <TabsList className="grid w-full grid-cols-3 max-w-2xl">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <TabsTrigger value="business" className="flex items-center gap-2">
+                  <Building2 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Profil biznesu</span>
+                  <span className="sm:hidden">Profil</span>
+                </TabsTrigger>
+              </TooltipTrigger>
+              <TooltipContent className="sm:hidden">
+                <p>Profil biznesu</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <TabsTrigger value="notifications" className="flex items-center gap-2">
+                  <Bell className="w-4 h-4" />
+                  <span className="hidden sm:inline">Powiadomienia</span>
+                  <span className="sm:hidden">Notyfikacje</span>
+                </TabsTrigger>
+              </TooltipTrigger>
+              <TooltipContent className="sm:hidden">
+                <p>Powiadomienia</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <TabsTrigger value="security" className="flex items-center gap-2">
+                  <Shield className="w-4 h-4" />
+                  <span className="hidden sm:inline">Bezpieczeństwo</span>
+                  <span className="sm:hidden">Hasło</span>
+                </TabsTrigger>
+              </TooltipTrigger>
+              <TooltipContent className="sm:hidden">
+                <p>Bezpieczeństwo</p>
+              </TooltipContent>
+            </Tooltip>
+          </TabsList>
+        </TooltipProvider>
 
         <TabsContent value="business" className="mt-6">
           <BusinessProfileTab data={data?.data.business} />

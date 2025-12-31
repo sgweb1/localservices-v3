@@ -24,6 +24,14 @@ import {
   User,
   X
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Card } from '@/components/ui/card';
+import { PageTitle, Text } from '@/components/ui/typography';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const getIcon = (eventKey: string) => {
   if (eventKey.startsWith('booking.')) return Calendar;

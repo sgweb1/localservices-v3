@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { MessageSquare, Send, Paperclip, Smile, Search, MoreVertical } from 'lucide-react';
+import { MessageSquare, Send, Paperclip, Smile, Search, MoreVertical, ArrowLeft } from 'lucide-react';
 import { ConversationList } from './ConversationList';
 import { ChatWindow } from './ChatWindow';
 import { useConversations } from './hooks/useConversations';
 
 /**
  * Strona wiadomości - system czatu w stylu Facebook Messenger
+ * Mobile-first responsive design
  */
 export const MessagesPage: React.FC = () => {
   const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null);
@@ -14,10 +15,17 @@ export const MessagesPage: React.FC = () => {
 
   const { data: conversations, isLoading } = useConversations(filter === 'hidden');
 
+  // Mobile: show chat when conversation selected, list otherwise
+  const showChat = selectedConversationId !== null;
+
   return (
-    <div className="flex h-[calc(100vh-4rem)] bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="flex h-[calc(100vh-4rem)] md:h-[calc(100vh-5rem)] bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Sidebar - Lista konwersacji */}
-      <div className="w-96 bg-white border-r border-slate-200 flex flex-col">
+      {/* Mobile: full screen when no chat selected, hidden when chat open */}
+      {/* Desktop: always visible, fixed width sidebar */}
+      <div className={`${
+        showChat ? 'hidden md:flex' : 'flex'
+      } w-full md:w-80 lg:w-96 bg-white md:border-r border-slate-200 flex-col`}>
         {/* Header */}
         <div className="p-4 border-b border-slate-200">
           <h2 className="text-xl font-semibold text-slate-900 mb-3">Wiadomości</h2>
@@ -76,15 +84,29 @@ export const MessagesPage: React.FC = () => {
       </div>
 
       {/* Okno czatu */}
-      <div className="flex-1 flex flex-col">
+      {/* Mobile: full screen when chat selected */}
+      {/* Desktop: always visible flex-1 */}
+      <div className={`${
+        showChat ? 'flex' : 'hidden md:flex'
+      } flex-1 flex-col relative`}>
         {selectedConversationId ? (
-          <ChatWindow conversationId={selectedConversationId} />
+          <>
+            {/* Mobile back button */}
+            <button
+              onClick={() => setSelectedConversationId(null)}
+              className="md:hidden absolute top-4 left-4 z-10 p-2 bg-white rounded-full shadow-lg border border-slate-200 hover:bg-slate-50 transition-colors"
+              aria-label="Wróć do listy konwersacji"
+            >
+              <ArrowLeft className="w-5 h-5 text-slate-700" />
+            </button>
+            <ChatWindow conversationId={selectedConversationId} />
+          </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-slate-400">
+          <div className="flex-1 flex items-center justify-center text-slate-400 p-4">
             <div className="text-center">
-              <MessageSquare className="w-16 h-16 mx-auto mb-4 text-slate-300" />
-              <p className="text-lg font-medium">Wybierz konwersację</p>
-              <p className="text-sm mt-1">aby rozpocząć rozmowę</p>
+              <MessageSquare className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-slate-300" />
+              <p className="text-base sm:text-lg font-medium">Wybierz konwersację</p>
+              <p className="text-xs sm:text-sm mt-1">aby rozpocząć rozmowę</p>
             </div>
           </div>
         )}

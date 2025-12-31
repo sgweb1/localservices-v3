@@ -5,6 +5,10 @@ import { Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Text } from '@/components/ui/typography';
 import '@/lib/echo';
 
 type RecentReview = {

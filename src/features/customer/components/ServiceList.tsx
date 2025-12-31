@@ -5,6 +5,7 @@ import { useGeolocation } from '../../../hooks/useGeolocation';
 import { useLocations } from '../../../hooks/useLocations';
 import { useCategories } from '../../../hooks/useCategories';
 import { Button } from '../../../components/ui/button';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../../../components/ui/tooltip';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { CategorySelect } from '../../../components/CategorySelect';
@@ -157,27 +158,43 @@ const ServiceFilter: React.FC<{
             className="pl-11 h-9 text-sm shadow-sm"
           />
         </div>
-        <Button
-          onClick={() => setIsOpen(true)}
-          variant="outline"
-          size="md"
-          className="px-4 sm:px-5 py-3 rounded-xl gap-2 shadow-sm"
-          data-testid="filters-open"
-        >
-          <Filter size={18} />
-          <span className="hidden sm:inline">Filtry</span>
-        </Button>
-        <Button
-          onClick={handleApply}
-          variant="primary"
-          size="md"
-          className="px-4 sm:px-5 py-3 rounded-xl gap-2 shadow-md"
-          data-testid="filters-apply"
-        >
-          <Sparkles size={18} />
-          <span className="hidden sm:inline">Zastosuj</span>
-          <span className="sm:hidden">OK</span>
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={() => setIsOpen(true)}
+                variant="outline"
+                size="md"
+                className="px-4 sm:px-5 py-3 rounded-xl gap-2 shadow-sm"
+                data-testid="filters-open"
+              >
+                <Filter size={18} />
+                <span className="hidden sm:inline">Filtry</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="sm:hidden">
+              <p>Filtry wyszukiwania</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={handleApply}
+                variant="primary"
+                size="md"
+                className="px-4 sm:px-5 py-3 rounded-xl gap-2 shadow-md"
+                data-testid="filters-apply"
+              >
+                <Sparkles size={18} />
+                <span className="hidden sm:inline">Zastosuj</span>
+                <span className="sm:hidden">OK</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="sm:hidden">
+              <p>Zastosuj filtry</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       {/* Quick Presets */}

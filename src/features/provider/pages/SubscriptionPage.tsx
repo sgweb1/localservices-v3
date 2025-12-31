@@ -4,6 +4,8 @@ import { Check, Crown, Zap, TrendingUp, AlertCircle, Sparkles, Gift } from 'luci
 import { PageTitle, Text, SectionTitle, Caption, StatValue, EmptyText } from '@/components/ui/typography';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ProgressBar } from '@/components/ui/ProgressBar';
 import { PLAN_LIMITS, LIMITS_COMPARISON } from '../subscription/constants/planLimits';
 
 /**

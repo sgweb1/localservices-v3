@@ -36,6 +36,7 @@ class SubscriptionSeeder extends Seeder
                     'subscription_plan_id' => $plan->id,
                     'billing_period' => $billingPeriod,
                     'status' => rand(1, 100) <= 85 ? 'active' : 'paused',
+                    'starts_at' => $startedAt, // Nowa kolumna
                     'started_at' => $startedAt,
                     'ends_at' => $endsAt,
                     'renews_at' => $renewsAt,

@@ -27,6 +27,7 @@ import {
   SelectItem,
 } from '@/components/ui/select-radix';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 
 interface CalendarToolbarProps {
@@ -100,27 +101,43 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
         </SelectRoot>
 
         {/* Show bookings toggle */}
-        <Button
-          onClick={() => setShowBookings(!showBookings)}
-          variant={showBookings ? 'primary' : 'neutral'}
-          size="sm"
-          className={!showBookings ? 'border-2' : ''}
-        >
-          <Calendar className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Rezerwacje</span>
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={() => setShowBookings(!showBookings)}
+                variant={showBookings ? 'primary' : 'neutral'}
+                size="sm"
+                className={!showBookings ? 'border-2' : ''}
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Rezerwacje</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="sm:hidden">
+              <p>{showBookings ? 'Ukryj rezerwacje' : 'Pokaż rezerwacje'}</p>
+            </TooltipContent>
+          </Tooltip>
 
-        {/* Template button */}
-        <Button
-          onClick={handleTemplateClick}
-          disabled={!selectionMode}
-          variant="neutral"
-          size="sm"
-          className="border-2"
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Szablon</span>
-        </Button>
+          {/* Template button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={handleTemplateClick}
+                disabled={!selectionMode}
+                variant="neutral"
+                size="sm"
+                className="border-2"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Szablon</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="sm:hidden">
+              <p>Użyj szablonu</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </div>
   );

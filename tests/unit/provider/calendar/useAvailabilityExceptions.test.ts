@@ -10,6 +10,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
+import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   useAvailabilityExceptions,
@@ -23,6 +24,7 @@ vi.mock('@/api/client');
 
 describe('useAvailabilityExceptions', () => {
   let queryClient: QueryClient;
+  let wrapper: ({ children }: { children: React.ReactNode }) => JSX.Element;
 
   beforeEach(() => {
     queryClient = new QueryClient({
@@ -31,12 +33,9 @@ describe('useAvailabilityExceptions', () => {
         mutations: { retry: false },
       },
     });
+    wrapper = ({ children }) => React.createElement(QueryClientProvider, { client: queryClient }, children);
     vi.clearAllMocks();
   });
-
-  const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
 
   describe('useAvailabilityExceptions - pobieranie wyjątków', () => {
     it('pobiera listę wyjątków (urlopy, blokady)', async () => {
@@ -57,7 +56,7 @@ describe('useAvailabilityExceptions', () => {
         },
       ];
 
-      vi.mocked(apiClient.get).mockResolvedValue({ data: mockExceptions });
+      vi.mocked(apiClient.get).mockResolvedValue({ data: { data: mockExceptions } });
 
       const { result } = renderHook(() => useAvailabilityExceptions(), { wrapper });
 
@@ -69,7 +68,7 @@ describe('useAvailabilityExceptions', () => {
     });
 
     it('zwraca pustą tablicę gdy brak wyjątków', async () => {
-      vi.mocked(apiClient.get).mockResolvedValue({ data: [] });
+      vi.mocked(apiClient.get).mockResolvedValue({ data: { data: [] } });
 
       const { result } = renderHook(() => useAvailabilityExceptions(), { wrapper });
 

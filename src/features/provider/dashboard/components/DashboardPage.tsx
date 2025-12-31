@@ -7,6 +7,11 @@ import { useRecentBookings, useRecentMessages, useRecentReviews } from '../../ho
 import { PerformanceMetrics } from './PerformanceMetrics';
 import { RecentBookings } from './RecentBookings';
 import { RecentMessages } from './RecentMessages';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { PageTitle, Text } from '@/components/ui/typography';
 
 /**
  * Provider Dashboard - styl dopasowany do widoków Rezerwacje/Kalendarz

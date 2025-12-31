@@ -2,6 +2,7 @@ import React from 'react';
 import { Service } from '../../../types/service';
 import { Star, MapPin, Heart } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../../../components/ui/tooltip';
 
 interface ServiceCardProps {
   service: Service;
@@ -100,16 +101,25 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ service, onClick, isFa
             <p className="text-xs text-gray-500 dark:text-gray-400 truncate">za godzinę</p>
           </div>
           
-          <Button
-            onClick={(e) => { e.stopPropagation(); onClick?.(service); }}
-            className="px-4 sm:px-5 py-2.5 sm:py-3 gap-1.5 whitespace-nowrap flex-shrink-0"
-          >
-            <span className="hidden sm:inline">Sprawdź</span>
-            <span className="sm:hidden">Szczegóły</span>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={(e) => { e.stopPropagation(); onClick?.(service); }}
+                  className="px-4 sm:px-5 py-2.5 sm:py-3 gap-1.5 whitespace-nowrap flex-shrink-0"
+                >
+                  <span className="hidden sm:inline">Sprawdź</span>
+                  <span className="sm:hidden">Szczegóły</span>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="sm:hidden">
+                <p>Sprawdź szczegóły usługi</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
     </div>

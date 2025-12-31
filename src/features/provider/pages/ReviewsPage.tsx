@@ -4,6 +4,10 @@ import { Star, TrendingUp, MessageCircle, Filter, ThumbsUp, Award } from 'lucide
 import { PageTitle, Text, Caption, StatValue, EmptyText } from '@/components/ui/typography';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { apiClient } from '@/api/client';
 

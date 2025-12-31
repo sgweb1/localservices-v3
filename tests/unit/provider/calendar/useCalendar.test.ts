@@ -11,6 +11,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
+import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useCalendar, useCreateSlot, useUpdateSlot, useDeleteSlot, useGlobalCalendarStats } from '@/features/provider/calendar/hooks/useCalendar';
 import { apiClient } from '@/api/client';
@@ -20,6 +21,7 @@ vi.mock('@/api/client');
 
 describe('useCalendar', () => {
   let queryClient: QueryClient;
+  let wrapper: ({ children }: { children: React.ReactNode }) => JSX.Element;
 
   beforeEach(() => {
     queryClient = new QueryClient({
@@ -28,12 +30,9 @@ describe('useCalendar', () => {
         mutations: { retry: false },
       },
     });
+    wrapper = ({ children }) => React.createElement(QueryClientProvider, { client: queryClient }, children);
     vi.clearAllMocks();
   });
-
-  const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
 
   describe('useCalendar - pobieranie danych', () => {
     it('pobiera sloty i rezerwacje dla podanego zakresu dat', async () => {
@@ -75,12 +74,7 @@ describe('useCalendar', () => {
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-      expect(apiClient.get).toHaveBeenCalledWith('/provider/calendar', {
-        params: {
-          start_date: '2025-01-06',
-          end_date: '2025-01-12',
-        },
-      });
+      expect(apiClient.get).toHaveBeenCalledWith('/provider/calendar?start_date=2025-01-06&end_date=2025-01-12');
       expect(result.current.data).toEqual(mockData);
       expect(result.current.data?.slots).toHaveLength(1);
       expect(result.current.data?.bookings).toHaveLength(1);
@@ -132,7 +126,7 @@ describe('useCalendar', () => {
       await result.current.mutateAsync(newSlot);
 
       await waitFor(() => {
-        expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['calendar'] });
+        expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['provider', 'calendar'] });
       });
     });
   });
@@ -187,7 +181,7 @@ describe('useCalendar', () => {
       await result.current.mutateAsync(1);
 
       await waitFor(() => {
-        expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['calendar'] });
+        expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['provider', 'calendar'] });
       });
     });
   });
@@ -215,7 +209,7 @@ describe('useCalendar', () => {
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-      expect(apiClient.get).toHaveBeenCalledWith('/provider/calendar/global');
+      expect(apiClient.get).toHaveBeenCalledWith('/provider/calendar');
       expect(result.current.data?.slots).toHaveLength(2);
       expect(result.current.data?.bookings).toHaveLength(2);
     });

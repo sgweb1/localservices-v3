@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Calendar, Home, Briefcase, ShieldCheck, TrendingUp, Sparkles, Zap } from 'lucide-react';
 import { useDashboardWidgets } from '../../hooks/useDashboardWidgets';
 import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Text } from '@/components/ui/typography';
 
 /**
  * Dashboard Hero Section - interaktywny hero z animacjami

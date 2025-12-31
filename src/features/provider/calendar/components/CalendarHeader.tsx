@@ -17,6 +17,7 @@
 import React from 'react';
 import { Plus, Ban, CheckSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 
 interface CalendarHeaderProps {
   totalSlots: number;
@@ -36,7 +37,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   onManageBlocks,
 }) => {
   return (
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-4 md:p-0">
+    <div className="flex flex-wrap items-center justify-between gap-3 md:gap-4 p-4 md:p-0">
       {/* Tytuł i statystyki */}
       <div>
         <h1 className="text-xl md:text-2xl font-semibold text-slate-900">
@@ -47,39 +48,62 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
         </p>
       </div>
 
-      {/* Desktop actions */}
-      <div className="hidden md:flex items-center gap-2">
-        {/* Przycisk zaznaczania */}
-        <Button
-          onClick={onToggleSelection}
-          variant={selectionMode ? 'primary' : 'neutral'}
-          size="sm"
-          className={!selectionMode ? 'border' : ''}
-        >
-          <CheckSquare className="w-3.5 h-3.5" />
-          {selectionMode ? 'Anuluj zaznaczanie' : 'Zaznacz'}
-        </Button>
+      {/* Actions - mobile responsive */}
+      <TooltipProvider>
+        <div className="flex items-center gap-1.5 md:gap-2">
+          {/* Przycisk zaznaczania */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={onToggleSelection}
+                variant={selectionMode ? 'primary' : 'neutral'}
+                size="sm"
+                className={!selectionMode ? 'border' : ''}
+              >
+                <CheckSquare className="w-3.5 h-3.5" />
+                <span className="hidden md:inline">{selectionMode ? 'Anuluj' : 'Zaznacz'}</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="md:hidden">
+              <p>{selectionMode ? 'Anuluj zaznaczanie' : 'Zaznacz sloty'}</p>
+            </TooltipContent>
+          </Tooltip>
 
-        {/* Dodaj dostępność */}
-        <Button
-          onClick={onAddSlot}
-          variant="primary"
-          size="sm"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Dodaj dostępność</span>
-        </Button>
+          {/* Dodaj dostępność */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={onAddSlot}
+                variant="primary"
+                size="sm"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span className="hidden md:inline">Dodaj</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="md:hidden">
+              <p>Dodaj dostępność</p>
+            </TooltipContent>
+          </Tooltip>
 
-        {/* Urlopy/Bloki */}
-        <Button
-          onClick={onManageBlocks}
-          variant="danger"
-          size="sm"
-        >
-          <Ban className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Urlopy/Bloki</span>
-        </Button>
-      </div>
+          {/* Urlopy/Bloki */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={onManageBlocks}
+                variant="danger"
+                size="sm"
+              >
+                <Ban className="w-3.5 h-3.5" />
+                <span className="hidden md:inline">Urlopy</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="md:hidden">
+              <p>Urlopy i bloki</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </TooltipProvider>
     </div>
   );
 };
