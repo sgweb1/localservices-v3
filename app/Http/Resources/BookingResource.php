@@ -43,6 +43,12 @@ class BookingResource extends JsonResource
             'customerNotes' => $this->customer_notes,
             'provider_notes' => $this->provider_notes,
             'providerNotes' => $this->provider_notes,
+            
+            // Hidden flags
+            'hidden_by_provider' => (bool) $this->hidden_by_provider,
+            'hiddenByProvider' => (bool) $this->hidden_by_provider,
+            'isHidden' => (bool) $this->hidden_by_provider, // Alias dla frontend
+            
             // Frontend expects these flattened
             'customer_id' => $this->customer_id,
             'customerId' => $this->customer_id,

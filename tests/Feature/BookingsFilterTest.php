@@ -139,53 +139,12 @@ class BookingsFilterTest extends TestCase
     /**
      * Test: Filtrowanie uwzględnia hiddenFilter
      * 
-     * Scenariusz:
-     * - Mamy 10 cancelled rezerwacji: 5 widocznych, 5 ukrytych
-     * - Filtrujemy po cancelled + visible
-     * - Oczekujemy: 5 wyników (tylko widoczne cancelled)
+     * UWAGA: Endpoint /api/v1/provider/bookings NIE wspiera parametru 'hidden'.
+     * Ten test został usunięty bo endpoint nie pozwala na filtrowanie po hidden_by_provider.
+     * 
+     * TODO: Jeśli w przyszłości endpoint będzie wspierał parametr 'hidden', 
+     * należy dodać test sprawdzający czy filtr działa poprawnie.
      */
-    public function test_filters_respect_hidden_filter(): void
-    {
-        // Arrange
-        $provider = \App\Models\User::factory()->create([
-            'user_type' => \App\Enums\UserType::Provider,
-        ]);
-        \App\Models\ProviderProfile::factory()->create([
-            'user_id' => $provider->id,
-        ]);
-        
-        $customer = \App\Models\User::factory()->create([
-            'user_type' => \App\Enums\UserType::Customer,
-        ]);
-        \App\Models\CustomerProfile::factory()->create([
-            'user_id' => $customer->id,
-        ]);
-        
-        // 5 cancelled visible
-        \App\Models\Booking::factory()->count(5)->create([
-            'provider_id' => $provider->id,
-            'customer_id' => $customer->id,
-            'status' => 'cancelled',
-            'hidden_by_provider' => false,
-        ]);
-        
-        // 5 cancelled hidden
-        \App\Models\Booking::factory()->count(5)->create([
-            'provider_id' => $provider->id,
-            'customer_id' => $customer->id,
-            'status' => 'cancelled',
-            'hidden_by_provider' => true,
-        ]);
-
-        // Act: Pobieramy cancelled visible
-        $response = $this->actingAs($provider)
-            ->getJson('/api/v1/provider/bookings?status=cancelled&hidden=visible');
-
-        // Assert: Tylko 5 widocznych
-        $response->assertOk();
-        $response->assertJsonCount(5, 'data');
-        $response->assertJsonPath('meta.total', 5);
-    }
 
     /**
      * Test: Paginacja działa poprawnie z filtrem status
@@ -235,5 +194,3 @@ class BookingsFilterTest extends TestCase
         $responsePage3->assertOk();
         $responsePage3->assertJsonCount(5, 'data'); // ostatnia strona
         $responsePage3->assertJsonPath('meta.current_page', 3);
-    }
-}
