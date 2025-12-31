@@ -139,12 +139,67 @@ class BookingsFilterTest extends TestCase
     /**
      * Test: Filtrowanie uwzględnia hiddenFilter
      * 
-     * UWAGA: Endpoint /api/v1/provider/bookings NIE wspiera parametru 'hidden'.
-     * Ten test został usunięty bo endpoint nie pozwala na filtrowanie po hidden_by_provider.
-     * 
-     * TODO: Jeśli w przyszłości endpoint będzie wspierał parametr 'hidden', 
-     * należy dodać test sprawdzający czy filtr działa poprawnie.
+     * Scenariusz:
+     * - Mamy 10 rezerwacji: 5 widocznych, 5 ukrytych
+     * - Filtr hidden=visible pokazuje tylko widoczne (5)
+     * - Filtr hidden=hidden pokazuje tylko ukryte (5)
+     * - Filtr hidden=all pokazuje wszystkie (10)
      */
+    public function test_hidden_filter_works(): void
+    {
+        // Arrange
+        $provider = \App\Models\User::factory()->create([
+            'user_type' => \App\Enums\UserType::Provider,
+        ]);
+        \App\Models\ProviderProfile::factory()->create([
+            'user_id' => $provider->id,
+        ]);
+        
+        $customer = \App\Models\User::factory()->create([
+            'user_type' => \App\Enums\UserType::Customer,
+        ]);
+        \App\Models\CustomerProfile::factory()->create([
+            'user_id' => $customer->id,
+        ]);
+        
+        // Rezerwacje widoczne
+        \App\Models\Booking::factory()->count(5)->create([
+            'provider_id' => $provider->id,
+            'customer_id' => $customer->id,
+            'hidden_by_provider' => false,
+        ]);
+        
+        // Rezerwacje ukryte
+        \App\Models\Booking::factory()->count(5)->create([
+            'provider_id' => $provider->id,
+            'customer_id' => $customer->id,
+            'hidden_by_provider' => true,
+        ]);
+
+        // Act & Assert: Tylko widoczne
+        $responseVisible = $this->actingAs($provider)
+            ->getJson('/api/v1/provider/bookings?hidden=visible&per_page=20');
+        
+        $responseVisible->assertOk();
+        $responseVisible->assertJsonCount(5, 'data');
+        $responseVisible->assertJsonPath('meta.total', 5);
+
+        // Tylko ukryte
+        $responseHidden = $this->actingAs($provider)
+            ->getJson('/api/v1/provider/bookings?hidden=hidden&per_page=20');
+        
+        $responseHidden->assertOk();
+        $responseHidden->assertJsonCount(5, 'data');
+        $responseHidden->assertJsonPath('meta.total', 5);
+
+        // Wszystkie
+        $responseAll = $this->actingAs($provider)
+            ->getJson('/api/v1/provider/bookings?hidden=all&per_page=20');
+        
+        $responseAll->assertOk();
+        $responseAll->assertJsonCount(10, 'data');
+        $responseAll->assertJsonPath('meta.total', 10);
+    }
 
     /**
      * Test: Paginacja działa poprawnie z filtrem status
@@ -193,4 +248,5 @@ class BookingsFilterTest extends TestCase
 
         $responsePage3->assertOk();
         $responsePage3->assertJsonCount(5, 'data'); // ostatnia strona
-        $responsePage3->assertJsonPath('meta.current_page', 3);
+        $responsePage3->assertJsonPath('meta.current_page', 3);    }
+}

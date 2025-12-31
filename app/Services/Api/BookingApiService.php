@@ -33,6 +33,19 @@ class BookingApiService
             $query->where('status', $filters['status']);
         }
 
+        // Filtr po widoczności (hidden_by_provider)
+        if (isset($filters['hidden'])) {
+            if ($filters['hidden'] === 'visible') {
+                $query->where(function($q) {
+                    $q->where('hidden_by_provider', false)
+                      ->orWhereNull('hidden_by_provider');
+                });
+            } elseif ($filters['hidden'] === 'hidden') {
+                $query->where('hidden_by_provider', true);
+            }
+            // 'all' - nie dodajemy żadnego filtra
+        }
+
         if (!empty($filters['service_id'])) {
             $query->where('service_id', $filters['service_id']);
         }
