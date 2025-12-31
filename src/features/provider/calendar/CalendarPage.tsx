@@ -534,19 +534,17 @@ export const CalendarPage: React.FC = () => {
         
         {/* Desktop actions */}
         <div className="hidden md:flex items-center gap-2">
-          <button
+          <Button
             onClick={() => setSelectionMode(!selectionMode)}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-normal rounded-lg transition-all ${
-              selectionMode
-                ? 'bg-cyan-100 text-cyan-700 border border-cyan-300'
-                : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300'
-            }`}
+            variant={selectionMode ? "primary" : "neutral"}
+            size="sm"
+            className="text-xs"
           >
             <CheckSquare className="w-3.5 h-3.5" />
             {selectionMode ? 'Anuluj zaznaczanie' : 'Zaznacz'}
-          </button>
+          </Button>
           
-          <button
+          <Button
             onClick={() => {
               // Ustaw domyślny dzień na poniedziałek wybranego tygodnia
               const mondayDate = weekDates[1];
@@ -563,18 +561,22 @@ export const CalendarPage: React.FC = () => {
               setSelectedDays([]);
               setShowAddModal(true);
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-cyan-500 to-teal-500 rounded-lg hover:shadow-md transition-all"
+            variant="primary"
+            size="sm"
+            className="text-xs"
           >
             <Plus className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Dodaj dostępność</span>
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setShowBlockModal(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-red-500 to-rose-500 rounded-lg hover:shadow-md transition-all"
+            variant="danger"
+            size="sm"
+            className="text-xs"
           >
             <Ban className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Urlopy/Bloki</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -624,26 +626,30 @@ export const CalendarPage: React.FC = () => {
         <div className="flex items-center gap-2">
           {/* View toggle */}
           <div className="inline-flex bg-slate-100 rounded-lg p-1">
-            <button
+            <Button
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-md transition-all ${
+              variant="ghost"
+              size="icon"
+              className={`rounded-md ${
                 viewMode === 'grid'
                   ? 'bg-white text-slate-900 shadow-sm'
                   : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               <LayoutGrid className="w-4 h-4" />
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded-md transition-all ${
+              variant="ghost"
+              size="icon"
+              className={`rounded-md ${
                 viewMode === 'list'
                   ? 'bg-white text-slate-900 shadow-sm'
                   : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               <List className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
 
           {/* Filter */}
@@ -658,19 +664,17 @@ export const CalendarPage: React.FC = () => {
           </Select>
           
           {/* Przycisk pokazywania rezerwacji */}
-          <button
+          <Button
             onClick={() => setShowBookings(!showBookings)}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all border-2 ${
-              showBookings
-                ? 'text-cyan-700 bg-cyan-50 border-cyan-300 hover:bg-cyan-100'
-                : 'text-slate-500 bg-white border-slate-200 hover:border-slate-300'
-            }`}
+            variant={showBookings ? "primary" : "neutral"}
+            size="sm"
+            className="text-xs"
           >
             <Calendar className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Rezerwacje</span>
-          </button>
+          </Button>
           
-          <button
+          <Button
             onClick={() => {
               if (!selectionMode) {
                 toast.info('Włącz tryb zaznaczania, aby użyć szablonów');
@@ -679,15 +683,13 @@ export const CalendarPage: React.FC = () => {
               handleCopyTemplate();
             }}
             disabled={!selectionMode}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-              selectionMode
-                ? 'text-slate-700 bg-white border-2 border-slate-200 hover:border-cyan-400'
-                : 'text-slate-400 bg-slate-50 border-2 border-slate-100 cursor-not-allowed'
-            }`}
+            variant="neutral"
+            size="sm"
+            className="text-xs"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Szablon</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -703,23 +705,27 @@ export const CalendarPage: React.FC = () => {
         <div className="glass-card rounded-2xl overflow-hidden px-4 md:px-0">
           {/* Nawigacja tygodnia */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-50">
-            <button
+            <Button
               onClick={() => setCurrentWeekOffset(prev => prev - 1)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+              variant="neutral"
+              size="sm"
+              className="text-xs"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
               Poprzedni
-            </button>
+            </Button>
             <span className="text-sm font-medium text-slate-700">
               {currentWeekOffset === 0 ? 'Bieżący tydzień' : currentWeekOffset === 1 ? 'Następny tydzień' : currentWeekOffset === -1 ? 'Poprzedni tydzień' : `${currentWeekOffset > 0 ? '+' : ''}${currentWeekOffset} tyg.`}
             </span>
-            <button
+            <Button
               onClick={() => setCurrentWeekOffset(prev => prev + 1)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+              variant="neutral"
+              size="sm"
+              className="text-xs"
             >
               Następny
               <ChevronRight className="w-3.5 h-3.5" />
-            </button>
+            </Button>
           </div>
 
           {/* Widok grid (kalendarz) */}
@@ -817,29 +823,33 @@ export const CalendarPage: React.FC = () => {
                         </span>
                       </div>
                       <div className="flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                        <button
+                        <Button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleUpdateSlot(slot.id, !slot.is_available);
                           }}
+                          variant="ghost"
+                          size="icon"
                           className={`
-                            p-1.5 rounded-lg hover:bg-white/80 transition-all active:scale-90
+                            h-7 w-7 hover:bg-white/80 transition-all
                             ${slot.is_available ? 'text-emerald-600 hover:text-emerald-700' : 'text-red-600 hover:text-red-700'}
                           `}
                           title={slot.is_available ? 'Wyłącz slot' : 'Włącz slot'}
                         >
                           {slot.is_available ? <Power className="w-3.5 h-3.5" /> : <PowerOff className="w-3.5 h-3.5" />}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteSlot(slot.id);
                           }}
-                          className="p-1 rounded-md hover:bg-red-50 text-red-500 hover:text-red-600 transition-all active:scale-90"
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 hover:bg-red-50 text-red-500 hover:text-red-600 transition-all"
                           title="Usuń"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        </Button>
                       </div>
                     </div>
 
@@ -903,7 +913,7 @@ export const CalendarPage: React.FC = () => {
                       <div className="flex items-center gap-1">
                         {booking.status === 'pending' && (
                           <>
-                            <button
+                            <Button
                               onClick={async (e) => {
                                 e.stopPropagation();
                                 try {
@@ -914,34 +924,40 @@ export const CalendarPage: React.FC = () => {
                                   toast.error(error.response?.data?.error || 'Błąd podczas potwierdzania');
                                 }
                               }}
-                              className="px-2 py-1 text-xs font-medium bg-emerald-600 text-white rounded hover:bg-emerald-700 transition-colors"
+                              variant="success"
+                              size="sm"
+                              className="text-xs h-6"
                               title="Potwierdź rezerwację"
                             >
                               ✓
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleRejectBooking(booking.id, false);
                               }}
-                              className="px-2 py-1 text-xs font-medium bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                              variant="danger"
+                              size="sm"
+                              className="text-xs h-6"
                               title="Odrzuć rezerwację"
                             >
                               ✕
-                            </button>
+                            </Button>
                           </>
                         )}
                         {booking.status === 'confirmed' && (
-                          <button
+                          <Button
                             onClick={(e) => {
                               e.stopPropagation();
                               handleRejectBooking(booking.id, true);
                             }}
-                            className="px-2 py-1 text-xs font-medium bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                            variant="danger"
+                            size="sm"
+                            className="text-xs h-6"
                             title="Odrzuć potwierdzoną rezerwację"
                           >
                             ✕
-                          </button>
+                          </Button>
                         )}
                         <span className="text-xs text-slate-400">
                           {booking.duration_minutes} min
@@ -1016,28 +1032,32 @@ export const CalendarPage: React.FC = () => {
                         <div className="flex items-center gap-2">
                           {!selectionMode && (
                             <>
-                              <button
+                              <Button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleUpdateSlot(slot.id, !slot.is_available);
                                 }}
-                                className="p-1.5 rounded-md hover:bg-slate-100 transition-colors"
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
                               >
                                 {slot.is_available ? (
                                   <Power className="w-4 h-4 text-emerald-600" />
                                 ) : (
                                   <PowerOff className="w-4 h-4 text-slate-400" />
                                 )}
-                              </button>
-                              <button
+                              </Button>
+                              <Button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleDeleteSlot(slot.id);
                                 }}
-                                className="p-1.5 rounded-md hover:bg-red-50 transition-colors"
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 hover:bg-red-50"
                               >
                                 <Trash2 className="w-4 h-4 text-red-600" />
-                              </button>
+                              </Button>
                             </>
                           )}
                         </div>
@@ -1074,7 +1094,7 @@ export const CalendarPage: React.FC = () => {
                                 </span>
                                 {booking.status === 'pending' && (
                                   <>
-                                    <button
+                                    <Button
                                       onClick={async () => {
                                         try {
                                           await apiClient.patch(`/provider/bookings/${booking.id}/confirm`);
@@ -1084,28 +1104,34 @@ export const CalendarPage: React.FC = () => {
                                           toast.error(error.response?.data?.error || 'Błąd podczas potwierdzania');
                                         }
                                       }}
-                                      className="px-2 py-1 text-xs font-medium bg-emerald-600 text-white rounded hover:bg-emerald-700 transition-colors"
+                                      variant="success"
+                                      size="sm"
+                                      className="text-xs h-7"
                                       title="Potwierdź rezerwację"
                                     >
                                       ✓ Potwierdź
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
                                       onClick={() => handleRejectBooking(booking.id, false)}
-                                      className="px-2 py-1 text-xs font-medium bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                                      variant="danger"
+                                      size="sm"
+                                      className="text-xs h-7"
                                       title="Odrzuć rezerwację"
                                     >
                                       ✕ Odrzuć
-                                    </button>
+                                    </Button>
                                   </>
                                 )}
                                 {booking.status === 'confirmed' && (
-                                  <button
+                                  <Button
                                     onClick={() => handleRejectBooking(booking.id, true)}
-                                    className="px-2 py-1 text-xs font-medium bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                                    variant="danger"
+                                    size="sm"
+                                    className="text-xs h-7"
                                     title="Odrzuć potwierdzoną rezerwację"
                                   >
                                     ✕ Odrzuć
-                                  </button>
+                                  </Button>
                                 )}
                               </div>
                               <span className="text-xs text-slate-400">
@@ -1126,12 +1152,14 @@ export const CalendarPage: React.FC = () => {
       )}
 
       {/* Floating Action Button (Mobile) */}
-      <button
+      <Button
         onClick={() => setShowAddModal(true)}
-        className="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-cyan-500 to-teal-500 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-transform z-40"
+        variant="primary"
+        size="icon"
+        className="md:hidden fixed bottom-6 right-6 w-14 h-14 shadow-2xl hover:scale-110 active:scale-95 transition-transform z-40 rounded-full"
       >
         <Plus className="w-6 h-6" />
-      </button>
+      </Button>
 
       {/* Bulk Actions Bar */}
       {selectionMode && (
@@ -1169,12 +1197,14 @@ export const CalendarPage: React.FC = () => {
                   <p className="text-xs text-slate-500">Określ kiedy jesteś dostępny</p>
                 </div>
               </div>
-              <button
+              <Button
                 onClick={() => setShowAddModal(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-lg transition-colors"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-slate-400 hover:text-slate-600"
               >
                 <X className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
 
             <div className="space-y-4">
