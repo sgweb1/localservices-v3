@@ -114,8 +114,11 @@ class ProviderBookingController extends Controller
         $allBookings = $bookingsPaginated->getCollection();
 
         // Stats
+        // ZMIANA (2025-01-01): Total powinno być z gefilteredych rezerwacji (paginated->total())
+        // a nie z aktualnej strony (allBookings->count())
+        // Teraz total odzwierciedla liczbę rezerwacji pasujących do aktualnych filtrów
         $counts = [
-            'total' => $allBookings->count(),
+            'total' => $bookingsPaginated->total(), // Całkowita liczba z filtrami
             'pending' => $allBookings->where('status', 'pending')->count(),
             'confirmed' => $allBookings->where('status', 'confirmed')->count(),
             'completed' => $allBookings->where('status', 'completed')->count(),
