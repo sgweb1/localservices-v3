@@ -167,6 +167,10 @@ class ProviderDashboardApiService
      * Tablica z zapytaniami ofertowymi (pending/quoted/accepted) + konwersja oraz
      * rezerwacjami (pending/confirmed/completed). Gating szczegółów gdy brak instant_booking + messaging.
      * 
+     * ZMIANA (2025-12-31): Pipeline zwraca bookings counts niezależnie od created_at
+     * Problem: Dashboard pokazywał 0 rezerwacji mimo że provider miał rezerwacje (filtrował po ostatnich 30 dniach).
+     * Rozwiązanie: Usunięto filtr created_at dla bookings, counts pokazują WSZYSTKIE rezerwacje providera.
+     * 
      * @param User $provider
      * @return array{period: string, can_view_details: bool, requests: array, bookings: array}
      */
@@ -175,7 +179,7 @@ class ProviderDashboardApiService
         $providerId = $provider->id;
         $since = now()->subDays(30);
 
-        // Zapytania ofertowe (BookingRequest)
+        // Zapytania ofertowe (BookingRequest) - tylko ostatnie 30 dni
         $requests = BookingRequest::query()
             ->where('provider_id', $providerId)
             ->where('created_at', '>=', $since)
@@ -183,10 +187,10 @@ class ProviderDashboardApiService
             ->groupBy('status')
             ->pluck('total', 'status');
 
-        // Rezerwacje (Booking)
+        // Rezerwacje (Booking) - WSZYSTKIE (nie filtrujemy po dacie)
+        // Dashboard pokazuje aktualny stan, nie tylko ostatnie 30 dni
         $bookings = Booking::query()
             ->where('provider_id', $providerId)
-            ->where('created_at', '>=', $since)
             ->selectRaw('status, COUNT(*) as total')
             ->groupBy('status')
             ->pluck('total', 'status');
