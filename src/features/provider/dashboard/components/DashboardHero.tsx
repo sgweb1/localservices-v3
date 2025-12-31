@@ -29,6 +29,8 @@ export const DashboardHero: React.FC = () => {
   };
   
   console.log('[DashboardHero] final stats:', stats);
+  
+  console.log('[DashboardHero] final stats:', stats);
 
   // Animated counters
   const [animatedBookings, setAnimatedBookings] = useState(0);
