@@ -16,6 +16,10 @@ export const DashboardHero: React.FC = () => {
   const { user } = useAuth();
   const { data: widgets, isLoading } = useDashboardWidgets();
   
+  // DEBUG: Sprawdź co przychodzi z API
+  console.log('[DashboardHero] widgets:', widgets);
+  console.log('[DashboardHero] widgets?.stats:', widgets?.stats);
+  
   // Pobierz stats z widgets lub użyj fallbacku
   const stats = widgets?.stats ?? {
     upcoming_bookings: 0,
@@ -23,6 +27,8 @@ export const DashboardHero: React.FC = () => {
     trust_score: 0,
     verification_level: 0
   };
+  
+  console.log('[DashboardHero] final stats:', stats);
 
   // Animated counters
   const [animatedBookings, setAnimatedBookings] = useState(0);

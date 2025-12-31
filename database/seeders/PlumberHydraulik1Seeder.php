@@ -85,7 +85,6 @@ class PlumberHydraulik1Seeder extends Seeder
                 'email_verified_at' => now(),
                 'password' => bcrypt('password'),
                 'profile_completion' => 95,
-                'is_verified' => true,
                 'is_active' => true,
             ]
         );
@@ -281,6 +280,7 @@ class PlumberHydraulik1Seeder extends Seeder
                         'uuid' => (string) Str::uuid(),
                         'slug' => Str::slug($svc['title']) . '-' . Str::random(4),
                         'price_currency' => 'PLN',
+                        'status' => 'active',
                         'accepts_quote_requests' => in_array($svc['pricing_type'], ['quote']),
                         'instant_booking' => $svc['pricing_type'] === 'fixed',
                         'min_notice_hours' => 4,
