@@ -92,6 +92,7 @@ class ChatController extends Controller
         $validated = $request->validate([
             'participant_id' => 'required|integer|exists:users,id',
             'booking_id' => 'nullable|integer|exists:bookings,id',
+            'message' => 'nullable|string|max:5000', // Opcjonalna pierwsza wiadomość
         ]);
 
         $participantId = $validated['participant_id'];
@@ -101,21 +102,53 @@ class ChatController extends Controller
             return response()->json(['error' => 'Nie możesz czatować sam ze sobą'], 400);
         }
 
+        // Określ kto jest customer a kto provider
+        $currentUser = auth()->user();
+        $participant = \App\Models\User::findOrFail($participantId);
+        
+        // Sprawdź role użytkowników
+        $isCurrentProvider = $currentUser->hasRole('provider');
+        $isParticipantProvider = $participant->hasRole('provider');
+        
+        // Ustal customer_id i provider_id
+        if ($isCurrentProvider && !$isParticipantProvider) {
+            $customerId = $participantId;
+            $providerId = $userId;
+        } elseif (!$isCurrentProvider && $isParticipantProvider) {
+            $customerId = $userId;
+            $providerId = $participantId;
+        } else {
+            return response()->json(['error' => 'Konwersacja musi być między customer a provider'], 400);
+        }
+
         // Utwórz lub pobierz istniejącą konwersację
-        $conversation = \App\Models\Conversation::where(function ($q) use ($userId, $participantId) {
-            $q->where('user_one_id', $userId)->where('user_two_id', $participantId);
-        })->orWhere(function ($q) use ($userId, $participantId) {
-            $q->where('user_one_id', $participantId)->where('user_two_id', $userId);
-        })->firstOrCreate(
+        $conversation = \App\Models\Conversation::firstOrCreate(
             [
-                'user_one_id' => min($userId, $participantId),
-                'user_two_id' => max($userId, $participantId),
+                'customer_id' => $customerId,
+                'provider_id' => $providerId,
+            ],
+            [
+                'booking_id' => $validated['booking_id'] ?? null,
             ]
         );
 
-        // Jeśli podano booking_id, powiąż go z konwersacją
-        if ($validated['booking_id'] ?? null) {
+        // Jeśli podano booking_id, zaktualizuj konwersację
+        if (($validated['booking_id'] ?? null) && !$conversation->booking_id) {
             $conversation->update(['booking_id' => $validated['booking_id']]);
+        }
+
+        // Jeśli podano wiadomość, wyślij ją
+        if (!empty($validated['message'])) {
+            try {
+                $this->service->sendMessage(
+                    $conversation->id,
+                    $userId,
+                    $validated['message'],
+                    []
+                );
+            } catch (\Exception $e) {
+                \Log::error('Failed to send initial message', ['error' => $e->getMessage()]);
+            }
         }
 
         return response()->json(['data' => new ConversationResource($conversation)], 201);
