@@ -94,7 +94,7 @@ class BookingController extends Controller
         $validated = $request->validate([
             'page' => 'integer|min:1',
             'per_page' => 'integer|min:1|max:50',
-            'status' => 'string|in:confirmed,completed,cancelled,in_progress',
+            'status' => 'string|in:pending,confirmed,completed,cancelled,rejected,in_progress',
             'sort_by' => 'string|in:booking_date,created_at,total_price',
             'sort_order' => 'string|in:asc,desc',
         ]);
@@ -127,7 +127,7 @@ class BookingController extends Controller
         $validated = $request->validate([
             'page' => 'integer|min:1',
             'per_page' => 'integer|min:1|max:50',
-            'status' => 'string|in:confirmed,completed,cancelled,in_progress',
+            'status' => 'string|in:pending,confirmed,completed,cancelled,rejected,in_progress',
             'sort_by' => 'string|in:booking_date,created_at,total_price',
             'sort_order' => 'string|in:asc,desc',
         ]);
@@ -154,7 +154,7 @@ class BookingController extends Controller
         $validated = $request->validate([
             'page' => 'integer|min:1',
             'per_page' => 'integer|min:1|max:50',
-            'status' => 'string|in:confirmed,completed,cancelled,in_progress',
+            'status' => 'string|in:pending,confirmed,completed,cancelled,rejected,in_progress',
             'sort_by' => 'string|in:booking_date,created_at,total_price',
             'sort_order' => 'string|in:asc,desc',
         ]);

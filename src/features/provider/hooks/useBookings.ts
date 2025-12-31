@@ -85,22 +85,35 @@ export interface BookingListResponse {
 /**
  * Fetch provider bookings from API
  * 
- * GET /provider/bookings?page={page}&per_page={perPage}&hidden={hidden}
+ * GET /provider/bookings?page={page}&per_page={perPage}&hidden={hidden}&status={status}
+ * 
+ * ZMIANA (2025-12-31): Dodano parametr status do filtrowania na backendzie
+ * Problem: Filtrowanie po statusie działało tylko na frontendzie po pobraniu danych,
+ * co powodowało puste strony (np. strona 1 miała same pending, więc po filtrze
+ * cancelled wyświetlała 0 wyników).
+ * Rozwiązanie: Backend teraz filtruje przed paginacją, więc każda strona
+ * zawiera tylko rezerwacje z wybranym statusem.
  * 
  * @param page - Numer strony (domyślnie 1)
  * @param perPage - Rezerwacje na stronę (domyślnie 15)
  * @param hidden - Filtr ukrytych rezerwacji: 'visible' | 'hidden' | 'all' (domyślnie 'visible')
+ * @param status - Filtr po statusie: 'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'rejected' (domyślnie 'all')
  * @returns Promise z listą rezerwacji i metadanymi
  */
 async function fetchBookings(
   page: number = 1, 
   perPage: number = 15,
-  hidden: 'visible' | 'hidden' | 'all' = 'visible'
+  hidden: 'visible' | 'hidden' | 'all' = 'visible',
+  status: string = 'all'
 ): Promise<BookingListResponse> {
   try {
-    console.log('[fetchBookings] Fetching page:', page, 'perPage:', perPage, 'hidden:', hidden);
+    console.log('[fetchBookings] Fetching page:', page, 'perPage:', perPage, 'hidden:', hidden, 'status:', status);
+    const params: any = { page, per_page: perPage, hidden };
+    if (status !== 'all') {
+      params.status = status;
+    }
     const response = await apiClient.get('/provider/bookings', {
-      params: { page, per_page: perPage, hidden }
+      params
     });
     console.log('[fetchBookings] Response:', response.data);
     
@@ -175,27 +188,33 @@ async function fetchBookings(
 /**
  * React Query hook do pobierania rezerwacji providera
  * 
+ * ZMIANA (2025-12-31): Dodano parametr status i queryKey zawiera teraz status
+ * React Query automatycznie deduplikuje requesty z tym samym queryKey,
+ * więc zmiana status spowoduje nowy fetch z backendu.
+ * 
  * Automatycznie cachuje dane, refetch przy focus na oknie,
  * refetch co 60 sekund
  * 
  * @param page - Numer strony rezerwacji
  * @param perPage - Liczba rezerwacji na stronę
  * @param hidden - Filtr ukrytych rezerwacji: 'visible' | 'hidden' | 'all'
+ * @param status - Filtr po statusie: 'all' | BookingStatus (domyślnie 'all')
  * @returns Object z danymi, loading, error
  * 
  * @example
- * const { data, isLoading, error } = useBookings(1, 15, 'visible');
+ * const { data, isLoading, error } = useBookings(1, 15, 'visible', 'cancelled');
  * const items = data?.data ?? [];
  */
 export function useBookings(
   page: number = 1, 
   perPage: number = 15,
-  hidden: 'visible' | 'hidden' | 'all' = 'visible'
+  hidden: 'visible' | 'hidden' | 'all' = 'visible',
+  status: string = 'all'
 ) {
-  console.log('[useBookings] Hook called with page:', page, 'perPage:', perPage, 'hidden:', hidden);
+  console.log('[useBookings] Hook called with page:', page, 'perPage:', perPage, 'hidden:', hidden, 'status:', status);
   return useQuery({
-    queryKey: ['provider','bookings', page, perPage, hidden],
-    queryFn: () => fetchBookings(page, perPage, hidden),
+    queryKey: ['provider','bookings', page, perPage, hidden, status],
+    queryFn: () => fetchBookings(page, perPage, hidden, status),
     staleTime: 60 * 1000,
     refetchOnWindowFocus: true,
   });

@@ -110,15 +110,30 @@ class ProviderBookingController extends Controller
             ];
         });
 
-        // Wszystkie bookings do statystyk (bez paginacji)
-        $allBookings = $bookingsPaginated->getCollection();
+        // Wszystkie bookings do statystyk (z uwzględnieniem hiddenFilter, bez paginacji i bez status filter)
+        // ZMIANA (2025-12-31): Counts muszą być liczone z WSZYSTKICH rezerwacji providera
+        // (z tym samym hiddenFilter co paginacja), żeby pokazać właściwą liczbę dla każdego statusu.
+        // Problem: Wcześniej counts były liczone tylko z aktualnej strony ($bookingsPaginated->getCollection()),
+        // co powodowało nieprawidłowe liczby (strona 1 pokazywała pending: 15, cancelled: 0,
+        // a strona 2 pending: 10, cancelled: 5).
+        // Rozwiązanie: Pobieramy ALL rezerwacje providera z hiddenFilter i liczymy statystyki.
+        $allBookingsQuery = Booking::where('provider_id', $user->id);
+        
+        // Zastosuj ten sam hiddenFilter co do paginacji
+        if ($hiddenFilter === 'hidden') {
+            $allBookingsQuery->where('hidden_by_provider', 1);
+        } elseif ($hiddenFilter === 'visible') {
+            $allBookingsQuery->where('hidden_by_provider', 0);
+        }
+        
+        $allBookings = $allBookingsQuery->get();
 
         // Stats
         // ZMIANA (2025-01-01): Total powinno być z gefilteredych rezerwacji (paginated->total())
         // a nie z aktualnej strony (allBookings->count())
         // Teraz total odzwierciedla liczbę rezerwacji pasujących do aktualnych filtrów
         $counts = [
-            'total' => $bookingsPaginated->total(), // Całkowita liczba z filtrami
+            'total' => $allBookings->count(), // Całkowita liczba wszystkich rezerwacji (z hiddenFilter, bez status)
             'pending' => $allBookings->where('status', 'pending')->count(),
             'confirmed' => $allBookings->where('status', 'confirmed')->count(),
             'completed' => $allBookings->where('status', 'completed')->count(),

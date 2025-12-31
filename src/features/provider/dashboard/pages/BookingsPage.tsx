@@ -22,7 +22,8 @@ import {
   AlertTriangle,
   BadgeCheck,
   XCircle,
-  Edit
+  Edit,
+  EyeOff
 } from 'lucide-react';
 
 /**
@@ -32,11 +33,18 @@ import {
  * szczegóły rezerwacji, akcje, sidebar, modal edycji, paginacja.
  */
 export const BookingsPage: React.FC = () => {
-  const { data, isLoading, error } = useBookings();
-  const queryClient = useQueryClient();
-  const { confirm, ConfirmDialog } = useConfirm();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage] = useState(15);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const { data, isLoading, error } = useBookings(currentPage, perPage, 'visible', statusFilter);
+  const queryClient = useQueryClient();
+  const { confirm, ConfirmDialog } = useConfirm();
+  
+  // Reset page to 1 when status filter changes
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter]);
   
   const items = data?.data ?? [];
   const stats = data?.counts ?? { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0 };
@@ -98,11 +106,8 @@ export const BookingsPage: React.FC = () => {
     },
   });
 
-  // Filtrowanie
+  // Filtrowanie (tylko search query - status już na backendzie)
   let filteredItems = items;
-  if (statusFilter !== 'all') {
-    filteredItems = filteredItems.filter(b => b.status === statusFilter);
-  }
   if (searchQuery.trim()) {
     const q = searchQuery.toLowerCase();
     filteredItems = filteredItems.filter(b => 
@@ -429,11 +434,12 @@ export const BookingsPage: React.FC = () => {
                                 </div>
                               )}
                             </div>
-                            <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
-                              booking.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                              booking.status === 'confirmed' ? 'bg-emerald-100 text-emerald-700' :
-                              booking.status === 'completed' ? 'bg-indigo-100 text-indigo-700' :
-                              booking.status === 'cancelled' ? 'bg-slate-100 text-slate-500' :
+                            <div className="flex items-center gap-2">
+                              <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
+                                booking.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                                booking.status === 'confirmed' ? 'bg-emerald-100 text-emerald-700' :
+                                booking.status === 'completed' ? 'bg-indigo-100 text-indigo-700' :
+                                booking.status === 'cancelled' ? 'bg-slate-100 text-slate-500' :
                               'bg-slate-100 text-slate-700'
                             }`}>
                               {booking.status === 'pending' && 'Oczekuje'}
@@ -442,6 +448,13 @@ export const BookingsPage: React.FC = () => {
                               {booking.status === 'cancelled' && 'Anulowana'}
                               {booking.status === 'rejected' && 'Odrzucona'}
                             </span>
+                              {booking.isHidden && (
+                                <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold bg-slate-200 text-slate-600">
+                                  <EyeOff className="w-3 h-3" />
+                                  Ukryte
+                                </span>
+                              )}
+                            </div>
                           </div>
 
                           <div className="mt-4 grid grid-cols-2 md:grid-cols-5 gap-4 text-sm text-slate-500">
