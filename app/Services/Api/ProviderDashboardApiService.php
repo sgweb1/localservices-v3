@@ -386,9 +386,9 @@ class ProviderDashboardApiService
             ->where('booking_date', '<=', now()->addDays(7))
             ->count();
 
-        // Aktywne usługi (is_active = true)
+        // Aktywne usługi (status = 'active')
         $activeServices = $provider->serviceListings()
-            ->where('is_active', true)
+            ->where('status', 'active')
             ->count();
 
         // Trust Score
