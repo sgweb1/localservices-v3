@@ -15,12 +15,12 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-API_URL="http://localhost:8000/api/v1"
+API_URL="http://localhost:8001/api/v1"
 PROVIDER_EMAIL="provider@example.com"  # Email z seedera
 
 # 1. Logowanie i pobranie tokena (używamy quick-login z /dev)
 echo -e "${BLUE}🔐 Logowanie przez /dev/quick-login...${NC}"
-login_response=$(curl -s -X POST "http://localhost:8000/api/v1/dev/quick-login" \
+login_response=$(curl -s -X POST "http://localhost:8001/api/v1/dev/quick-login" \
     -H "Content-Type: application/json" \
     -H "Accept: application/json" \
     -d "{\"email\":\"$PROVIDER_EMAIL\",\"role\":\"provider\"}")
