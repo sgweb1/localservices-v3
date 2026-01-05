@@ -389,10 +389,12 @@ Napisz testy dla:
   - Provider actions: accept, reject, sendQuote, start, complete (5 testów)
   - Statistics, destroy/restore, completeOverdue (3 testy)
   - **Uwaga:** Wymaga naprawy session store w setupie testów
-- [ ] **ServiceController** (8 testów)
-  - CRUD operations
-  - Toggle status
-  - Gallery (upload, delete, reorder)
+- [x] ✅ **ServiceController** (18 testów - commit af7525b)
+  - Authentication & Authorization (3 testy)
+  - CRUD operations (8 testów)
+  - Status toggle (1 test)
+  - Gallery management (4 testy)
+  - Validation (2 testy)
 - [ ] **AuthController** (5 testów)
   - Register, login, logout
   - Session handling
