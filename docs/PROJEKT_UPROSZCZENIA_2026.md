@@ -365,7 +365,7 @@ protected $except = [
 **Dzień 3: Routing cleanup (4h)**
 - [x] ✅ Połącz subscriptions.php + subscriptions-public.php (2025-01-05)
 - [x] ✅ Połącz provider.php + provider-services.php (2025-01-05)
-- [ ] Git commit: "Routing: konsolidacja API endpoints"
+- [x] ✅ Git commit: "Routing: konsolidacja API endpoints" (commit 62b3bb5, -72 deletions)
 
 **REZULTAT FAZY 2:**
 - **-2,000 linii kodu**
