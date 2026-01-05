@@ -69,7 +69,7 @@ export const DashboardPage: React.FC = () => {
     {
       label: 'Trust Score™',
       value: trustScore,
-      hint: trustScore >= 70 ? 'Premium widoczność aktywna' : 'Cel: 70+',
+      hint: trustScore >= 70 ? 'Widoczność organiczna aktywna' : 'Cel: 70+ dla lepszej widoczności',
       accent: 'from-amber-400 to-orange-500',
       icon: Zap,
     },
@@ -121,7 +121,9 @@ export const DashboardPage: React.FC = () => {
                     {widgetsLoading ? <Loader2 className="w-6 h-6 animate-spin text-cyan-600" /> : trustScore}
                   </p>
                   <p className="text-xs text-emerald-700 mt-1 font-semibold">
-                    {trustScore >= 70 ? 'Premium widoczność utrzymana' : 'Cel: 70+ aby odblokować premium'}
+                    {trustScore >= 70
+                      ? 'Widoczność organiczna aktywna'
+                      : 'Cel: 70+ dla lepszej widoczności'}
                   </p>
                 </div>
               </div>

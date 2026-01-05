@@ -11,7 +11,13 @@ const BASE_URL = 'http://localhost:5173/api/v1'
  * 2. Czy error response ma poprawną strukturę
  * 3. Czy endpointy są dostępne (nie 404)
  */
-describe('Provider Dashboard API Endpoints', () => {
+const runLiveApi = process.env.RUN_LIVE_API_TESTS === 'true'
+
+// Te testy wymagają działającego backendu na localhost:5173.
+// Domyślnie pomijamy je, aby suite nie wymagała realnego API.
+const describeApi = runLiveApi ? describe : describe.skip
+
+describeApi('Provider Dashboard API Endpoints', () => {
   describe('Authentication Required', () => {
     it('should return 401 for widgets without auth', async () => {
       try {

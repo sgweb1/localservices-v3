@@ -181,7 +181,7 @@ describe('DashboardPage', () => {
       expect(screen.getByText('13')).toBeInTheDocument()
     })
 
-    it('should show premium hint when trust score >= 70', () => {
+    it('should show organic visibility hint when trust score >= 70', () => {
       vi.mocked(useDashboardWidgets).mockReturnValue({
         data: {
           insights: { trust_score: 85 },
@@ -192,7 +192,7 @@ describe('DashboardPage', () => {
 
       renderWithProviders(<DashboardPage />)
       
-      expect(screen.getByText(/Premium widoczność aktywna/)).toBeInTheDocument()
+      expect(screen.getAllByText(/Widoczność organiczna aktywna/).length).toBeGreaterThanOrEqual(1)
     })
 
     it('should show goal hint when trust score < 70', () => {
@@ -207,7 +207,7 @@ describe('DashboardPage', () => {
       renderWithProviders(<DashboardPage />)
       
       // Pojawia się w 2 miejscach: hero card i summary card
-      expect(screen.getAllByText(/Cel: 70\+/).length).toBeGreaterThanOrEqual(1)
+      expect(screen.getAllByText(/Cel: 70\+ dla lepszej widoczności/).length).toBeGreaterThanOrEqual(1)
     })
   })
 

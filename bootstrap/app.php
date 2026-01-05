@@ -54,12 +54,23 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::prefix('api/v1')
                 ->group(base_path('routes/api/v1/push.php'));
 
-            Route::middleware('web')
+            // Notifications: stateful SPA auth (Sanctum) + API stack
+            Route::middleware([
+                'api',
+                \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+                'auth:sanctum',
+            ])
                 ->prefix('api/v1')
                 ->group(base_path('routes/api/v1/notifications.php'));
         }
     )
             ->withMiddleware(function (Middleware $middleware): void {
+        // Sanctum stateful cookies for SPA/API
+        $middleware->statefulApi();
+
+        // API bez CSRF validation - token auth wystarczy
+        $middleware->append(\App\Http\Middleware\ExceptCsrfOnApi::class);
+
         // API bez przekierowania do login – zwracaj 401
         $middleware->redirectTo(fn () => null);
         

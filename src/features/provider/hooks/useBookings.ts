@@ -104,13 +104,17 @@ async function fetchBookings(
   page: number = 1, 
   perPage: number = 15,
   hidden: 'visible' | 'hidden' | 'all' = 'visible',
-  status: string = 'all'
+  status: string = 'all',
+  search: string = ''
 ): Promise<BookingListResponse> {
   try {
-    console.log('[fetchBookings] Fetching page:', page, 'perPage:', perPage, 'hidden:', hidden, 'status:', status);
+    console.log('[fetchBookings] Fetching page:', page, 'perPage:', perPage, 'hidden:', hidden, 'status:', status, 'search:', search);
     const params: any = { page, per_page: perPage, hidden };
     if (status !== 'all') {
       params.status = status;
+    }
+    if (search.trim()) {
+      params.search = search.trim();
     }
     const response = await apiClient.get('/provider/bookings', {
       params
@@ -188,9 +192,9 @@ async function fetchBookings(
 /**
  * React Query hook do pobierania rezerwacji providera
  * 
- * ZMIANA (2025-12-31): Dodano parametr status i queryKey zawiera teraz status
- * React Query automatycznie deduplikuje requesty z tym samym queryKey,
- * więc zmiana status spowoduje nowy fetch z backendu.
+ * ZMIANA (2025-01-02): Dodano parametr search dla wyszukiwania rezerwacji po nazwie klienta/usługi
+ * Search jest wysyłany na backend, który filtruje rezerwacje po obu stronach.
+ * React Query automatycznie deduplikuje requesty z tym samym queryKey.
  * 
  * Automatycznie cachuje dane, refetch przy focus na oknie,
  * refetch co 60 sekund
@@ -199,22 +203,24 @@ async function fetchBookings(
  * @param perPage - Liczba rezerwacji na stronę
  * @param hidden - Filtr ukrytych rezerwacji: 'visible' | 'hidden' | 'all'
  * @param status - Filtr po statusie: 'all' | BookingStatus (domyślnie 'all')
+ * @param search - Szukaj rezerwacji po nazwie klienta lub usługi
  * @returns Object z danymi, loading, error
  * 
  * @example
- * const { data, isLoading, error } = useBookings(1, 15, 'visible', 'cancelled');
+ * const { data, isLoading, error } = useBookings(1, 15, 'visible', 'cancelled', 'Anna');
  * const items = data?.data ?? [];
  */
 export function useBookings(
   page: number = 1, 
   perPage: number = 15,
   hidden: 'visible' | 'hidden' | 'all' = 'visible',
-  status: string = 'all'
+  status: string = 'all',
+  search: string = ''
 ) {
-  console.log('[useBookings] Hook called with page:', page, 'perPage:', perPage, 'hidden:', hidden, 'status:', status);
+  console.log('[useBookings] Hook called with page:', page, 'perPage:', perPage, 'hidden:', hidden, 'status:', status, 'search:', search);
   return useQuery({
-    queryKey: ['provider','bookings', page, perPage, hidden, status],
-    queryFn: () => fetchBookings(page, perPage, hidden, status),
+    queryKey: ['provider','bookings', page, perPage, hidden, status, search],
+    queryFn: () => fetchBookings(page, perPage, hidden, status, search),
     staleTime: 60 * 1000,
     refetchOnWindowFocus: true,
   });

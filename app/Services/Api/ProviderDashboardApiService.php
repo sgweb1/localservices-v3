@@ -29,6 +29,15 @@ class ProviderDashboardApiService
      */
     public function getDashboardWidgets(User $provider, ?array $fields = null): array
     {
+        // Wersja MVP: ograniczamy widgety do lekkich i potrzebnych widoków
+        $allowedFields = [
+            'pipeline',
+            'performance',
+            'insights',
+            'messages',
+            'stats',
+        ];
+
         // Załaduj relacje potrzebne dla wszystkich widgetów
         $provider->load([
             'providerProfile:id,user_id,trust_score,response_time_hours,completion_rate,repeat_customers,cancellation_rate',
@@ -39,13 +48,13 @@ class ProviderDashboardApiService
             $query->with('subscriptionPlan');
         }]);
 
-        // Jeśli nie podano fields, zwrócj wszystkie widgety
+        // Domyślnie (MVP) zwracamy tylko lekkie widgety; inne ignorujemy
         if ($fields === null) {
-            $fields = [
-                'plan', 'addons', 'pipeline', 'insights', 'tasks', 'performance',
-                'calendar', 'messages', 'notifications', 'services', 'live_activity', 'stats'
-            ];
+            $fields = $allowedFields;
         }
+
+        // Przefiltruj do dozwolonej listy (zapobiega ciężkim/premium feature'om)
+        $fields = array_values(array_intersect($fields, $allowedFields));
 
         $widgets = [];
         foreach ($fields as $field) {

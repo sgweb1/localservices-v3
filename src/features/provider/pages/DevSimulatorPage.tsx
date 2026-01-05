@@ -989,24 +989,6 @@ function NotificationsSimulator({ addResult, isLoading, setIsLoading, queryClien
     }
   };
 
-  const testPush = async () => {
-    setIsLoading(true);
-    try {
-      addResult('📱 Testowanie push notification...', 'info');
-      
-      await apiClient.post('/notifications/test/test');
-      
-      addResult('✅ Push notification wysłany', 'success');
-      addResult('Sprawdź czy otrzymałeś powiadomienie', 'info');
-      
-    } catch (error: any) {
-      addResult(`Błąd: ${error.response?.data?.message || error.message}`, 'error');
-      console.error('Test push error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const clearAllNotifications = async () => {
     setIsLoading(true);
     try {
@@ -1062,15 +1044,12 @@ function NotificationsSimulator({ addResult, isLoading, setIsLoading, queryClien
             <AlertCircle className="w-5 h-5 text-red-400" />
           </div>
           <div>
-            <Text className="text-white font-semibold">Push Notifications</Text>
-            <Text className="text-slate-400 text-sm">Testuj push</Text>
+            <Text className="text-white font-semibold">Porządki powiadomień</Text>
+            <Text className="text-slate-400 text-sm">Oznacz wszystko jako przeczytane</Text>
           </div>
         </div>
 
         <div className="space-y-3">
-          <Button disabled={isLoading} onClick={testPush} className="w-full">
-            {isLoading ? 'Testowanie...' : '📱 Testuj push'}
-          </Button>
           <Button variant="neutral" disabled={isLoading} onClick={clearAllNotifications} className="w-full">
             {isLoading ? 'Czyszczenie...' : '🔕 Wyczyść wszystkie'}
           </Button>

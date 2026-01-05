@@ -208,111 +208,48 @@ export const BookingsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Pełny ekran upsell gdy brak rezerwacji i brak dostępu */}
+      {/* Info gdy brak dostępu w MVP */}
       {showUpsell && !hasBookings && (
-        <div className="glass-card p-12 rounded-2xl">
-          <div className="max-w-3xl mx-auto text-center space-y-6">
-            <div className="w-20 h-20 mx-auto bg-gradient-to-br from-teal-100 to-cyan-100 rounded-2xl flex items-center justify-center">
-              <Lock className="w-10 h-10 text-teal-600" />
-            </div>
-            
-            <div className="space-y-3">
-              <h2 className="text-3xl font-bold text-gradient">
-                Zarządzanie rezerwacjami
-              </h2>
-              <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-                Twój plan <span className="font-semibold">Free</span> nie obejmuje zarządzania rezerwacjami instant booking. 
-                Przejdź na plan <span className="font-semibold text-teal-600">Basic</span>, aby:
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 text-left">
-              {[
-                { icon: CheckCircle, title: 'Akceptuj rezerwacje', desc: 'Natychmiastowe potwierdzenia bez oczekiwania' },
-                { icon: MessageSquare, title: 'Czat z klientami', desc: 'Bezpośrednia komunikacja w czasie rzeczywistym' },
-                { icon: Bell, title: 'Powiadomienia push', desc: 'Nie przegap żadnej nowej rezerwacji' },
-                { icon: CalendarDays, title: 'Kalendarz dostępności', desc: 'Zarządzaj swoim czasem i terminami' },
-              ].map((item, idx) => (
-                <div key={idx} className="flex items-start gap-3 p-4 rounded-xl bg-teal-50/50">
-                  <div className="flex-shrink-0 w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center">
-                    <item.icon className="w-5 h-5 text-teal-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-slate-900">{item.title}</p>
-                    <p className="text-sm text-slate-600">{item.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-8 space-y-4">
-              <a href="/provider/subscription" 
-                 className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-bold text-lg rounded-xl hover:from-teal-700 hover:to-cyan-700 transition-all shadow-lg hover:shadow-xl hover:scale-105">
-                <Sparkles className="w-6 h-6" />
-                Przejdź na plan Basic
-              </a>
-              <p className="text-sm text-slate-500">
-                Od <span className="font-semibold text-teal-600">49 zł/mies</span> • Anuluj w każdej chwili
-              </p>
-            </div>
+        <div className="glass-card p-10 rounded-2xl text-center space-y-4">
+          <div className="w-16 h-16 mx-auto bg-slate-100 rounded-2xl flex items-center justify-center">
+            <Lock className="w-8 h-8 text-slate-500" />
           </div>
+          <h2 className="text-2xl font-bold text-slate-900">Zarządzanie rezerwacjami</h2>
+          <p className="text-sm text-slate-600 max-w-2xl mx-auto">
+            Wersja MVP nie zawiera płatnych planów ani push/SMS. Podstawowe zarządzanie rezerwacjami będzie dostępne w pełnej wersji.
+          </p>
         </div>
       )}
 
-      {/* Trial Mode Info Banner */}
+      {/* Trial info w MVP */}
       {showTrialInfo && (
-        <div className="glass-card border-2 border-teal-100 bg-gradient-to-r from-teal-50/90 to-cyan-50/60 p-6 rounded-2xl">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-2 flex-1">
-              <div className="flex items-center gap-2">
-                <Gift className="w-6 h-6 text-teal-600" />
-                <p className="text-lg font-semibold text-slate-900">🎉 Tryb promocyjny aktywny!</p>
-              </div>
-              <p className="text-sm text-slate-700">
-                Masz dostęp do zarządzania rezerwacjami na <strong>{trialDays} dni w przód</strong> 
-                {maxBookingDate && ` (do ${maxBookingDate})`}.
-                Rezerwacje w tym okresie są w pełni dostępne - możesz akceptować, odrzucać i przeglądać szczegóły.
-              </p>
-              <div className="flex items-center gap-2 text-xs text-teal-700 mt-2">
-                <Clock className="w-4 h-4" />
-                <span>Rezerwacje poza tym okresem wymagają planu Basic (49 zł/mies)</span>
-              </div>
-            </div>
-            <div className="flex flex-col gap-3">
-              <a href="/provider/subscription" className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-teal-700 hover:to-cyan-700 transition-all shadow-lg hover:shadow-xl">
-                <Sparkles className="w-5 h-5" />
-                Pełny dostęp
-              </a>
-            </div>
+        <div className="glass-card border border-slate-200 bg-slate-50 p-6 rounded-2xl">
+          <div className="flex items-center gap-3 mb-2">
+            <Gift className="w-5 h-5 text-slate-600" />
+            <p className="text-sm font-semibold text-slate-800">Tryb promocyjny</p>
           </div>
+          <p className="text-sm text-slate-700">
+            Masz dostęp do rezerwacji na <strong>{trialDays} dni</strong>{maxBookingDate && ` (do ${maxBookingDate})`}. Poza tym okresem szczegóły rezerwacji będą dostępne w pełnej wersji.
+          </p>
         </div>
       )}
 
-      {/* Banner upsell gdy są rezerwacje ale brak dostępu */}
+      {/* Info gdy są rezerwacje poza zakresem trial */}
       {showUpsell && hasBookings && (
-        <div className="glass-card border-2 border-teal-100 bg-gradient-to-r from-teal-50/90 to-cyan-50/60 p-6 rounded-2xl">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-2 flex-1">
-              <div className="flex items-center gap-2">
-                <Lock className="w-5 h-5 text-teal-600" />
-                <p className="text-lg font-semibold text-slate-900">Zarządzanie rezerwacjami zablokowane</p>
-              </div>
-              <p className="text-sm text-slate-700">Twój plan Free nie obejmuje zarządzania rezerwacjami. Przejdź na plan Basic, aby akceptować/odrzucać rezerwacje, przeglądać szczegóły klientów i otrzymywać powiadomienia.</p>
-              <div className="flex flex-wrap gap-3 mt-3">
-                {['Instant Booking', 'Czat z klientami', 'Powiadomienia push', 'Kalendarz dostępności'].map(feature => (
-                  <div key={feature} className="flex items-center gap-2 text-xs text-slate-600">
+        <div className="glass-card border border-slate-200 bg-slate-50 p-6 rounded-2xl">
+          <div className="flex items-start gap-3">
+            <Lock className="w-5 h-5 text-slate-600" />
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-slate-900">Część rezerwacji niedostępna w MVP</p>
+              <p className="text-sm text-slate-700">Szczegóły i pełne zarządzanie poza okresem trial pojawią się w pełnej wersji. Obecnie dostępne są podstawowe widoki i czat.</p>
+              <div className="flex flex-wrap gap-2 text-xs text-slate-600">
+                {['Instant Booking', 'Czat z klientami', 'Kalendarz dostępności'].map(feature => (
+                  <span key={feature} className="inline-flex items-center gap-1">
                     <CheckCircle className="w-4 h-4 text-teal-600" />
-                    <span>{feature}</span>
-                  </div>
+                    {feature}
+                  </span>
                 ))}
               </div>
-            </div>
-            <div className="flex flex-col gap-3">
-              <a href="/provider/subscription" className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-teal-700 hover:to-cyan-700 transition-all shadow-lg hover:shadow-xl">
-                <Sparkles className="w-5 h-5" />
-                Ulepsz do planu Basic
-              </a>
-              <p className="text-xs text-slate-500 text-center">Od 49 zł/mies</p>
             </div>
           </div>
         </div>
@@ -389,12 +326,9 @@ export const BookingsPage: React.FC = () => {
                           <p className="text-xs text-slate-500 mt-3">
                             {showTrialInfo 
                               ? `Twój trial obejmuje rezerwacje do ${maxBookingDate}` 
-                              : 'Szczegóły dostępne w planie Basic'
+                              : 'Szczegóły dostępne w pełnej wersji.'
                             }
                           </p>
-                          <a href="/provider/subscription" className="inline-block mt-5 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-teal-500 to-cyan-600 rounded-full hover:shadow-lg transition">
-                            {showTrialInfo ? 'Ulepsz do Basic →' : 'Ulepsz plan →'}
-                          </a>
                         </div>
                       ) : (
                         // Pełna zawartość rezerwacji
@@ -557,11 +491,11 @@ export const BookingsPage: React.FC = () => {
             <div className="glass-card p-6 space-y-4 rounded-2xl">
               <div className="flex items-center gap-3">
                 <Bell className="w-6 h-6 text-amber-500" />
-                <p className="text-base font-semibold text-slate-900">Automatyczne follow-upy</p>
+                <p className="text-base font-semibold text-slate-900">Follow-up e-mail</p>
               </div>
-              <p className="text-sm text-slate-500">Aktywuj powiadomienia SMS przed wizytą i przypomnienia o opinii po zakończeniu zlecenia.</p>
-              <a href="/provider/subscription" className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-600">
-                Skonfiguruj automatyzacje
+              <p className="text-sm text-slate-500">Wysyłaj przypomnienia e-mail przed wizytą i po zakończeniu zlecenia.</p>
+              <a href="/provider/settings" className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-600">
+                Przejdź do ustawień powiadomień
                 <ArrowUpRight className="w-4 h-4" />
               </a>
             </div>

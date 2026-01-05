@@ -12,28 +12,30 @@ export const dashboardHandlers = [
   // GET /provider/dashboard/widgets
   http.get(`${baseURL}/provider/dashboard/widgets`, () => {
     return HttpResponse.json({
-      pipeline: {
-        bookings: {
-          pending: 5,
-          confirmed: 12,
-          completed: 48,
-          cancelled: 2,
+      data: {
+        pipeline: {
+          bookings: {
+            pending: 5,
+            confirmed: 12,
+            completed: 48,
+            cancelled: 2,
+          },
+          requests: {
+            incoming: 8,
+            quoted: 6,
+            converted: 4,
+          },
         },
-        requests: {
-          incoming: 8,
-          quoted: 6,
-          converted: 4,
+        insights: {
+          trust_score: 87,
         },
-      },
-      insights: {
-        trust_score: 87,
-      },
-      performance: {
-        trust_score: 87,
-        response_minutes: 35,
-      },
-      messages: {
-        unread_count: 3,
+        performance: {
+          trust_score: 87,
+          response_minutes: 35,
+        },
+        messages: {
+          unread_count: 3,
+        },
       },
     })
   }),

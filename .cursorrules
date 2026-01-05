@@ -676,3 +676,165 @@ Jeśli coś nie jest jasne:
 3. Razem naprawimy/wyjaśnimy
 
 Celem jest nauczanie przez robienie! 🚀
+
+---
+
+## 🔐 CSRF PROTECTION - WAŻNE DLA MUTACJI (POST/PATCH/DELETE)
+
+### Problem: 419 Page Expired
+```
+Gdy robisz POST/PATCH/DELETE z frontendu, Laravel wymaga X-CSRF-TOKEN headera.
+Bez niego → 419 Unauthorized
+```
+
+### Rozwiązanie: API Client Configuration
+
+**1. Stwórz centralized API client** (`src/lib/api.ts`)
+```typescript
+import axios, { AxiosInstance } from 'axios';
+
+export const apiClient: AxiosInstance = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'https://ls.test',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  withCredentials: true, // ⭐ WAŻNE! Wysyła cookies
+});
+
+// Interceptor: Auto-add CSRF token do każdego requesta
+apiClient.interceptors.request.use((config) => {
+  const token = getCSRFToken();
+  if (token) {
+    config.headers['X-CSRF-TOKEN'] = decodeURIComponent(token);
+  }
+  return config;
+});
+
+// Helper: Odczytaj XSRF-TOKEN z cookies
+function getCSRFToken(): string | null {
+  const name = 'XSRF-TOKEN=';
+  const decodedCookie = decodeURIComponent(document.cookie);
+  const cookies = decodedCookie.split(';');
+  
+  for (let cookie of cookies) {
+    cookie = cookie.trim();
+    if (cookie.indexOf(name) === 0) {
+      return cookie.substring(name.length);
+    }
+  }
+  return null;
+}
+```
+
+**2. Pobierz CSRF cookie na App load**
+```typescript
+// src/App.tsx
+import { useEffect } from 'react';
+import { apiClient } from '@/lib/api';
+
+export function App() {
+  useEffect(() => {
+    // ⭐ KLUCZOWE: Pobierz CSRF token na starcie aplikacji
+    // Laravel Sanctum automatycznie ustawia XSRF-TOKEN w cookies
+    apiClient.get('/sanctum/csrf-cookie').catch(() => {
+      console.warn('CSRF cookie endpoint niedostępny');
+    });
+  }, []);
+  
+  return (
+    // ... aplikacja
+  );
+}
+```
+
+**3. Używaj apiClient we wszystkich hookach**
+```typescript
+// ✅ POPRAWNIE - useMutation z apiClient
+export function useUpdateService() {
+  return useMutation({
+    mutationFn: async (data: UpdateServiceRequest) => {
+      // apiClient automatycznie dodaje X-CSRF-TOKEN!
+      const response = await apiClient.patch(
+        `/api/v1/provider/services/${data.id}`,
+        data
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['services'] });
+    }
+  });
+}
+
+// ✅ Używanie w komponencie
+export function ServiceFormPage() {
+  const { mutate: updateService } = useUpdateService();
+  
+  const handleSubmit = (data) => {
+    updateService(data); // CSRF token jest automatycznie dodawany!
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* ... */}
+    </form>
+  );
+}
+```
+
+**4. Nginx configuration** (backend)
+```nginx
+# /etc/nginx/sites-available/localservices
+location /sanctum {
+    try_files $uri $uri/ /index.php?$query_string;
+    # ⭐ Nie cache'uj CSRF endpoint!
+    add_header Cache-Control "no-cache, no-store, must-revalidate";
+}
+```
+
+**5. Laravel .env** (sprawdzić)
+```env
+# .env.local / .env
+SESSION_DOMAIN=.ls.test        # ⭐ Z punktem!
+SANCTUM_STATEFUL_DOMAINS=ls.test,localhost:5173
+
+# Jeśli używasz Cloudflare/proxy
+TRUSTED_PROXIES=*
+TRUSTED_HEADERS=X-FORWARDED-FOR,X-FORWARDED-PROTO,X-FORWARDED-PORT
+```
+
+### ✅ Checklist - Napraw 419 Error
+
+```
+Frontend (React):
+□ src/lib/api.ts - stworzony z interceptorem
+□ src/App.tsx - robi GET /sanctum/csrf-cookie na load
+□ useUpdateService() - używa apiClient.patch
+□ ServiceFormPage - używa useMutation z apiClient
+□ withCredentials: true w axios config
+
+Backend (Laravel):
+□ SANCTUM_STATEFUL_DOMAINS zawiera domenę
+□ SESSION_DOMAIN=.ls.test (z punktem!)
+□ config/cors.php - supports_credentials: true
+□ Nginx - /sanctum endpoint nie cachowany
+□ CSRF middleware aktywny (domyślnie jest)
+```
+
+### Debug: Sprawdź czy token jest wysyłany
+```bash
+# 1. Otwórz DevTools → Network tab
+# 2. Zrób PATCH request
+# 3. Sprawdź Headers:
+#    ✅ Cookie: XSRF-TOKEN=xxx (powinna być)
+#    ✅ X-CSRF-TOKEN: xxx (powinna być w request header)
+#
+# Jeśli brakuje - problem w apiClient interceptorze
+
+# 4. Lub test curl:
+curl -i -X PATCH https://ls.test/api/v1/provider/services/1 \
+  -H "X-CSRF-TOKEN: $(curl -s https://ls.test/sanctum/csrf-cookie | grep -oP 'XSRF-TOKEN=\K[^;]+')" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test"}' \
+  -b "laravel-session=xxx"
+```

@@ -5,7 +5,7 @@ import { apiClient } from '@/api/client';
 import { toast } from 'sonner';
 import { useConfirm } from '@/hooks/useConfirm';
 import { DevToolsPanel } from '../dashboard/components/DevToolsPanel';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { InputRadix } from '@/components/ui/input-radix';
 import {
@@ -23,7 +23,6 @@ import {
   CheckCircle, 
   Trophy, 
   Lock, 
-  Sparkles, 
   Gift, 
   Bell, 
   MessageSquare, 
@@ -36,7 +35,8 @@ import {
   BadgeCheck,
   XCircle,
   Edit,
-  EyeOff
+  EyeOff,
+  Search
 } from 'lucide-react';
 
 /**
@@ -59,19 +59,20 @@ import {
  * @returns {React.ReactElement} Provider bookings dashboard
  */
 export const BookingsPage: React.FC = () => {
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage] = useState(15);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [hiddenFilter, setHiddenFilter] = useState<'visible' | 'hidden' | 'all'>('visible');
-  const { data, isLoading, error } = useBookings(currentPage, perPage, hiddenFilter, statusFilter);
+  const { data, isLoading, error } = useBookings(currentPage, perPage, hiddenFilter, statusFilter, searchQuery);
   const queryClient = useQueryClient();
   const { confirm, ConfirmDialog } = useConfirm();
   
   // Reset page to 1 when filters change
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [statusFilter, hiddenFilter]);
+  }, [statusFilter, hiddenFilter, searchQuery]);
   
   // DEBUG
   React.useEffect(() => {
@@ -230,15 +231,8 @@ export const BookingsPage: React.FC = () => {
     restoreMutation.mutate(bookingId);
   };
 
-  // Filtrowanie (tylko search query - status i hidden już na backendzie)
+  // Dane już są filtrowane na backendzie (searchQuery, statusFilter, hiddenFilter)
   let filteredItems = items;
-  if (searchQuery.trim()) {
-    const q = searchQuery.toLowerCase();
-    filteredItems = filteredItems.filter(b => 
-      b.customerName?.toLowerCase().includes(q) || 
-      b.serviceName?.toLowerCase().includes(q)
-    );
-  }
 
   /**
    * Zaakceptuj rezerwację
@@ -281,12 +275,25 @@ export const BookingsPage: React.FC = () => {
 
   /**
    * Otwórz wiadomości z klientem
+   * Inicjuje/znajduje konwersację i przekierowuje do czatu
    * @param customerId - ID klienta
-   * @todo Dodać navigację do czatu
    */
-  const handleOpenConversation = (customerId: number) => {
-    console.log('Open conversation with customer:', customerId);
-    // TODO: navigate do messages z customerId
+  const handleOpenConversation = async (customerId: number) => {
+    try {
+      // Znajdź lub utwórz konwersację
+      const response = await apiClient.post('/conversations', {
+        participant_id: customerId
+      });
+      
+      const conversationId = response.data?.data?.id;
+      
+      // Przekieruj do strony wiadomo ści z wybraną konwersacją
+      navigate(`/provider/messages?conversation=${conversationId}`);
+      toast.success('Otwarto konwersację z klientem');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Nie udało się otworzyć konwersacji');
+      console.error('Open conversation error:', error);
+    }
   };
 
   /**
@@ -371,7 +378,6 @@ export const BookingsPage: React.FC = () => {
               {[
                 { icon: CheckCircle, title: 'Akceptuj rezerwacje', desc: 'Natychmiastowe potwierdzenia bez oczekiwania' },
                 { icon: MessageSquare, title: 'Czat z klientami', desc: 'Bezpośrednia komunikacja w czasie rzeczywistym' },
-                { icon: Bell, title: 'Powiadomienia push', desc: 'Nie przegap żadnej nowej rezerwacji' },
                 { icon: CalendarDays, title: 'Kalendarz dostępności', desc: 'Zarządzaj swoim czasem i terminami' },
               ].map((item, idx) => (
                 <div key={idx} className="flex items-start gap-3 p-4 rounded-xl bg-teal-50/50">
@@ -386,17 +392,6 @@ export const BookingsPage: React.FC = () => {
               ))}
             </div>
 
-            <div className="mt-8 space-y-4">
-              <Link to="/provider/subscription">
-                <Button variant="primary" size="md" className="w-full sm:w-auto">
-                  <Sparkles className="w-5 h-5" />
-                  Przejdź na plan Basic
-                </Button>
-              </Link>
-              <Caption muted>
-                Od <strong className="text-teal-600">49 zł/mies</strong> • Anuluj w każdej chwili
-              </Caption>
-            </div>
           </div>
         </div>
       )}
@@ -420,14 +415,6 @@ export const BookingsPage: React.FC = () => {
                 <span>Rezerwacje poza tym okresem wymagają planu Basic (49 zł/mies)</span>
               </Caption>
             </div>
-            <div className="flex flex-col gap-3">
-              <Link to="/provider/subscription">
-                <Button variant="primary" size="md">
-                  <Sparkles className="w-5 h-5" />
-                  Pełny dostęp
-                </Button>
-              </Link>
-            </div>
           </div>
         </div>
       )}
@@ -443,22 +430,13 @@ export const BookingsPage: React.FC = () => {
               </div>
               <Text size="sm">Twój plan Free nie obejmuje zarządzania rezerwacjami. Przejdź na plan Basic, aby akceptować/odrzucać rezerwacje, przeglądać szczegóły klientów i otrzymywać powiadomienia.</Text>
               <div className="flex flex-wrap gap-3 mt-3">
-                {['Instant Booking', 'Czat z klientami', 'Powiadomienia push', 'Kalendarz dostępności'].map(feature => (
+                {['Instant Booking', 'Czat z klientami', 'Kalendarz dostępności'].map(feature => (
                   <Caption key={feature} className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-teal-600" />
                     <span>{feature}</span>
                   </Caption>
                 ))}
               </div>
-            </div>
-            <div className="flex flex-col gap-3">
-              <Link to="/provider/subscription">
-                <Button variant="primary" size="md">
-                  <Sparkles className="w-5 h-5" />
-                  Ulepsz do planu Basic
-                </Button>
-              </Link>
-              <Caption muted className="text-center">Od 49 zł/mies</Caption>
             </div>
           </div>
         </div>
@@ -504,12 +482,16 @@ export const BookingsPage: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-600 mb-2">Szukaj klienta</label>
-                  <InputRadix 
-                    type="text" 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="np. Anna Kowalska"
-                  />
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <InputRadix 
+                      type="text" 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="np. Anna Kowalska"
+                      className="pl-10"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -557,13 +539,8 @@ export const BookingsPage: React.FC = () => {
                               : 'Szczegóły dostępne w planie Basic'
                             }
                           </p>
-                          <div className="mt-5 flex justify-center">
-                            <Link to="/provider/subscription">
-                              <Button variant="primary" size="sm">
-                                {showTrialInfo ? 'Ulepsz do Basic' : 'Ulepsz plan'}
-                                <ArrowRight className="w-4 h-4" />
-                              </Button>
-                            </Link>
+                          <div className="mt-5 text-xs text-slate-500 text-center">
+                            Dostęp do szczegółów poza trialem wróci w pełnej wersji.
                           </div>
                         </div>
                       ) : (
@@ -627,7 +604,7 @@ export const BookingsPage: React.FC = () => {
                             </div>
                           </div>
 
-                          <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 text-sm text-slate-500">
+                          <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 text-sm text-slate-500">
                             <div>
                               <p className="text-xs uppercase tracking-wide text-slate-400">Data</p>
                               <p className="mt-1 font-semibold text-slate-900">{formatDate(booking.bookingDate) || 'TBD'}</p>
@@ -860,11 +837,11 @@ export const BookingsPage: React.FC = () => {
             <div className="glass-card p-6 space-y-4 rounded-2xl">
               <div className="flex items-center gap-3">
                 <Bell className="w-6 h-6 text-amber-500" />
-                <p className="text-base font-semibold text-slate-900">Automatyczne follow-upy</p>
+                <p className="text-base font-semibold text-slate-900">Automatyczne maile follow-up</p>
               </div>
-              <p className="text-sm text-slate-500">Aktywuj powiadomienia SMS przed wizytą i przypomnienia o opinii po zakończeniu zlecenia.</p>
-              <Link to="/provider/subscription" className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-600 hover:text-cyan-700">
-                Skonfiguruj automatyzacje
+              <p className="text-sm text-slate-500">Wysyłaj e-maile przypominające przed wizytą i po zakończeniu zlecenia.</p>
+              <Link to="/provider/settings" className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-600 hover:text-cyan-700">
+                Przejdź do ustawień powiadomień
                 <ArrowUpRight className="w-4 h-4" />
               </Link>
             </div>

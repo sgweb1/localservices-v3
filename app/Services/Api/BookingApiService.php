@@ -50,6 +50,15 @@ class BookingApiService
             $query->where('service_id', $filters['service_id']);
         }
 
+        // Wyszukiwanie - po nazwie klienta lub usługi
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function($q) use ($search) {
+                $q->whereHas('customer', fn($cq) => $cq->where('name', 'LIKE', "%{$search}%"))
+                  ->orWhereHas('service', fn($sq) => $sq->where('title', 'LIKE', "%{$search}%"));
+            });
+        }
+
         // Sortowanie
         $sortBy = $filters['sort_by'] ?? 'booking_date';
         $sortOrderRaw = $filters['sort_order'] ?? 'desc';

@@ -9,6 +9,7 @@ return [
         'http://localhost:8000',
         'http://127.0.0.1:8000',
         'http://ls.test',
+        'https://ls.test',
         'http://ls.test:5173',
         'https://ls.test:5173',
         'https://localservices.test',

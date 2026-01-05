@@ -14,7 +14,7 @@ const isHttps = APP_URL.startsWith('https://');
 // Extract domain from APP_URL
 const urlObj = new URL(APP_URL);
 const hmrHost = urlObj.hostname;
-const hmrProtocol = isHttps ? 'https' : 'http';
+const hmrProtocol = isHttps ? 'wss' : 'ws';
 const hmrUrl = `${hmrProtocol}://${hmrHost}:5173`;
 
 export default defineConfig({

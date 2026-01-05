@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useNavigate, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Moon, Sun, LayoutDashboard, Users, Menu, X, Calendar, MessagesSquare, Briefcase, CreditCard, Settings, CalendarDays, User, Zap } from 'lucide-react';
+import { Moon, Sun, LayoutDashboard, Users, Menu, X, Calendar, MessagesSquare, Briefcase, Settings, CalendarDays, User, Star } from 'lucide-react';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './components/ui/tooltip';
 import { useConversations } from './features/provider/hooks/useConversations';
 import { Toaster } from 'sonner';
 import { HomePage } from './pages/HomePage';
+import { ComingSoonPage } from './pages/ComingSoonPage';
 import { ServicesPage } from './pages/ServicesPage';
 import { DevLoginPage } from './pages/DevLoginPage';
 import { DashboardPage } from './features/provider/dashboard/components';
@@ -17,10 +18,9 @@ import { ServicesPage as ProviderServicesPage } from './features/provider/pages/
 import ServiceFormPageV2 from './features/provider/pages/ServiceFormPageV2';
 import ServiceFormPage from './features/provider/pages/ServiceFormPage';
 import { SettingsPage } from './features/provider/pages/SettingsPage';
-import { BoostPurchase, SubscriptionPurchase, BoostList, SubscriptionList } from './features/provider/monetization/components';
-import { CheckoutSuccess, CheckoutCancel } from './features/provider/monetization/pages';
 import { CalendarPage } from './features/provider/calendar/CalendarPage';
-import { ProfilePage } from './features/provider/profile/ProfilePage';
+import { ProfilePage } from './features/provider/profile';
+import ReviewsPage from './features/provider/pages/ReviewsPage';
 import { DevSimulatorPage } from './features/provider/pages/DevSimulatorPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -114,9 +114,8 @@ const ProviderNavLinksMobile: React.FC<{ onClose: () => void }> = ({ onClose }) 
     { to: '/provider/calendar', label: 'Kalendarz', icon: CalendarDays },
     { to: '/provider/messages', label: 'Wiadomości', icon: MessagesSquare, showBadge: totalUnread > 0, badgeCount: totalUnread },
     { to: '/provider/services', label: 'Usługi', icon: Briefcase },
+    { to: '/provider/reviews', label: 'Opinie', icon: Star },
     { to: '/provider/profile', label: 'Profil', icon: User },
-    { to: '/provider/monetization/boost', label: 'Boost', icon: Zap },
-    { to: '/provider/monetization/subscription', label: 'Subskrypcja', icon: CreditCard },
     { to: '/provider/settings', label: 'Ustawienia', icon: Settings },
   ];
 
@@ -306,12 +305,11 @@ const App = () => {
       {/* Page Content */}
       <main className="flex-1 transition-colors">
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<ComingSoonPage />} />
+          <Route path="/home" element={<HomePage />} />
           <Route path="/szukaj" element={<ServicesPage />} />
           <Route path="/szukaj/:category" element={<ServicesPage />} />
           <Route path="/szukaj/:category/:city" element={<ServicesPage />} />
-          <Route path="/checkout/success" element={<CheckoutSuccess />} />
-          <Route path="/checkout/cancel" element={<CheckoutCancel />} />
           <Route path="/dev/login" element={<DevLoginPage />} />
           
           {/* Provider Routes - wymagają autoryzacji jako provider */}
@@ -325,17 +323,16 @@ const App = () => {
             <Route path="bookings" element={<BookingsPageWithTabs />} />
             <Route path="calendar" element={<CalendarPage />} />
             <Route path="messages" element={<MessagesPage />} />
+            <Route path="reviews" element={<ReviewsPage />} />
             <Route path="services" element={<ProviderServicesPage />} />
             <Route path="services/create" element={<ServiceFormPage />} />
-            <Route path="services/edit/:id" element={<ServiceFormPageV2 />} />
-            <Route path="services/edit-legacy/:id" element={<ServiceFormPage />} />
+            <Route path="services/edit/:id" element={<ServiceFormPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="settings" element={<SettingsPage />} />
-            <Route path="monetization/boost" element={<BoostPurchase />} />
-            <Route path="monetization/subscription" element={<SubscriptionPurchase />} />
-            <Route path="monetization/boosts" element={<BoostList />} />
-            <Route path="monetization/subscriptions" element={<SubscriptionList />} />
             <Route path="dev-simulator" element={<DevSimulatorPage />} />
+            {/* Monetization/subscription wyłączone w MVP - twarde przekierowanie */}
+            <Route path="subscription/*" element={<Navigate to="/provider/dashboard" replace />} />
+            <Route path="monetization/*" element={<Navigate to="/provider/dashboard" replace />} />
           </Route>
         </Routes>
       </main>

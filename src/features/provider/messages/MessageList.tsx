@@ -72,9 +72,11 @@ export const MessageList: React.FC<MessageListProps> = ({
         const isOwnMessage = message.sender_id === currentUserId;
         const isDeleted = Boolean(message.deleted_at);
         const showAvatar = index === 0 || messages[index - 1].sender_id !== message.sender_id;
-        const showTimestamp = 
-          index === 0 || 
-          new Date(message.created_at).getTime() - new Date(messages[index - 1].created_at).getTime() > 300000; // 5 min
+        const createdAt = new Date(message.created_at);
+        const showTimestamp =
+          index === 0 ||
+          createdAt.getTime() - new Date(messages[index - 1].created_at).getTime() > 300000; // 5 min
+        const isOlderThanDay = Date.now() - createdAt.getTime() > 24 * 60 * 60 * 1000;
 
         return (
           <div key={message.id} className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
@@ -93,7 +95,7 @@ export const MessageList: React.FC<MessageListProps> = ({
               {/* Timestamp */}
               {showTimestamp && (
                 <div className="text-xs text-slate-500 mb-1.5 sm:mb-2 px-2 sm:px-3">
-                  {format(new Date(message.created_at), 'HH:mm', { locale: pl })}
+                  {format(createdAt, isOlderThanDay ? 'd MMM yyyy, HH:mm' : 'HH:mm', { locale: pl })}
                 </div>
               )}
 

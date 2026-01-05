@@ -1,8 +1,5 @@
 /**
- * Eksport wszystkich komponentów monetization
+ * Monetization wyłączone w MVP.
+ * Brak eksportów komponentów płatności/boostów, aby uniknąć ich przypadkowego użycia.
  */
-
-export { BoostPurchase } from './BoostPurchase'
-export { SubscriptionPurchase } from './SubscriptionPurchase'
-export { BoostList } from './BoostList'
-export { SubscriptionList } from './SubscriptionList'
+export {}

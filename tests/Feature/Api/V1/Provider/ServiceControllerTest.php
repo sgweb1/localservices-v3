@@ -4,7 +4,7 @@ namespace Tests\Feature\Api\V1\Provider;
 
 use App\Models\Service;
 use App\Models\User;
-use App\Models\Category;
+use App\Models\ServiceCategory;
 use App\Models\Location;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -36,9 +36,9 @@ class ServiceControllerTest extends TestCase
     protected User $provider;
 
     /**
-     * @var Category Test category
+     * @var ServiceCategory Test category
      */
-    protected Category $category;
+    protected ServiceCategory $category;
 
     /**
      * @var Location Test location
@@ -53,14 +53,13 @@ class ServiceControllerTest extends TestCase
         parent::setUp();
 
         // Create test provider
-        $this->provider = User::factory()->create([
-            'role' => 'provider',
+        $this->provider = User::factory()->provider()->create([
             'email' => 'provider@test.com',
         ]);
 
         // Create test category and location
-        $this->category = Category::factory()->create(['name' => 'Sprzątanie']);
-        $this->location = Location::factory()->create(['city' => 'Warszawa']);
+        $this->category = ServiceCategory::factory()->create(['name' => 'Sprzątanie']);
+        $this->location = Location::factory()->create(['name' => 'Warszawa']);
 
         // Fake storage for photo uploads
         Storage::fake('public');

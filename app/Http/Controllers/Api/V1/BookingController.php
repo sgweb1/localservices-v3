@@ -96,6 +96,7 @@ class BookingController extends Controller
             'per_page' => 'integer|min:1|max:50',
             'status' => 'string|in:pending,confirmed,completed,cancelled,in_progress',
             'hidden' => 'string|in:visible,hidden,all',
+            'search' => 'string|max:100',
             'sort_by' => 'string|in:booking_date,created_at,total_price',
             'sort_order' => 'string|in:asc,desc',
         ]);

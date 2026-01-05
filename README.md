@@ -505,5 +505,6 @@ Proprietary - LocalServices © 2024
 - **API**: Swagger (TODO)
 
 ---
+czytaj ten plik .cursorrules
 
 **Built with ❤️ using Laravel 12 + React 18 + TypeScript**

@@ -4,10 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { SectionTitle, Text } from '@/components/ui/typography';
 import { toast } from 'sonner';
-import { Bell, Mail, Smartphone, MessageSquare, Clock, Zap, Package, Info } from 'lucide-react';
-import { useWebPush } from '@/hooks/useWebPush';
+import { Bell, Mail, MessageSquare, Clock, Info } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://ls.test';
 
@@ -54,19 +52,29 @@ const getCsrfToken = (): string => {
 };
 
 const fetchPreferences = async (): Promise<EventPreference[]> => {
-  console.log('Fetching preferences from:', `${API_BASE_URL}/api/v1/notification-preferences`);
-  const res = await fetch(`${API_BASE_URL}/api/v1/notification-preferences`, {
-    credentials: 'include',
-    headers: { Accept: 'application/json' },
-  });
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/notification-preferences`, {
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    });
 
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status}`);
+    // Graceful fallback dla braku autoryzacji
+    if (res.status === 401) {
+      toast.error('Musisz być zalogowany, aby zobaczyć powiadomienia');
+      return [];
+    }
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    return data.data;
+  } catch (error) {
+    console.warn('Błąd pobierania preferencji powiadomień:', error);
+    toast.error('Nie udało się pobrać preferencji powiadomień');
+    return [];
   }
-
-  const data = await res.json();
-  console.log('Preferences data:', data);
-  return data.data;
 };
 
 const updatePreference = async (eventId: number, updates: any): Promise<void> => {
@@ -87,11 +95,6 @@ const updatePreference = async (eventId: number, updates: any): Promise<void> =>
 };
 
 const sendTestNotification = async (eventId: number, channel: string): Promise<{ toast?: { type: string; title: string; message: string } }> => {
-  // Dla kanału push, upewnij się że jest aktywna subskrypcja
-  if (channel === 'push') {
-    await ensurePushSubscription();
-  }
-
   const res = await fetch(`${API_BASE_URL}/api/v1/notifications/${eventId}/test`, {
     method: 'POST',
     credentials: 'include',
@@ -111,88 +114,8 @@ const sendTestNotification = async (eventId: number, channel: string): Promise<{
   return data;
 };
 
-const ensurePushSubscription = async (): Promise<void> => {
-  // Pobierz status subskrypcji
-  const statusRes = await fetch(`${API_BASE_URL}/api/v1/push/status`, {
-    credentials: 'include',
-    headers: { Accept: 'application/json' },
-  });
-
-  if (!statusRes.ok) return;
-
-  const { data } = await statusRes.json();
-  
-  // Jeśli już jest subskrypcja, nic nie rób
-  if (data.has_subscription) {
-    return;
-  }
-
-  // W przeciwnym razie, zarejestruj service workera i zasubskrybuj
-  try {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      return;
-    }
-
-    const registration = await navigator.serviceWorker.register('/sw.js');
-    let subscription = await registration.pushManager.getSubscription();
-
-    if (!subscription) {
-      const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-      if (!vapidKey) return;
-
-      const appServerKey = new Uint8Array(
-        atob(vapidKey.replace(/-/g, '+').replace(/_/g, '/'))
-          .split('')
-          .map(c => c.charCodeAt(0))
-      );
-
-      subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: appServerKey,
-      });
-    }
-
-    // Wyślij subskrypcję na serwer
-    if (subscription) {
-      const key = subscription.getKey('p256dh');
-      const auth = subscription.getKey('auth');
-
-      if (key && auth) {
-        await fetch(`${API_BASE_URL}/api/v1/push/enable`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            'X-XSRF-TOKEN': getCsrfToken(),
-          },
-          body: JSON.stringify({
-            endpoint: subscription.endpoint,
-            p256dh: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(key)))),
-            auth: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(auth)))),
-          }),
-        });
-      }
-    }
-  } catch (e) {
-    console.warn('Failed to setup push subscription:', e);
-  }
-};
-
 export const NotificationsTab: React.FC<NotificationsTabProps> = ({ data }) => {
   const queryClient = useQueryClient();
-  const { status: pushStatus, isSupported, subscribe, error: pushError } = useWebPush();
-  
-  // Debug push support
-  console.log('Push Debug:', { 
-    isSupported, 
-    pushStatus, 
-    pushError,
-    hasServiceWorker: 'serviceWorker' in navigator,
-    hasPushManager: 'PushManager' in window,
-    hasNotification: 'Notification' in window,
-    permission: typeof Notification !== 'undefined' ? Notification.permission : 'unavailable'
-  });
   
   const { data: preferences, isLoading } = useQuery<EventPreference[]>({
     queryKey: ['notification-preferences'],
@@ -206,8 +129,15 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ data }) => {
   useEffect(() => {
     if (preferences) {
       const prefs = preferences.reduce((acc, pref) => {
+        const normalizedChannels = {
+          email: pref.channels.email,
+          toast: pref.channels.toast,
+          database: pref.channels.database,
+          // Push wyłączony w MVP
+          push: false,
+        };
         acc[pref.event_id] = {
-          channels: pref.channels,
+          channels: normalizedChannels,
           quiet_hours_enabled: pref.quiet_hours_enabled ?? false,
           quiet_hours_start: pref.quiet_hours_start ?? '22:00',
           quiet_hours_end: pref.quiet_hours_end ?? '08:00',
@@ -253,7 +183,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ data }) => {
   });
 
   const handleChannelToggle = (eventId: number, channel: string) => {
-    const current = localPreferences[eventId] || { channels: { email: true, toast: true, push: true, database: true } };
+    const current = localPreferences[eventId] || { channels: { email: true, toast: true, database: true, push: false } };
     const updated = {
       ...current,
       channels: { ...current.channels, [channel]: !current.channels[channel] },
@@ -263,15 +193,15 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ data }) => {
   };
 
   const handleEventToggle = (eventId: number) => {
-    const current = localPreferences[eventId] || { channels: { email: true, toast: true, push: true, database: true } };
-    const anyEnabled = Object.values(current.channels).some(v => v);
+    const current = localPreferences[eventId] || { channels: { email: true, toast: true, database: true, push: false } };
+    const anyEnabled = ['email', 'toast', 'database'].some(key => current.channels[key]);
     const updated = {
       ...current,
       channels: {
         email: !anyEnabled,
         toast: !anyEnabled,
-        push: !anyEnabled,
         database: !anyEnabled,
+        push: false,
       },
     };
     setLocalPreferences({ ...localPreferences, [eventId]: updated });
@@ -298,7 +228,6 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ data }) => {
   const getChannelIcon = (channel: string) => {
     switch (channel) {
       case 'email': return <Mail className="w-4 h-4" />;
-      case 'push': return <Smartphone className="w-4 h-4" />;
       case 'toast': return <MessageSquare className="w-4 h-4" />;
       case 'database': return <Clock className="w-4 h-4" />;
       default: return <Bell className="w-4 h-4" />;
@@ -321,61 +250,24 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ data }) => {
         <div>
           <p className="text-sm font-semibold text-blue-900 mb-1">Dostępne kanały</p>
           <p className="text-sm text-blue-800">
-            Email • Push • Toast (powiadomienia w aplikacji) • Historia (archiwum w panelu)
+            Email • Toast (powiadomienia w aplikacji) • Historia (archiwum w panelu)
           </p>
+          <p className="text-xs text-blue-700">Push wyłączony w MVP — wróci w pełnej wersji.</p>
         </div>
       </div>
-
-      {/* Push setup */}
-      {isSupported && pushStatus !== 'subscribed' && (
-        <div className="glass-card p-6 rounded-2xl">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
-              <Zap className="w-5 h-5 text-green-600" />
-            </div>
-            <div>
-              <SectionTitle>Włącz powiadomienia push</SectionTitle>
-              <Text size="sm" muted>Natychmiastowe powiadomienia na tym urządzeniu</Text>
-            </div>
-          </div>
-          <Button
-            type="button"
-            onClick={subscribe}
-            disabled={pushStatus === 'pending'}
-            variant="primary"
-            size="md"
-          >
-            {pushStatus === 'pending' ? 'Włączanie…' : 'Włącz powiadomienia push'}
-          </Button>
-        </div>
-      )}
-
-      {isSupported && pushStatus === 'subscribed' && (
-        <div className="glass-card p-6 rounded-2xl border-l-4 border-green-500">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
-              <Zap className="w-5 h-5 text-green-600" />
-            </div>
-            <div>
-              <p className="font-semibold text-gray-900">✓ Push włączony</p>
-              <p className="text-sm text-gray-600">Subskrypcja aktywna na tym urządzeniu</p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Events */}
       <div className="space-y-6">
         {preferences?.map((pref) => {
           const current = localPreferences[pref.event_id] || { 
-            channels: { email: true, toast: true, push: true, database: true },
+            channels: { email: true, toast: true, database: true, push: false },
             quiet_hours_enabled: false,
             quiet_hours_start: '22:00',
             quiet_hours_end: '08:00',
             frequency: 'instant',
             batch_enabled: false,
           };
-          const anyEnabled = Object.values(current.channels).some(v => v);
+          const anyEnabled = ['email', 'toast', 'database'].some(key => current.channels[key]);
 
           return (
             <div 
@@ -421,9 +313,9 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ data }) => {
               </div>
 
               {/* Channels Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
-                {(['email', 'push', 'toast', 'database'] as const).map((channel) => {
-                  const isDisabled = channel === 'push' && !isSupported;
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-6">
+                {(['email', 'toast', 'database'] as const).map((channel) => {
+                  const isDisabled = false;
                   const isEnabled = current.channels[channel];
 
                   return (
@@ -452,7 +344,7 @@ export const NotificationsTab: React.FC<NotificationsTabProps> = ({ data }) => {
                         {getChannelIcon(channel)}
                       </div>
                       <div className="text-xs font-medium text-gray-700">
-                        {channel === 'push' ? 'Push' : channel === 'email' ? 'Email' : channel === 'toast' ? 'Toast' : 'Historia'}
+                        {channel === 'email' ? 'Email' : channel === 'toast' ? 'Toast' : 'Historia'}
                       </div>
                       {isEnabled && (
                         <div className="text-cyan-600 text-xs font-bold">✓</div>

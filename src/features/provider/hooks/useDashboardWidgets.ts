@@ -28,12 +28,12 @@ export function useDashboardWidgets(): UseQueryResult<DashboardWidgets, Error> {
       // Optymalizacja: pobiera tylko widgety używane na stronie głównej dashboardu
       // Pominięte: plan, addons, tasks, calendar, notifications, services, live_activity
       // Efekt: zmniejsza load time poprzez pominięcie N+1 queries dla nieużywanych widgetów
-      const response = await apiClient.get<DashboardWidgets>('/provider/dashboard/widgets', {
+      const response = await apiClient.get<{ data: DashboardWidgets }>('/provider/dashboard/widgets', {
         params: {
           fields: ['pipeline', 'performance', 'insights', 'messages', 'stats'].join(',')
         }
       });
-      return response.data;
+      return response.data.data;
     },
     // Cache 60s jak w LocalServices
     staleTime: 60 * 1000, // 60 sekund

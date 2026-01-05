@@ -1,19 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { MessageSquare, Send, Paperclip, Smile, Search, MoreVertical, ArrowLeft } from 'lucide-react';
-import { ConversationList } from './ConversationList';
+import { ConversationList } from '@/features/provider/messages/ConversationList';
 import { ChatWindow } from './ChatWindow';
-import { useConversations } from './hooks/useConversations';
+import { useConversations } from '@/features/provider/messages/hooks/useConversations';
 
 /**
  * Strona wiadomości - system czatu w stylu Facebook Messenger
  * Mobile-first responsive design
+ * 
+ * ZMIANA (2025-01-02): Dodano obsługę URL parametru ?conversation=ID
+ * Gdy przychodzisz z BookingsPage po kliknięciu koperty, automatycznie
+ * otworzy się rozmowa z tym klientem
  */
 export const MessagesPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'active' | 'hidden'>('active');
 
   const { data: conversations, isLoading } = useConversations(filter === 'hidden');
+
+  // Ustaw aktywną rozmowę jeśli jest podana w URL
+  useEffect(() => {
+    const conversationIdParam = searchParams.get('conversation');
+    if (conversationIdParam) {
+      const conversationId = parseInt(conversationIdParam, 10);
+      if (!isNaN(conversationId)) {
+        setSelectedConversationId(conversationId);
+      }
+    }
+  }, [searchParams]);
 
   // Mobile: show chat when conversation selected, list otherwise
   const showChat = selectedConversationId !== null;

@@ -1,11 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { useReviews } from '../hooks/useReviews';
-import { Star, TrendingUp, MessageCircle, Filter, ThumbsUp, Award } from 'lucide-react';
-import { PageTitle, Text, Caption, StatValue, EmptyText } from '@/components/ui/typography';
-import { Card } from '@/components/ui/card';
+import { Star, MessageCircle, Award, Loader2, ThumbsUp, Send, X } from 'lucide-react';
+import { PageTitle, Text, Caption, StatValue } from '@/components/ui/typography';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
@@ -26,7 +24,7 @@ import { apiClient } from '@/api/client';
  * @component
  * @returns {React.ReactElement} Reviews dashboard with stats and review list
  */
-export const ReviewsPage: React.FC = () => {
+const ReviewsPage: React.FC = () => {
   const [filterRating, setFilterRating] = useState<number | null>(null);
   const [showUnanswered, setShowUnanswered] = useState(false);
   const [page, setPage] = useState(1);
@@ -99,422 +97,242 @@ export const ReviewsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-amber-950/20 dark:via-orange-950/20 dark:to-yellow-950/20 border border-amber-100 dark:border-amber-900/30 p-8">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(251,191,36,0.1),transparent_50%)]" />
-        <div className="relative">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-3xl">⭐</span>
-            <PageTitle className="text-gray-900 dark:text-gray-100">Opinie klientów</PageTitle>
-          </div>
-          <Text muted size="sm">Monitoruj swoją reputację, odpowiadaj na feedback i buduj zaufanie</Text>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+        {/* Hero - inspirowany DashboardPage */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-600 via-orange-500 to-amber-500 text-white shadow-2xl">
+          <div className="absolute inset-0 opacity-25 bg-[radial-gradient(circle_at_20%_20%,#ffffff_0%,transparent_35%)]" />
+          <div className="absolute inset-y-0 right-0 w-1/3 bg-white/10 blur-3xl" />
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {/* Średnia ocena */}
-        <Card className="p-6 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border-amber-200 dark:border-amber-800">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-xl bg-amber-500/20">
-              <Star className="w-5 h-5 text-amber-600 fill-amber-600" />
+          <div className="relative p-8 sm:p-10 space-y-6">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-4xl">⭐</span>
+              <div>
+                <p className="text-sm font-semibold text-white">Zarządzanie opiniami</p>
+                <h1 className="text-4xl sm:text-5xl font-black leading-tight drop-shadow-md">Opinie klientów</h1>
+              </div>
             </div>
-            <Text muted size="sm">Średnia ocena</Text>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <StatValue className="text-3xl font-bold text-amber-600">{avgRating.toFixed(1)}</StatValue>
-            <Text muted size="sm">/ 5.0</Text>
-          </div>
-          <div className="flex items-center gap-1 mt-2">
-            {Array.from({ length: 5 }, (_, i) => (
-              <Star
-                key={i}
-                className={`w-4 h-4 ${
-                  i < Math.round(avgRating) ? 'text-amber-500 fill-amber-500' : 'text-gray-300'
-                }`}
-              />
-            ))}
-          </div>
-        </Card>
+            <p className="text-white text-sm sm:text-base max-w-2xl">
+              Monitoruj swoją reputację, odpowiadaj na feedback i buduj zaufanie. Twoje opinie mają znaczenie dla nowych klientów.
+            </p>
 
-        {/* Łączna liczba */}
-        <Card className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 border-blue-200 dark:border-blue-800">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-xl bg-blue-500/20">
-              <MessageCircle className="w-5 h-5 text-blue-600" />
-            </div>
-            <Text muted size="sm">Łączna liczba</Text>
-          </div>
-          <StatValue className="text-3xl font-bold text-blue-600">{totalReviews}</StatValue>
-          <Caption muted className="mt-2">opinii od klientów</Caption>
-        </Card>
-
-        {/* Trend */}
-        <Card className="p-6 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/20 dark:to-green-950/20 border-emerald-200 dark:border-emerald-800">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-xl bg-emerald-500/20">
-              <TrendingUp className="w-5 h-5 text-emerald-600" />
-            </div>
-            <Text muted size="sm">Trend (30 dni)</Text>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <StatValue className="text-3xl font-bold text-emerald-600">+0.3</StatValue>
-            <Text muted size="sm">punktu</Text>
-          </div>
-          <div className="flex items-center gap-1 mt-2">
-            <div className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
-              ↗ Rośnie
-            </div>
-          </div>
-        </Card>
-
-        {/* Wskaźnik jakości */}
-        <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200 dark:border-purple-800">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-xl bg-purple-500/20">
-              <Award className="w-5 h-5 text-purple-600" />
-            </div>
-            <Text muted size="sm">Jakość</Text>
-          </div>
-          <StatValue className="text-3xl font-bold text-purple-600">{Math.round(avgRating * 20)}%</StatValue>
-          <Caption muted className="mt-2">zadowolenia klientów</Caption>
-        </Card>
-      </div>
-
-      {/* Rating Breakdown */}
-      <Card className="p-6">
-        <div className="mb-6">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <Text className="text-lg font-semibold text-gray-900 dark:text-gray-100">📊 Rozkład ocen</Text>
-              <Text muted size="sm">Szczegółowa analiza wszystkich opinii</Text>
-            </div>
-          </div>
-          
-          {/* Filtry szybkie */}
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={filterRating === null && !showUnanswered ? 'primary' : 'info'}
-              size="sm"
-              onClick={() => { setFilterRating(null); setShowUnanswered(false); setPage(1); }}
-            >
-              <Filter className="w-4 h-4 mr-2" />
-              Wszystkie ({totalReviews})
-            </Button>
-            <Button
-              variant={showUnanswered ? 'warning' : 'info'}
-              size="sm"
-              onClick={() => { setShowUnanswered(!showUnanswered); setFilterRating(null); setPage(1); }}
-            >
-              <MessageCircle className="w-4 h-4 mr-2" />
-              Bez odpowiedzi
-            </Button>
-            {[5, 4, 3, 2, 1].map(stars => {
-              const count = ratingBreakdown[stars as keyof typeof ratingBreakdown] || 0;
-              if (count === 0) return null;
-              return (
-                <Button
-                  key={stars}
-                  variant={filterRating === stars ? 'primary' : 'info'}
-                  size="sm"
-                  onClick={() => handleFilterChange(stars)}
-                >
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: stars }, (_, i) => (
-                      <Star key={i} className="w-3 h-3 text-amber-500 fill-amber-500" />
-                    ))}
-                    <span className="ml-1">({count})</span>
-                  </div>
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-
-          <div className="space-y-3">
-          {[5, 4, 3, 2, 1].map(stars => {
-            const count = ratingBreakdown[stars as keyof typeof ratingBreakdown] || 0;
-            const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
-            
-            return (
-              <button
-                key={stars}
-                onClick={() => handleFilterChange(stars)}
-                className={`w-full flex items-center gap-4 p-3 rounded-xl border-2 transition-all ${
-                  filterRating === stars
-                    ? 'border-cyan-400 bg-cyan-50 dark:bg-cyan-950/20 ring-2 ring-cyan-200'
-                    : 'border-slate-200 dark:border-slate-700 hover:border-cyan-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                }`}
-              >
-                <div className="flex items-center gap-1 w-20">
-                  {Array.from({ length: stars }, (_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                  ))}
+            {/* Stats Grid - szklane karty jak na Dashboard */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Średnia ocena */}
+              <div className="glass-card bg-white/90 border border-white/40 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+                <div>
+                  <p className="text-xs text-amber-700 font-semibold">Średnia ocena</p>
+                  <p className="text-3xl font-black mt-1 text-amber-900">
+                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : avgRating.toFixed(1)}
+                  </p>
                 </div>
-                <div className="flex-1">
-                  <div className="h-2.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all duration-500"
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
+                <div className="p-3 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg">
+                  <Star className="w-5 h-5 fill-white" />
                 </div>
-                <div className="flex items-center gap-3 min-w-[100px] justify-end">
-                  <Text size="sm" className="font-semibold text-gray-900 dark:text-gray-100">{count}</Text>
-                  <Text muted size="sm" className="text-xs">({percentage.toFixed(0)}%)</Text>
+              </div>
+
+              {/* Łączna liczba */}
+              <div className="glass-card bg-white/90 border border-white/40 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+                <div>
+                  <p className="text-xs text-orange-700 font-semibold">Łączna liczba</p>
+                  <p className="text-3xl font-black mt-1 text-orange-900">
+                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : totalReviews}
+                  </p>
                 </div>
-              </button>
-            );
-          })}
-        </div>
-      </Card>
-
-      {/* Filtry i nagłówek listy */}
-      <div className="flex items-center justify-between">
-        <div>
-          <Text className="text-lg font-semibold text-gray-900 dark:text-gray-100">💬 Lista opinii</Text>
-          <Text muted size="sm">
-            {filterRating ? `Wyświetlam opinie z ${filterRating} gwiazdkami` : `Wszystkie opinie (${filteredItems.length})`}
-          </Text>
-        </div>
-        {filterRating && (
-          <Button variant="ghost" size="sm" onClick={() => setFilterRating(null)} className="text-cyan-600">
-            ✕ Wyczyść filtr
-          </Button>
-        )}
-      </div>
-
-      {/* Lista opinii */}
-      <Card className="overflow-hidden">
-        <div className="divide-y divide-slate-100 dark:divide-slate-800">
-          {isLoading && (
-            <div className="px-6 py-16 text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-slate-200 border-t-cyan-500 mb-4" />
-              <EmptyText>Ładowanie opinii...</EmptyText>
-            </div>
-          )}
-          {error && !isLoading && (
-            <div className="px-6 py-16 text-center">
-              <div className="text-5xl mb-4">❌</div>
-              <EmptyText className="text-red-600 font-semibold">Błąd ładowania opinii</EmptyText>
-              <Text muted size="sm" className="mt-2">Spróbuj odświeżyć stronę</Text>
-            </div>
-          )}
-          {!isLoading && filteredItems.map((r, idx) => (
-            <div
-              key={r.id}
-              className="px-6 py-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-              style={{ animationDelay: `${idx * 50}ms` }}
-            >
-              <div className="flex items-start gap-4">
-                {/* Avatar z gradientem */}
-                <div className="flex-shrink-0">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 via-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                    {r.customerName.charAt(0).toUpperCase()}
-                  </div>
+                <div className="p-3 rounded-xl bg-gradient-to-br from-orange-400 to-red-500 text-white shadow-lg">
+                  <MessageCircle className="w-5 h-5" />
                 </div>
+              </div>
 
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <Text className="font-semibold text-gray-900 dark:text-gray-100">{r.customerName}</Text>
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className="flex items-center gap-0.5">
-                          {Array.from({ length: 5 }, (_, i) => (
-                            <Star
-                              key={i}
-                              className={`w-4 h-4 transition-all ${
-                                i < r.rating ? 'text-amber-500 fill-amber-500 scale-110' : 'text-gray-300'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-semibold">
-                          {r.rating}/5
-                        </span>
-                      </div>
-                    </div>
-                    <Caption muted className="text-xs bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">{r.date}</Caption>
-                  </div>
-                  
-                  <div className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 mb-3 space-y-3">
-                    <Text size="sm" className="text-gray-700 dark:text-gray-300 leading-relaxed">{r.comment}</Text>
-                    {r.response && (
-                      <div className="border border-cyan-100 dark:border-cyan-900/50 bg-cyan-50/60 dark:bg-cyan-950/30 rounded-xl p-3">
-                        <div className="flex items-center gap-2 mb-1 text-cyan-700 dark:text-cyan-300 text-sm font-semibold">
-                          <MessageCircle className="w-4 h-4" />
-                          Twoja odpowiedź
-                          <Caption muted className="ml-2">{new Date(r.response.updated_at).toLocaleString()}</Caption>
-                        </div>
-                        <Text size="sm" className="text-gray-800 dark:text-gray-200">{r.response.response}</Text>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Actions */}
-                  <div className="flex items-center gap-3">
-                    {!r.response && replyingTo === r.id ? (
-                      <div className="flex-1 flex items-center gap-2">
-                        <input
-                          type="text"
-                          placeholder="Napisz odpowiedź..."
-                          className="flex-1 px-4 py-2 border-2 border-cyan-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-400 text-sm"
-                          autoFocus
-                          value={replyTexts[r.id] || ''}
-                          onChange={(e) => handleReplyChange(r.id, e.target.value)}
-                        />
-                        <Button
-                          size="sm"
-                          onClick={() => handleReplySubmit(r.id)}
-                          className="bg-gradient-to-r from-cyan-500 to-blue-500"
-                        >
-                          Wyślij
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => setReplyingTo(null)}>
-                          Anuluj
-                        </Button>
-                      </div>
-                    ) : (
-                      <>
-                        {!r.response && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setReplyingTo(r.id)}
-                            className="font-semibold"
-                          >
-                            <MessageCircle className="w-4 h-4 mr-2" />
-                            Odpowiedz
-                          </Button>
-                        )}
-                        <button
-                          onClick={() => toggleHelpful(r.id)}
-                          disabled={helpful[r.id]}
-                          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors text-sm ${
-                            helpful[r.id]
-                              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
-                              : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-gray-600 dark:text-gray-400'
-                          }`}
-                        >
-                          <ThumbsUp className="w-4 h-4" />
-                          <span>{helpful[r.id] ? 'Dodano' : 'Pomocne'}</span>
-                        </button>
-                      </>
-                    )}
-                  </div>
+              {/* Jakość zadowolenia */}
+              <div className="glass-card bg-white/90 border border-white/40 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+                <div>
+                  <p className="text-xs text-amber-700 font-semibold">Zadowolenie</p>
+                  <p className="text-3xl font-black mt-1 text-amber-900">
+                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : `${Math.round(avgRating * 20)}%`}
+                  </p>
+                </div>
+                <div className="p-3 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-500 text-white shadow-lg">
+                  <Award className="w-5 h-5" />
                 </div>
               </div>
             </div>
-          ))}
-          {!isLoading && filteredItems.length === 0 && !error && (
-            <div className="px-6 py-16 text-center">
-              <div className="text-6xl mb-4">⭐</div>
-              <Text className="text-gray-900 dark:text-gray-100 font-semibold text-lg mb-2">
-                {filterRating ? `Brak opinii z ${filterRating} gwiazdkami` : 'Brak opinii'}
-              </Text>
-              <Text size="sm" muted className="max-w-md mx-auto">
-                {filterRating
-                  ? 'Zmień filtr, aby zobaczyć inne opinie'
-                  : 'Poproś klientów o feedback po zrealizowanych usługach. Pozytywne opinie budują zaufanie i zwiększają konwersje!'}
-              </Text>
-              {filterRating && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setFilterRating(null)}
-                  className="mt-4 font-semibold"
-                >
-                  Pokaż wszystkie opinie
-                </Button>
-              )}
+          </div>
+        </div>
+
+        {/* Filtry - szklane karty */}
+        <div className="glass-card rounded-2xl p-6">
+          <div className="space-y-4">
+            <h2 className="text-lg font-bold text-slate-900">Filtry opinii</h2>
+            
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={filterRating === null && !showUnanswered ? 'primary' : 'info'}
+                size="sm"
+                onClick={() => { setFilterRating(null); setShowUnanswered(false); setPage(1); }}
+              >
+                Wszystkie ({totalReviews})
+              </Button>
+              <Button
+                variant={showUnanswered ? 'warning' : 'info'}
+                size="sm"
+                onClick={() => { setShowUnanswered(!showUnanswered); setFilterRating(null); setPage(1); }}
+              >
+                <MessageCircle className="w-4 h-4 mr-2" />
+                Bez odpowiedzi
+              </Button>
+              {[5, 4, 3, 2, 1].map(stars => {
+                const count = ratingBreakdown[stars as keyof typeof ratingBreakdown] || 0;
+                if (count === 0) return null;
+                return (
+                  <Button
+                    key={stars}
+                    variant={filterRating === stars ? 'primary' : 'info'}
+                    size="sm"
+                    onClick={() => handleFilterChange(stars)}
+                  >
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: stars }, (_, i) => (
+                        <Star key={i} className="w-3 h-3 text-amber-500 fill-amber-500" />
+                      ))}
+                      ({count})
+                    </div>
+                  </Button>
+                );
+              })}
             </div>
+          </div>
+        </div>
+
+      {/* Lista opinii - szklane karty */}
+      <div className="space-y-4">
+        {isLoading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="glass-card rounded-2xl p-6 animate-pulse">
+                <Skeleton className="h-6 w-32 mb-3" />
+                <Skeleton className="h-12 w-full" />
+              </div>
+            ))
+          ) : filteredItems.length === 0 ? (
+            <div className="glass-card rounded-2xl p-12 text-center">
+              <div className="mb-4 flex justify-center">
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-100 to-orange-100">
+                  <Star className="w-8 h-8 text-amber-600" />
+                </div>
+              </div>
+              <p className="text-lg font-bold text-slate-900 mb-2">Brak opinii</p>
+              <p className="text-sm text-slate-600">Każda opinia od klienta pojawi się tutaj. Czekaj na pierwsze oceny!</p>
+            </div>
+          ) : (
+            filteredItems.map((r: any) => (
+              <div key={r.id} className="glass-card rounded-2xl p-6 border border-white/20 hover:border-white/40 transition-all">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <p className="font-bold text-slate-900">{r.customerName}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <div className="flex gap-0.5">
+                        {Array.from({ length: 5 }, (_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-4 h-4 ${i < r.rating ? 'text-amber-500 fill-amber-500' : 'text-gray-300'}`}
+                          />
+                        ))}
+                      </div>
+                      <Badge variant="primary" className="text-xs">{r.rating}/5</Badge>
+                      <span className="text-xs text-slate-500">{r.date}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-sm text-slate-700 mb-4 leading-relaxed">{r.comment}</p>
+
+                {r.response && (
+                  <div className="mb-4 p-4 rounded-xl bg-white/50 border border-cyan-200">
+                    <div className="flex items-center gap-2 mb-2 text-cyan-700 text-sm font-semibold">
+                      <Send className="w-4 h-4" />
+                      Twoja odpowiedź
+                    </div>
+                    <p className="text-sm text-slate-700">{r.response.response}</p>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex items-center gap-2">
+                  {!r.response && replyingTo === r.id ? (
+                    <div className="flex-1 flex items-center gap-2">
+                      <textarea
+                        placeholder="Napisz odpowiedź..."
+                        className="flex-1 px-4 py-2 border border-cyan-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-400 text-sm bg-white"
+                        autoFocus
+                        rows={2}
+                        value={replyTexts[r.id] || ''}
+                        onChange={(e) => handleReplyChange(r.id, e.target.value)}
+                      />
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={() => handleReplySubmit(r.id)}>
+                          <Send className="w-4 h-4 mr-1" />
+                          Wyślij
+                        </Button>
+                        <Button size="sm" variant="info" onClick={() => setReplyingTo(null)}>
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {!r.response && (
+                        <Button size="sm" variant="info" onClick={() => setReplyingTo(r.id)}>
+                          <MessageCircle className="w-4 h-4 mr-1" />
+                          Odpowiedz
+                        </Button>
+                      )}
+                      <button
+                        onClick={() => toggleHelpful(r.id)}
+                        disabled={helpful[r.id]}
+                        className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm transition-all ${
+                          helpful[r.id]
+                            ? 'bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700'
+                            : 'hover:bg-slate-100 text-slate-600'
+                        }`}
+                      >
+                        <ThumbsUp className="w-4 h-4" />
+                        Przydatne
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))
           )}
         </div>
-      </Card>
 
-      {/* Pagination */}
-      {!isLoading && filteredItems.length > 0 && (
-        <Card className="p-4">
-          <div className="flex items-center justify-between">
+        {/* Paginacja */}
+        {lastPage > 1 && (
+          <div className="glass-card rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Button
-                variant="outline"
                 size="sm"
+                variant="info"
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={currentPage <= 1 || isRefetching}
-                className="font-semibold"
               >
                 ← Poprzednia
               </Button>
               <Button
-                variant="outline"
                 size="sm"
+                variant="info"
                 onClick={() => setPage(p => Math.min(lastPage, p + 1))}
                 disabled={currentPage >= lastPage || isRefetching}
-                className="font-semibold"
               >
                 Następna →
               </Button>
             </div>
-            <div className="flex items-center gap-2">
-              <Text muted size="sm" className="text-xs">
-                Strona {currentPage} z {lastPage} • {perPage} na stronie
-              </Text>
-              <span className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold">
-                {total} {total === 1 ? 'opinia' : total < 5 ? 'opinie' : 'opinii'}
-              </span>
-            </div>
+            <Text muted size="sm" className="text-xs">
+              Strona {currentPage} z {lastPage}
+            </Text>
           </div>
-
-          {/* Page numbers */}
-          {lastPage > 1 && lastPage <= 10 && (
-            <div className="flex items-center justify-center gap-1 mt-3">
-              {Array.from({ length: lastPage }, (_, i) => i + 1).map((pageNum) => (
-                <button
-                  key={pageNum}
-                  onClick={() => setPage(pageNum)}
-                  disabled={isRefetching}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
-                    pageNum === currentPage
-                      ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-md'
-                      : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-gray-600 dark:text-gray-400'
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              ))}
-            </div>
-          )}
-        </Card>
-      )}
-
-      {/* Tips Section */}
-      {!isLoading && totalReviews > 0 && (
-        <Card className="p-6 bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950/20 dark:to-blue-950/20 border-cyan-200 dark:border-cyan-800">
-          <div className="flex items-start gap-4">
-            <div className="text-4xl">💡</div>
-            <div className="flex-1">
-              <Text className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Wskazówki dotyczące opinii</Text>
-              <ul className="space-y-2">
-                <li className="flex items-start gap-2">
-                  <span className="text-cyan-600 mt-1">✓</span>
-                  <Text size="sm" muted>Odpowiadaj na wszystkie opinie w ciągu 24h - zwiększa to Trust Score</Text>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-cyan-600 mt-1">✓</span>
-                  <Text size="sm" muted>Dziękuj za pozytywny feedback i profesjonalnie reaguj na krytykę</Text>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-cyan-600 mt-1">✓</span>
-                  <Text size="sm" muted>Wykorzystuj opinie do poprawy jakości swoich usług</Text>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </Card>
-      )}
+        )}
+      </div>
     </div>
   );
 };

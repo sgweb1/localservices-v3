@@ -13,6 +13,7 @@ import axios from 'axios'
  */
 
 const API_BASE_URL = 'http://localhost:8000/api/v1'
+const runRealApi = process.env.RUN_REAL_API_TESTS === 'true'
 
 // Opcjonalnie: auth token z localStorage (jeśli masz zalogowanego usera)
 const getAuthToken = () => {
@@ -36,7 +37,10 @@ if (token) {
   apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`
 }
 
-describe('Real API Tests (Live Backend)', () => {
+// Domyślnie pomijamy – wymaga uruchomionego backendu.
+const describeReal = runRealApi ? describe : describe.skip
+
+describeReal('Real API Tests (Live Backend)', () => {
   beforeAll(() => {
     console.log('🚀 Testing REAL API at:', API_BASE_URL)
     console.log('🔐 Auth token:', token ? 'Yes' : 'No (will get 401)')

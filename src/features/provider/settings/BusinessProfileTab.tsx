@@ -266,7 +266,7 @@ export const BusinessProfileTab: React.FC<BusinessProfileTabProps> = ({ data }) 
 
   const handleSaveSubdomain = () => {
     if (!canUseSubdomain) {
-      toast.error('Subdomena jest dostępna w planach Pro i Premium');
+      toast.error('Subdomena dostępna w pełnej wersji — w MVP wyłączona');
       return;
     }
 
@@ -581,8 +581,8 @@ export const BusinessProfileTab: React.FC<BusinessProfileTabProps> = ({ data }) 
               Wyłączona
             </span>
           ) : (
-            <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">
-              Wymaga Pro/Premium
+            <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">
+              Niedostępne w MVP
             </span>
           )}
         </div>
@@ -617,11 +617,11 @@ export const BusinessProfileTab: React.FC<BusinessProfileTabProps> = ({ data }) 
             </ul>
             {canUseSubdomain ? (
               <Text size="xs" muted>
-                Masz dostęp w swoim planie — włącz i zapisz subdomenę poniżej.
+                Włącz i zapisz subdomenę poniżej.
               </Text>
             ) : (
-              <Text size="xs" className="text-amber-700 dark:text-amber-400">
-                Funkcja dostępna w planach Pro i Premium. Uaktualnij, aby ją odblokować.
+              <Text size="xs" muted>
+                Subdomena będzie dostępna w pełnej wersji (MVP: wyłączona).
               </Text>
             )}
           </div>

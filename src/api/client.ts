@@ -9,20 +9,34 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
  */
 class ApiClient {
   private client: AxiosInstance;
+  private csrfInitialized = false;
 
   constructor() {
     this.client = axios.create({
       baseURL: '/api/v1',
       withCredentials: true, // Sanctum SPA cookie-based auth
+      xsrfCookieName: 'XSRF-TOKEN',
+      xsrfHeaderName: 'X-XSRF-TOKEN',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
     });
 
+    // Bootstrap CSRF cookie on client creation (dla pierwszego requestu na https://ls.test)
+    axios.get('/sanctum/csrf-cookie', { withCredentials: true }).catch(() => {
+      // cichy fallback - następne mutacje spróbują ponownie
+    });
+
     // Request interceptor - dodaj token
     this.client.interceptors.request.use(
-      (config) => {
+      async (config) => {
+        // Sanctum: pobierz CSRF cookie przed mutacjami
+        if (!this.csrfInitialized && config.method && !['get', 'head', 'options'].includes(config.method.toLowerCase())) {
+          await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+          this.csrfInitialized = true;
+        }
+
         // Token opcjonalny (np. auth_token) – preferuj ciasteczko Sanctum
         const token = localStorage.getItem('auth_token');
         if (token) {

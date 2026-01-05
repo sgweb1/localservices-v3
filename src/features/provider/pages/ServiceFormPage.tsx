@@ -22,6 +22,7 @@ import { Switch } from '@/components/ui/switch';
 import { PageTitle, Text } from '@/components/ui/typography';
 import type { ServiceCategory } from '@/types/service';
 import type { Location } from '@/types/location';
+import { useUpdateService } from '@/hooks/useUpdateService';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://ls.test';
 const defaultLat = 52.2297;
@@ -130,6 +131,7 @@ const ServiceFormPage: React.FC = () => {
   const mode: 'create' | 'edit' = serviceId ? 'edit' : 'create';
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { mutate: updateService, isPending } = useUpdateService();
 
   const { data: service, isLoading } = useService(serviceId ?? 0);
   const { categories, loading: categoriesLoading } = useCategories();
@@ -1014,8 +1016,6 @@ const ServiceFormPage: React.FC = () => {
         <div
           className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer ${
             isDropActive 
-              ? 'border-cyan-400 bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 scale-[1.02]' 
-              : 'border-slate-300 dark:border-slate-600 hover:border-cyan-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
           }`}
           onDragOver={(e) => { e.preventDefault(); setIsDropActive(true); }}
           onDragLeave={() => setIsDropActive(false)}

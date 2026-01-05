@@ -203,7 +203,7 @@ export const DashboardHero: React.FC = () => {
                   Trust Score™
                 </span>
                 {animatedTrustScore >= 70 && (
-                  <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Premium</span>
+                  <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Widoczność organiczna</span>
                 )}
               </div>
               <div className="flex items-center gap-4">

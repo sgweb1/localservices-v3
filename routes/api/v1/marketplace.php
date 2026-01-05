@@ -46,13 +46,19 @@ Route::middleware(['api'])->group(function () {
     Route::get('/customers/{customerId}/bookings', [BookingController::class, 'customerBookings']);
     
     // Tworzenie rezerwacji - wymaga autentykacji
-    Route::middleware(['auth:sanctum'])->group(function () {
+    Route::middleware([
+        \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+        'auth:sanctum'
+    ])->group(function () {
         Route::post('/bookings', [BookingController::class, 'store']);
         Route::post('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
     });
 
     // Akcje providera na rezerwacjach - wymaga autentykacji
-    Route::middleware(['auth:sanctum'])->group(function () {
+    Route::middleware([
+        \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+        'auth:sanctum'
+    ])->group(function () {
         Route::get('/provider/bookings', [BookingController::class, 'providerIndex']);
         Route::post('/provider/bookings/{id}/accept', [BookingController::class, 'accept']);
         Route::post('/provider/bookings/{id}/decline', [BookingController::class, 'decline']);

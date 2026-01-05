@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Calendar, MessagesSquare, Briefcase, CreditCard, Settings, CalendarDays, User, Zap, FlaskConical } from 'lucide-react';
+import { LayoutDashboard, Calendar, MessagesSquare, Briefcase, Settings, CalendarDays, User, FlaskConical, Star } from 'lucide-react';
 import { useConversations } from '@/features/provider/hooks/useConversations';
 
 const navItems = [
@@ -9,9 +9,8 @@ const navItems = [
   { to: '/provider/calendar', label: 'Kalendarz', icon: CalendarDays },
   { to: '/provider/messages', label: 'Wiadomości', icon: MessagesSquare, dynamic: 'messages' },
   { to: '/provider/services', label: 'Usługi', icon: Briefcase },
+  { to: '/provider/reviews', label: 'Opinie', icon: Star },
   { to: '/provider/profile', label: 'Profil', icon: User },
-  { to: '/provider/monetization/boost', label: 'Boost', icon: Zap },
-  { to: '/provider/monetization/subscription', label: 'Subskrypcja', icon: CreditCard },
   { to: '/provider/settings', label: 'Ustawienia', icon: Settings },
 ];
 

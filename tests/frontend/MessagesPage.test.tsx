@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
-import { MessagesPage } from '@/features/provider/messages/MessagesPage';
-import { AuthProvider } from '@/contexts/AuthContext';
+import * as useConversationsModule from '@/features/provider/messages/hooks/useConversations';
+import * as ConversationListModule from '@/features/provider/messages/ConversationList';
 
 /**
  * Testy komponentu MessagesPage - system wiadomości
@@ -52,22 +52,43 @@ const mockConversations = {
   },
 };
 
-// Mock useConversations hook with all required exports
-vi.mock('@/features/provider/messages/hooks/useConversations', async () => {
-  const actual = await vi.importActual('@/features/provider/messages/hooks/useConversations');
-  return {
-    ...actual as any,
-    useConversations: vi.fn(() => ({
-      data: mockConversations,
-      isLoading: false,
-      error: null,
-    })),
-    useUnhideConversation: vi.fn(() => ({
-      mutate: vi.fn(),
-      isPending: false,
-    })),
-  };
-});
+let MessagesPage: typeof import('@/features/provider/messages/MessagesPage').MessagesPage;
+
+// Ustawiamy szpiegów zamiast vi.mock, żeby mieć pewność, że MessagesPage korzysta z podmienionych modułów
+const useConversationsSpy = vi.spyOn(useConversationsModule, 'useConversations');
+const useUnhideConversationSpy = vi.spyOn(useConversationsModule, 'useUnhideConversation');
+const conversationListSpy = vi.spyOn(ConversationListModule, 'ConversationList');
+
+const applyDefaultMocks = () => {
+  useConversationsSpy.mockImplementation(() => ({
+    data: mockConversations,
+    isLoading: false,
+    error: null,
+  }));
+
+  useUnhideConversationSpy.mockImplementation(() => ({
+    mutate: vi.fn(),
+    isPending: false,
+  }));
+
+  conversationListSpy.mockImplementation(({ conversations, isLoading }: any) => {
+    if (isLoading) {
+      return <div>Ładowanie...</div>;
+    }
+
+    return (
+      <div>
+        {conversations?.data?.map((conv: any) => (
+          <div key={conv.id}>
+            <div>{conv.customer.name}</div>
+            <div>{conv.last_message}</div>
+            {conv.unread_count ? <span>{conv.unread_count}</span> : null}
+          </div>
+        ))}
+      </div>
+    );
+  });
+};
 
 // Mock AuthContext
 vi.mock('@/contexts/AuthContext', () => ({
@@ -77,6 +98,13 @@ vi.mock('@/contexts/AuthContext', () => ({
     isAuthenticated: true,
   }),
 }));
+
+import { AuthProvider } from '@/contexts/AuthContext';
+
+beforeAll(async () => {
+  applyDefaultMocks();
+  ({ MessagesPage } = await import('@/features/provider/messages/MessagesPage'));
+});
 
 // Helper do renderowania z providerami
 function renderWithProviders(ui: React.ReactElement) {
@@ -100,6 +128,7 @@ function renderWithProviders(ui: React.ReactElement) {
 describe('MessagesPage - UI Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    applyDefaultMocks();
   });
 
   it('renderuje stronę wiadomości z nagłówkiem', () => {
@@ -204,21 +233,22 @@ describe('MessagesPage - Responsive Design', () => {
 
 describe('MessagesPage - Loading State', () => {
   it('pokazuje loading state gdy dane są ładowane', async () => {
-    // Mock loading state
-    vi.mock('@/features/provider/messages/hooks/useConversations', () => ({
-      useConversations: vi.fn(() => ({
-        data: undefined,
-        isLoading: true,
-        error: null,
-      })),
+    useConversationsSpy.mockImplementation(() => ({
+      data: undefined,
+      isLoading: true,
+      error: null,
     }));
+
+    conversationListSpy.mockImplementation(({ isLoading }: any) => (
+      <div>{isLoading ? 'Ładowanie...' : 'Gotowe'}</div>
+    ));
 
     renderWithProviders(<MessagesPage />);
 
     // ConversationList powinien obsługiwać isLoading
     // (zakładamy że komponent pokazuje loader lub skeleton)
     await waitFor(() => {
-      expect(screen.queryByText('Anna Kowalska')).not.toBeInTheDocument();
+      expect(screen.getByText('Ładowanie...')).toBeInTheDocument();
     });
   });
 });
