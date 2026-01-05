@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\BookingStatus;
+use App\Enums\UserType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BookingResource;
+use App\Models\Booking;
 use App\Services\Api\BookingApiService;
 use App\Services\NotificationService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -628,6 +631,161 @@ class BookingController extends Controller
             'success' => true,
             'message' => 'Usługa ukończona',
             'data' => new BookingResource($booking->fresh())
+        ]);
+    }
+
+    /**
+     * Oznacz przeterminowane bookings jako ukończone
+     * POST /provider/bookings/complete-overdue
+     * 
+     * Znajduje wszystkie potwierdzone rezerwacje z datą < dzisiaj i oznacza jako completed
+     */
+    public function completeOverdue(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user || $user->user_type !== UserType::Provider) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $bookings = Booking::where('provider_id', $user->id)
+            ->where('status', 'confirmed')
+            ->where('booking_date', '<', Carbon::today())
+            ->get();
+
+        $updated = 0;
+        foreach ($bookings as $booking) {
+            $booking->update(['status' => 'completed']);
+            $updated++;
+
+            if ($booking->customer) {
+                $this->notificationService->send(
+                    'booking.completed',
+                    $booking->customer,
+                    'customer',
+                    [
+                        'customer_name' => $booking->customer->name,
+                        'provider_name' => $user->name,
+                        'service_name' => $booking->service->title ?? 'Usługa',
+                        'booking_date' => Carbon::parse($booking->booking_date)->format('d.m.Y'),
+                        'booking_time' => substr($booking->start_time ?? '00:00:00', 0, 5),
+                        'booking_id' => $booking->id,
+                    ]
+                );
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Oznaczono {$updated} rezerwacji jako ukończone",
+            'count' => $updated,
+        ]);
+    }
+
+    /**
+     * Pobierz statystyki providera
+     * GET /provider/statistics
+     */
+    public function statistics(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user || $user->user_type !== UserType::Provider) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $allBookings = Booking::where('provider_id', $user->id)->get();
+
+        $totalBookings = $allBookings->count();
+        $completedBookings = $allBookings->where('status', 'completed')->count();
+        $pendingBookings = $allBookings->whereIn('status', ['pending', 'quote_sent'])->count();
+        $cancelledBookings = $allBookings->where('status', 'cancelled')->count();
+        $declinedBookings = $allBookings->where('status', 'declined')->count();
+
+        $completionRate = $totalBookings > 0 ? ($completedBookings / $totalBookings) * 100 : 0;
+
+        return response()->json([
+            'data' => [
+                'total_bookings' => $totalBookings,
+                'completed_bookings' => $completedBookings,
+                'pending_bookings' => $pendingBookings,
+                'cancelled_bookings' => $cancelledBookings,
+                'declined_bookings' => $declinedBookings,
+                'completion_rate' => round($completionRate, 2),
+                'average_rating' => 0,
+                'trust_score' => 0,
+                'response_time' => 0,
+            ],
+        ]);
+    }
+
+    /**
+     * Ukryj rezerwację (soft delete dla providera)
+     * DELETE /provider/bookings/{id}
+     */
+    public function destroy(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user || $user->user_type !== UserType::Provider) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $booking = Booking::where('provider_id', $user->id)
+            ->where('id', $id)
+            ->first();
+
+        if (!$booking) {
+            return response()->json(['error' => 'Rezerwacja nie została znaleziona'], 404);
+        }
+
+        if ($booking->hidden_by_provider) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Rezerwacja już była ukryta w Twoim panelu',
+            ]);
+        }
+
+        $booking->update(['hidden_by_provider' => true]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Rezerwacja została ukryta w Twoim panelu',
+        ]);
+    }
+
+    /**
+     * Przywróć ukrytą rezerwację
+     * POST /provider/bookings/{id}/restore
+     */
+    public function restore(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user || $user->user_type !== UserType::Provider) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $booking = Booking::where('provider_id', $user->id)
+            ->where('id', $id)
+            ->first();
+
+        if (!$booking) {
+            return response()->json(['error' => 'Rezerwacja nie została znaleziona'], 404);
+        }
+
+        if (!$booking->hidden_by_provider) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Rezerwacja już była widoczna w Twoim panelu',
+            ]);
+        }
+
+        $booking->update(['hidden_by_provider' => false]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Rezerwacja została przywrócona w Twoim panelu',
         ]);
     }
 }

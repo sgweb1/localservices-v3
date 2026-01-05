@@ -3,7 +3,7 @@
 use App\Http\Controllers\Api\V1\CalendarController;
 use App\Http\Controllers\Api\V1\Provider\AvailabilityExceptionController;
 use App\Http\Controllers\Api\V1\Provider\SettingsController;
-use App\Http\Controllers\Api\V1\ProviderBookingController;
+use App\Http\Controllers\Api\V1\BookingController;
 use App\Http\Controllers\Api\V1\ProviderDashboardController;
 use App\Http\Controllers\Api\V1\ReviewController;
 use App\Http\Controllers\Api\V1\ReviewResponseController;
@@ -32,20 +32,20 @@ Route::middleware(['auth:sanctum'])->prefix('provider')->group(function () {
     Route::post('/reviews/{review}/response', [ReviewResponseController::class, 'store'])->name('api.provider.reviews.response.store');
     Route::delete('/reviews/{review}/response', [ReviewResponseController::class, 'destroy'])->name('api.provider.reviews.response.destroy');
     
-    // Bookings management
-    Route::get('/bookings', [ProviderBookingController::class, 'index'])->name('api.provider.bookings.index');
-    Route::get('/bookings/{id}', [ProviderBookingController::class, 'show'])->name('api.provider.bookings.show');
-    Route::get('/statistics', [ProviderBookingController::class, 'statistics'])->name('api.provider.statistics');
-    Route::post('/bookings/complete-overdue', [ProviderBookingController::class, 'completeOverdue'])->name('api.provider.bookings.complete-overdue');
-    Route::post('/bookings/{id}/accept', [ProviderBookingController::class, 'accept'])->name('api.provider.bookings.accept');
-    Route::post('/bookings/{id}/decline', [ProviderBookingController::class, 'reject'])->name('api.provider.bookings.decline');
-    Route::post('/bookings/{id}/send-quote', [ProviderBookingController::class, 'sendQuote'])->name('api.provider.bookings.send-quote');
-    Route::post('/bookings/{id}/start', [ProviderBookingController::class, 'start'])->name('api.provider.bookings.start');
-    Route::post('/bookings/{id}/complete', [ProviderBookingController::class, 'complete'])->name('api.provider.bookings.complete');
-    Route::patch('/bookings/{id}/confirm', [\App\Http\Controllers\Api\V1\BookingController::class, 'confirm'])->name('api.provider.bookings.confirm');
-    Route::patch('/bookings/{id}/reject-booking', [\App\Http\Controllers\Api\V1\BookingController::class, 'reject'])->name('api.provider.bookings.reject-booking');
-    Route::delete('/bookings/{id}', [ProviderBookingController::class, 'destroy'])->name('api.provider.bookings.destroy');
-    Route::post('/bookings/{id}/restore', [ProviderBookingController::class, 'restore'])->name('api.provider.bookings.restore');
+    // Bookings management (CONSOLIDATED - using BookingController)
+    Route::get('/bookings', [BookingController::class, 'index'])->name('api.provider.bookings.index');
+    Route::get('/bookings/{id}', [BookingController::class, 'show'])->name('api.provider.bookings.show');
+    Route::get('/statistics', [BookingController::class, 'statistics'])->name('api.provider.statistics');
+    Route::post('/bookings/complete-overdue', [BookingController::class, 'completeOverdue'])->name('api.provider.bookings.complete-overdue');
+    Route::post('/bookings/{id}/accept', [BookingController::class, 'accept'])->name('api.provider.bookings.accept');
+    Route::post('/bookings/{id}/decline', [BookingController::class, 'reject'])->name('api.provider.bookings.decline');
+    Route::post('/bookings/{id}/send-quote', [BookingController::class, 'sendQuote'])->name('api.provider.bookings.send-quote');
+    Route::post('/bookings/{id}/start', [BookingController::class, 'start'])->name('api.provider.bookings.start');
+    Route::post('/bookings/{id}/complete', [BookingController::class, 'complete'])->name('api.provider.bookings.complete');
+    Route::patch('/bookings/{id}/confirm', [BookingController::class, 'confirm'])->name('api.provider.bookings.confirm');
+    Route::patch('/bookings/{id}/reject-booking', [BookingController::class, 'reject'])->name('api.provider.bookings.reject-booking');
+    Route::delete('/bookings/{id}', [BookingController::class, 'destroy'])->name('api.provider.bookings.destroy');
+    Route::post('/bookings/{id}/restore', [BookingController::class, 'restore'])->name('api.provider.bookings.restore');
     
     // Calendar & Availability
     Route::get('/calendar', [CalendarController::class, 'index'])->name('api.provider.calendar.index');

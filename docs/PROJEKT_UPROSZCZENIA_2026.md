@@ -351,7 +351,7 @@ protected $except = [
 ### FAZA 2: Refactoring (Tydzień 2 - 3 dni)
 
 **Dzień 1: Controllers consolidation (6h)**
-- [ ] Połącz BookingController + ProviderBookingController
+- [x] ✅ Połącz BookingController + ProviderBookingController (2025-01-05: -665 lines)
 - [ ] Uprość Service routes (usuń admin-style endpoints)
 - [ ] Usuń BookingsPageWithTabs (przenieś zakładki do BookingsPage)
 - [ ] Git commit: "Refactor: połącz duplikaty kontrolerów"
