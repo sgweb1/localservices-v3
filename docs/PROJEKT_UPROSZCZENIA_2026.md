@@ -377,13 +377,18 @@ protected $except = [
 
 ### FAZA 3: Testy (Tydzień 2 - 2 dni równolegle)
 
+**STATUS: 🔄 ROZPOCZĘTA (2026-01-05)**
+
 **Dzień 1-2: PHP Tests (10h)**
 
 Napisz testy dla:
-- [ ] **BookingController** (10 testów)
-  - CRUD operations
-  - Status transitions (accept, decline, complete)
-  - Permissions (can't manage other provider's bookings)
+- [x] ✅ **BookingController** (21 testów - commit 618d91b)
+  - Authentication & Authorization (3 testy)
+  - Provider booking management (8 testów)
+  - Customer booking creation (2 testy)
+  - Provider actions: accept, reject, sendQuote, start, complete (5 testów)
+  - Statistics, destroy/restore, completeOverdue (3 testy)
+  - **Uwaga:** Wymaga naprawy session store w setupie testów
 - [ ] **ServiceController** (8 testów)
   - CRUD operations
   - Toggle status
