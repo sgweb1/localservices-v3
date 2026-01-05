@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\CalendarController;
 use App\Http\Controllers\Api\V1\Provider\AvailabilityExceptionController;
+use App\Http\Controllers\Api\V1\Provider\ServiceController;
 use App\Http\Controllers\Api\V1\Provider\SettingsController;
 use App\Http\Controllers\Api\V1\BookingController;
 use App\Http\Controllers\Api\V1\ProviderDashboardController;
@@ -75,4 +76,29 @@ Route::middleware(['auth:sanctum'])->prefix('provider')->group(function () {
         Route::put('/password', [SettingsController::class, 'updatePassword'])->name('api.provider.settings.password');
         Route::put('/subdomain', [SettingsController::class, 'updateSubdomain'])->name('api.provider.settings.subdomain');
     });
+    
+    // Services management (CRUD, gallery, status)
+    // Self-provider shorthand (bez providerId w URL)
+    Route::get('/services', [ServiceController::class, 'indexSelf'])->name('api.provider.services.self-index');
+    Route::get('/services/{serviceId}', [ServiceController::class, 'showSelf'])->name('api.provider.services.self-show');
+    Route::post('/services', [ServiceController::class, 'storeSelf'])->name('api.provider.services.self-store');
+    Route::patch('/services/{serviceId}', [ServiceController::class, 'updateSelf'])->name('api.provider.services.self-update');
+    Route::delete('/services/{serviceId}', [ServiceController::class, 'destroySelf'])->name('api.provider.services.self-destroy');
+    Route::post('/services/{serviceId}/toggle-status', [ServiceController::class, 'toggleSelf'])->name('api.provider.services.self-toggle');
+});
+
+// Provider services with {providerId} parameter (legacy compatibility for marketplace)
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/providers/{providerId}/services', [ServiceController::class, 'index'])->name('api.provider.services.index');
+    Route::post('/providers/{providerId}/services', [ServiceController::class, 'store'])->name('api.provider.services.store');
+    Route::get('/providers/{providerId}/services/{serviceId}', [ServiceController::class, 'show'])->name('api.provider.services.show');
+    Route::patch('/providers/{providerId}/services/{serviceId}', [ServiceController::class, 'update'])->name('api.provider.services.update');
+    Route::delete('/providers/{providerId}/services/{serviceId}', [ServiceController::class, 'destroy'])->name('api.provider.services.destroy');
+    Route::post('/providers/{providerId}/services/{serviceId}/toggle-status', [ServiceController::class, 'toggleStatus'])->name('api.provider.services.toggle-status');
+
+    // Gallery endpoints
+    Route::post('/providers/{providerId}/services/{serviceId}/photos', [ServiceController::class, 'uploadPhoto'])->name('api.provider.services.photos.upload');
+    Route::delete('/providers/{providerId}/services/{serviceId}/photos/{photoId}', [ServiceController::class, 'deletePhoto'])->name('api.provider.services.photos.delete');
+    Route::post('/providers/{providerId}/services/{serviceId}/photos/reorder', [ServiceController::class, 'reorderPhotos'])->name('api.provider.services.photos.reorder');
+    Route::post('/providers/{providerId}/services/{serviceId}/photos/{photoId}/primary', [ServiceController::class, 'setPrimaryPhoto'])->name('api.provider.services.photos.primary');
 });

@@ -33,18 +33,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
             Route::middleware(['api', 'auth:sanctum'])
                 ->prefix('api/v1')
-                ->group(base_path('routes/api/v1/provider-services.php'));
-
-            Route::middleware(['api', 'auth:sanctum'])
-                ->prefix('api/v1')
                 ->group(base_path('routes/api/v1/boosts.php'));
 
-            // Public subscription endpoints (no auth required)
+            // Subscriptions (public + authenticated)
             Route::prefix('api/v1')
-                ->group(base_path('routes/api/v1/subscriptions-public.php'));
-
-            Route::middleware(['api', 'auth:sanctum'])
-                ->prefix('api/v1')
                 ->group(base_path('routes/api/v1/subscriptions.php'));
 
             // Marketplace - public routes, NO AUTH - MUST BE LAST to override provider-services.php GET /providers/{providerId}/services

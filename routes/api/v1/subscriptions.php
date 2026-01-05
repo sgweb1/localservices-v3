@@ -3,16 +3,24 @@
 use App\Http\Controllers\Api\V1\SubscriptionController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('subscriptions')->group(function () {
-    // GET /api/v1/subscriptions - Lista subskrypcji użytkownika
+/*
+|--------------------------------------------------------------------------
+| Subscription API Routes
+|--------------------------------------------------------------------------
+|
+| Publiczne i authenticated endpointy dla subskrypcji
+|
+*/
+
+// Publiczne - lista dostępnych planów (bez auth)
+Route::prefix('subscription-plans')->group(function () {
+    Route::get('', [SubscriptionController::class, 'plans'])->name('subscription-plans.index');
+});
+
+// Authenticated - zarządzanie subskrypcjami użytkownika
+Route::middleware('auth:sanctum')->prefix('subscriptions')->group(function () {
     Route::get('', [SubscriptionController::class, 'index'])->name('subscriptions.index');
-
-    // GET /api/v1/subscriptions/{subscription} - Szczegóły subskrypcji
     Route::get('{subscription}', [SubscriptionController::class, 'show'])->name('subscriptions.show');
-
-    // PUT /api/v1/subscriptions/{subscription}/renew - Przedłuż subskrypcję
     Route::put('{subscription}/renew', [SubscriptionController::class, 'renew'])->name('subscriptions.renew');
-
-    // DELETE /api/v1/subscriptions/{subscription} - Anuluj subskrypcję
     Route::delete('{subscription}', [SubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
 });

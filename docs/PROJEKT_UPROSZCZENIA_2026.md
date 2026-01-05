@@ -359,13 +359,12 @@ protected $except = [
 **Dzień 2: Migracje consolidation (4h)**
 - [x] ✅ Stwórz `2026_01_05_consolidate_bookings_patches.php` (2025-01-05)
 - [x] ✅ Usuń 3 stare bookings patches (rejected_status, hidden_flags, is_test_data)
-- [ ] Konsoliduj notification preferences (usuń duplikat)
-- [ ] Git commit: "Migracje: konsolidacja patches"
+- [x] ℹ️ Notification preferences: obie tabele (legacy + nowe) używane, pomiń na razie
+- [x] ✅ Git commit: "Migracje: konsolidacja patches" (commit 3609641, -104 deletions)
 
 **Dzień 3: Routing cleanup (4h)**
-- [ ] Połącz profile.php + provider/settings routes
-- [ ] Połącz subscriptions.php + subscriptions-public.php
-- [ ] Połącz provider.php + provider-services.php
+- [x] ✅ Połącz subscriptions.php + subscriptions-public.php (2025-01-05)
+- [x] ✅ Połącz provider.php + provider-services.php (2025-01-05)
 - [ ] Git commit: "Routing: konsolidacja API endpoints"
 
 **REZULTAT FAZY 2:**
