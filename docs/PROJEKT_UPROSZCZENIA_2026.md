@@ -357,8 +357,8 @@ protected $except = [
 - [ ] Git commit: "Refactor: połącz duplikaty kontrolerów"
 
 **Dzień 2: Migracje consolidation (4h)**
-- [ ] Stwórz `2026_01_05_consolidate_bookings_patches.php`
-- [ ] Usuń 3 stare bookings patches
+- [x] ✅ Stwórz `2026_01_05_consolidate_bookings_patches.php` (2025-01-05)
+- [x] ✅ Usuń 3 stare bookings patches (rejected_status, hidden_flags, is_test_data)
 - [ ] Konsoliduj notification preferences (usuń duplikat)
 - [ ] Git commit: "Migracje: konsolidacja patches"
 
