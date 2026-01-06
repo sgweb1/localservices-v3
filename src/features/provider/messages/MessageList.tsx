@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Message, MessageAttachment } from './hooks/useMessages';
+import { Message, MessageAttachment } from '../hooks/useMessages';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { Download, FileText, Image as ImageIcon, Trash2 } from 'lucide-react';
-import { useDeleteMessage } from './hooks/useMessages';
+import { useDeleteMessage } from '../hooks/useMessages';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { toast } from 'sonner';
 
@@ -203,7 +203,7 @@ const AttachmentPreview: React.FC<{ attachment: MessageAttachment; onPreview?: (
       <FileText className="w-8 h-8 flex-shrink-0" />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{attachment.file_name}</p>
-        <p className="text-xs opacity-70">{(attachment.file_size / 1024).toFixed(1)} KB</p>
+        <p className="text-xs opacity-70">{((attachment.file_size || 0) / 1024).toFixed(1)} KB</p>
       </div>
       <a
         href={attachment.url}

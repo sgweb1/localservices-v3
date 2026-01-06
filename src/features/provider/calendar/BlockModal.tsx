@@ -7,7 +7,7 @@ import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import type { AvailabilityException } from './hooks/useAvailabilityExceptions';
+import type { AvailabilityException } from '../hooks/useAvailabilityExceptions';
 
 interface BlockModalProps {
   open: boolean;

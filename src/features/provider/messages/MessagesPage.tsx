@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { MessageSquare, Send, Paperclip, Smile, Search, MoreVertical, ArrowLeft } from 'lucide-react';
 import { ConversationList } from '@/features/provider/messages/ConversationList';
 import { ChatWindow } from './ChatWindow';
-import { useConversations } from '@/features/provider/messages/hooks/useConversations';
+import { useConversations } from '@/features/provider/hooks/useConversations';
 
 /**
  * Strona wiadomości - system czatu w stylu Facebook Messenger

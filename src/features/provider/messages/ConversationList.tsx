@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Conversation, ConversationsResponse, useUnhideConversation } from './hooks/useConversations';
+import { Conversation, ConversationsResponse, useUnhideConversation } from '../hooks/useConversations';
 import { formatDistanceToNow } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { Eye } from 'lucide-react';

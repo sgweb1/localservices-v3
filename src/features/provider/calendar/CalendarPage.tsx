@@ -30,13 +30,13 @@ import {
   type CreateSlotData,
   type TimeSlot,
   type CalendarBooking
-} from './hooks/useCalendar';
+} from '../hooks/useCalendar';
 import { 
   useAvailabilityExceptions, 
   useCreateException,
   useUpdateException, 
   useDeleteException 
-} from './hooks/useAvailabilityExceptions';
+} from '../hooks/useAvailabilityExceptions';
 
 /**
  * Kalendarz Dostępności - Widok zarządzania slotami providera

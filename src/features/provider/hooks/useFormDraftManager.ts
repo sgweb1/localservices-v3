@@ -1,22 +1,28 @@
 /**
- * Hook do zarządzania drafts dla Service Form
- * 
- * CO: Centralizuje logikę save/load/restore drafts dla formularza usług
- * JAK: Wrappuje useDraftSave + loadDraft + hasFreshDraft
- * CZEMU: Service Form ma 50+ pól - dedykowany manager lepiej zarządza
- * 
- * ZMIANA (2025-01-02): Dodano modal do pytania o restore draft
+ * Hook do zarządzania drafts dla Service Form z wbudowanym auto-save
+ *
+ * CO: Centralizuje logikę save/load/restore drafts z auto-save co 30s
+ * JAK: Łączy funkcjonalność useDraftSave + useFormDraftManager w 1 hook
+ * CZEMU: Uproszczenie - useDraftSave był używany tylko tutaj
+ *
+ * ZMIANA (2025-01-06): Scalono useDraftSave + useFormDraftManager (-150 linii)
  */
 
-import { useEffect, useState } from 'react';
-import { useDraftSave, getDraftMetadata, formatDraftTime } from '@/hooks/useDraftSave';
-import { loadDraft, clearDraft as clearDraftStorage, hasFreshDraft } from '@/utils/draftStorage';
+import { useEffect, useState, useRef } from 'react';
+import {
+  saveDraft,
+  loadDraft,
+  clearDraft as clearDraftStorage,
+  hasFreshDraft,
+  getDraftMetadata,
+  formatDraftTime
+} from '@/utils/draftStorage';
 
 /**
  * Dane formularza usługi - mapa wszystkich pól
- * 
+ *
  * CO: Type-safe interfejs dla danych formularza
- * CZEMU: Używamy gdzie indziej (type safety + documentation)
+ * CZEMU: Używany przez komponenty (type safety + documentation)
  */
 export interface ServiceFormData {
   title: string;
@@ -69,17 +75,17 @@ export interface UseFormDraftManagerReturn {
 }
 
 /**
- * Hook do zarządzania drafts dla Service Form
- * 
+ * Hook do zarządzania drafts dla Service Form z auto-save
+ *
  * @param serviceId - ID usługi (dla unique draft key) - optional (undefined = new service)
  * @param formData - aktualne dane formularza
  * @param onRestore - callback po restore (np. do setowania form state)
  * @returns { isSaving, lastSaved, existingDraft, showRestoreModal, ... }
- * 
+ *
  * @example
  * // W ServiceFormPage
  * const [formData, setFormData] = useState<ServiceFormData>({...});
- * 
+ *
  * const {
  *   isSaving,
  *   lastSaved,
@@ -88,8 +94,8 @@ export interface UseFormDraftManagerReturn {
  *   restoreDraft,
  *   clearDraft,
  * } = useFormDraftManager(serviceId, formData);
- * 
- * // Return JSX z DraftRestoreModal
+ *
+ * // JSX z DraftRestoreModal
  * {showRestoreModal && (
  *   <DraftRestoreModal
  *     draft={existingDraft!}
@@ -97,8 +103,8 @@ export interface UseFormDraftManagerReturn {
  *     onDiscard={closeRestoreModal}
  *   />
  * )}
- * 
- * // Return JSX z indicator
+ *
+ * // JSX z indicator
  * <DraftSaveIndicator isSaving={isSaving} lastSaved={lastSaved} />
  */
 export function useFormDraftManager(
@@ -109,20 +115,77 @@ export function useFormDraftManager(
   const mode = serviceId ? 'edit' : 'create';
   const draftKey = `service-form-draft:${mode}:${serviceId || 'new'}`;
 
-  // Auto-save hook (co 30s)
-  const { isSaving, lastSaved, hasError, saveDraftNow } = useDraftSave(
-    draftKey,
-    formData,
-    {
-      intervalMs: 30000,
-      saveOnUnmount: true,
-      saveImmediate: false,
-    }
-  );
+  // Auto-save state
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<number | null>(null);
+  const [hasError, setHasError] = useState(false);
 
-  // State dla restore modal
+  // Restore modal state
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [existingDraft, setExistingDraft] = useState<ServiceFormData | null>(null);
+
+  // Refs dla auto-save logic (throttling)
+  const dataRef = useRef<ServiceFormData>(formData);
+  const hasChangedRef = useRef(false);
+  const intervalIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Track changes w formData (throttling)
+  useEffect(() => {
+    if (JSON.stringify(dataRef.current) !== JSON.stringify(formData)) {
+      dataRef.current = formData;
+      hasChangedRef.current = true;
+    }
+  }, [formData]);
+
+  // Ręczny save (bez throttling)
+  const saveDraftNow = async (): Promise<boolean> => {
+    setIsSaving(true);
+    setHasError(false);
+
+    try {
+      const success = saveDraft(draftKey, dataRef.current);
+
+      if (success) {
+        const timestamp = Date.now();
+        setLastSaved(timestamp);
+        setHasError(false);
+        hasChangedRef.current = false; // Reset flag
+        return true;
+      } else {
+        throw new Error('Failed to save draft (localStorage full?)');
+      }
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      console.error('[useFormDraftManager] Save failed:', err);
+      setHasError(true);
+      return false;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Setup auto-save interval (co 30s)
+  useEffect(() => {
+    // Setup interval
+    intervalIdRef.current = setInterval(() => {
+      // Tylko save jeśli data się zmieniła (throttling)
+      if (hasChangedRef.current) {
+        saveDraftNow();
+      }
+    }, 30000); // 30 sekund
+
+    // Cleanup
+    return () => {
+      if (intervalIdRef.current) {
+        clearInterval(intervalIdRef.current);
+      }
+
+      // Save on unmount jeśli są niezapisane zmiany
+      if (hasChangedRef.current) {
+        saveDraft(draftKey, dataRef.current);
+      }
+    };
+  }, [draftKey]);
 
   // Na mount: sprawdź czy jest draft do restore
   useEffect(() => {
@@ -140,7 +203,7 @@ export function useFormDraftManager(
       setExistingDraft(draft);
       setShowRestoreModal(true);
     }
-  }, [draftKey, formData]); // Re-check jeśli changed serviceId
+  }, [draftKey, formData]);
 
   // Restore draft do formu
   const restoreDraft = (data: ServiceFormData) => {
@@ -175,7 +238,7 @@ export function useFormDraftManager(
 
 /**
  * Helper: sprawdza czy form jest pusty (all default values)
- * 
+ *
  * CZEMU: Nie pokazuj "restore draft" jeśli user już edytuje form
  */
 function isFormEmpty(formData: ServiceFormData): boolean {
@@ -188,3 +251,8 @@ function isFormEmpty(formData: ServiceFormData): boolean {
     !formData.metaTitle
   );
 }
+
+/**
+ * Re-export utilities dla kompatybilności
+ */
+export { getDraftMetadata, formatDraftTime };
